@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "PULSE",
+    "slug": "pulse",
+    "scheme": "pulse",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "experiments": {
+      "typedRoutes": true
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png"
+        }
+      ]
+    ],
+    "ios": {"supportsTablet": false},
+    "android": {
+      "package": "com.pulse.worldtoday",
+      "permissions": ["INTERNET", "POST_NOTIFICATIONS"]
+    },
+    "extra": {
+      "eas": {"projectId": "YOUR_EAS_PROJECT_ID"}
+    }
+  }
+}
