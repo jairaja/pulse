@@ -6,7 +6,7 @@ type Props = { onSelect: (value: BinaryChoice) => void; disabled?: boolean };
 
 export function PredictionCard({ onSelect, disabled }: Props) {
   return (
-    <View style={{ backgroundColor: colors.card, padding: 16, borderRadius: 14, gap: 12 }}>
+    <View style={{ backgroundColor: colors.card, padding: 16, borderRadius: 14, gap: 12, borderWidth: 1, borderColor: colors.border }}>
       <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700' }}>
         What do you predict the world will say?
       </Text>
@@ -22,7 +22,8 @@ export function PredictionCard({ onSelect, disabled }: Props) {
               borderColor: colors.accent,
               borderRadius: 12,
               padding: 14,
-              alignItems: 'center'
+              alignItems: 'center',
+              backgroundColor: colors.accentSoft
             }}
           >
             <Text style={{ color: colors.accent, fontWeight: '700' }}>{value}</Text>

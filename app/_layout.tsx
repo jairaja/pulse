@@ -10,7 +10,7 @@ export default function RootLayout() {
   const setDeviceId = useSessionStore((state) => state.setDeviceId);
 
   useEffect(() => {
-    getOrCreateDeviceId().then(setDeviceId).catch(() => undefined);
+    setDeviceId(getOrCreateDeviceId());
   }, [setDeviceId]);
 
   return (

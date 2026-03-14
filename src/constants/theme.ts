@@ -1,8 +1,10 @@
 export const colors = {
-  bg: '#04060b',
-  card: '#0a1020',
-  text: '#f5f8ff',
-  muted: '#9ca8bf',
-  accent: '#4cf0ff',
-  danger: '#ff3f79'
+  bg: '#f7fbff',
+  card: '#ffffff',
+  text: '#2f4f6f',
+  muted: '#6f8ba6',
+  accent: '#2879d0',
+  accentSoft: '#dcecff',
+  danger: '#d94848',
+  border: '#c6ddf5'
 };

@@ -9,7 +9,7 @@ type Props = {
 
 export function VoteCard({ disabled, onVote }: Props) {
   return (
-    <View style={{ backgroundColor: colors.card, padding: 16, borderRadius: 14, gap: 12 }}>
+    <View style={{ backgroundColor: colors.card, padding: 16, borderRadius: 14, gap: 12, borderWidth: 1, borderColor: colors.border }}>
       <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700' }}>Cast your vote</Text>
       <Text style={{ color: colors.muted }}>
         {disabled ? 'Submit prediction first to unlock voting.' : 'Your vote updates global results instantly.'}
@@ -25,11 +25,11 @@ export function VoteCard({ disabled, onVote }: Props) {
               borderRadius: 12,
               padding: 14,
               alignItems: 'center',
-              backgroundColor: disabled ? '#333a4a' : colors.accent,
-              opacity: disabled ? 0.4 : 1
+              backgroundColor: disabled ? colors.accentSoft : colors.accent,
+              opacity: disabled ? 0.6 : 1
             }}
           >
-            <Text style={{ color: '#00111a', fontWeight: '800' }}>{value}</Text>
+            <Text style={{ color: '#ffffff', fontWeight: '800' }}>{value}</Text>
           </Pressable>
         ))}
       </View>

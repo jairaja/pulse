@@ -22,9 +22,10 @@ export function useSubmitPrediction(questionId: string) {
 
 export function useSubmitVote(questionId: string) {
   const deviceId = useSessionStore((state) => state.deviceId);
+  const country = useSettingsStore((state) => state.country);
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (vote: 'YES' | 'NO') => submitVote(questionId, vote, deviceId),
+    mutationFn: (vote: 'YES' | 'NO') => submitVote(questionId, vote, deviceId, country),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['results', questionId] });
       void queryClient.invalidateQueries({ queryKey: ['heatmap', questionId] });
@@ -34,10 +35,11 @@ export function useSubmitVote(questionId: string) {
 
 export function useResults(questionId: string) {
   const country = useSettingsStore((state) => state.country);
+  const deviceId = useSessionStore((state) => state.deviceId);
   return useQuery({
-    queryKey: ['results', questionId, country],
-    queryFn: () => fetchResults(questionId, country),
-    enabled: Boolean(questionId),
+    queryKey: ['results', questionId, country, deviceId],
+    queryFn: () => fetchResults(questionId, country, deviceId),
+    enabled: Boolean(questionId && deviceId),
     refetchInterval: 5000
   });
 }

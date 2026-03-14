@@ -21,10 +21,10 @@ export function ShareCard({ question, worldResult, countryResult, userVote }: Pr
   };
 
   return (
-    <View style={{ backgroundColor: colors.card, padding: 16, borderRadius: 14, gap: 12 }}>
+    <View style={{ backgroundColor: colors.card, padding: 16, borderRadius: 14, gap: 12, borderWidth: 1, borderColor: colors.border }}>
       <Text style={{ color: colors.text, fontWeight: '700' }}>Share today’s pulse</Text>
       <Pressable onPress={() => void onShare()} style={{ padding: 12, borderRadius: 10, backgroundColor: colors.accent }}>
-        <Text style={{ textAlign: 'center', fontWeight: '800', color: '#02131d' }}>Share</Text>
+        <Text style={{ textAlign: 'center', fontWeight: '800', color: '#ffffff' }}>Share</Text>
       </Pressable>
     </View>
   );

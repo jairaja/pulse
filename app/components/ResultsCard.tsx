@@ -7,7 +7,7 @@ type Props = { data: ResultsSnapshot };
 
 export function ResultsCard({ data }: Props) {
   return (
-    <View style={{ backgroundColor: colors.card, padding: 16, borderRadius: 14, gap: 8 }}>
+    <View style={{ backgroundColor: colors.card, padding: 16, borderRadius: 14, gap: 8, borderWidth: 1, borderColor: colors.border }}>
       <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700' }}>The world today</Text>
       <VictoryPie
         width={260}

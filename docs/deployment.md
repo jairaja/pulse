@@ -1,4 +1,4 @@
-# Deployment Instructions
+# Deployment Instructions (Latest / Recommended)
 
 ## Mobile app (Expo/EAS)
 
@@ -7,10 +7,10 @@
    npx eas login
    npx eas init
    ```
-2. Add secrets:
+2. Add public app runtime vars:
    ```bash
-   npx eas secret:create --name EXPO_PUBLIC_SUPABASE_URL --value <url>
-   npx eas secret:create --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value <anon-key>
+   npx eas secret:create --name EXPO_PUBLIC_SUPABASE_URL --value <project-url>
+   npx eas secret:create --name EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY --value <sb_publishable_key>
    ```
 3. Build preview:
    ```bash
@@ -28,7 +28,7 @@
    supabase login
    supabase link --project-ref <project-ref>
    ```
-2. Push database changes:
+2. Push DB changes + seed:
    ```bash
    supabase db push
    psql "$SUPABASE_DB_URL" -f supabase/seed/seed.sql
@@ -39,8 +39,14 @@
    ```
 4. Configure scheduler for 12:00 GMT invocation.
 
+## Secrets policy (critical)
+
+- Safe in mobile app runtime: **Project URL + Publishable key**.
+- Never in mobile app runtime: `service_role` / `secret key`.
+- Keep server-only secrets in Supabase Edge Function secrets.
+
 ## FCM
 
-1. Create service account credentials.
-2. Store credentials in Supabase function secrets.
+1. Create Firebase service account credentials.
+2. Store credentials as Supabase function secrets.
 3. Send daily topic notification (`pulse_daily`) from `daily-notification`.

@@ -16,18 +16,33 @@ export async function submitPrediction(questionId: string, prediction: BinaryCho
   if (error) throw error;
 }
 
-export async function submitVote(questionId: string, vote: BinaryChoice, deviceId: string) {
+export async function submitVote(
+  questionId: string,
+  vote: BinaryChoice,
+  deviceId: string,
+  countryCode: string
+) {
   const { error } = await supabase.from('votes').insert({
     question_id: questionId,
     vote,
-    device_id: deviceId
+    device_id: deviceId,
+    country_code: countryCode,
+    device_fingerprint: deviceId
   });
   if (error) throw error;
 }
 
-export async function fetchResults(questionId: string, countryCode: string): Promise<ResultsSnapshot> {
+export async function fetchResults(
+  questionId: string,
+  countryCode: string,
+  deviceId: string
+): Promise<ResultsSnapshot> {
   const { data, error } = await supabase
-    .rpc('get_live_results', { p_question_id: questionId, p_country: countryCode })
+    .rpc('get_live_results', {
+      p_question_id: questionId,
+      p_country: countryCode,
+      p_device_id: deviceId
+    })
     .single();
   if (error) throw error;
   return data as ResultsSnapshot;

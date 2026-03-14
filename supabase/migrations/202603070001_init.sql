@@ -4,6 +4,7 @@ create table if not exists public.users (
   id uuid primary key default uuid_generate_v4(),
   anonymous_uuid uuid not null unique,
   device_id text not null unique,
+  device_fingerprint text not null unique,
   country_code char(2) not null default 'GB',
   language_code text not null default 'en',
   created_at timestamptz not null default now(),
@@ -41,11 +42,13 @@ create table if not exists public.votes (
   id uuid primary key default uuid_generate_v4(),
   question_id uuid not null references public.questions(id) on delete cascade,
   device_id text not null,
+  device_fingerprint text not null,
   country_code char(2) not null,
   vote text not null check (vote in ('YES', 'NO')),
   ip_hash text,
   created_at timestamptz not null default now(),
-  unique(device_id, question_id)
+  unique(device_id, question_id),
+  unique(device_fingerprint, question_id)
 );
 
 create table if not exists public.predictions (
@@ -94,7 +97,7 @@ as $$
   limit 1;
 $$;
 
-create or replace function public.get_live_results(p_question_id uuid, p_country char(2))
+create or replace function public.get_live_results(p_question_id uuid, p_country char(2), p_device_id text)
 returns json
 language sql
 security definer
@@ -109,14 +112,16 @@ as $$
       coalesce(100.0 * avg(case when vote='YES' then 1 else 0 end), 0) as yes_percent,
       case when avg(case when vote='YES' then 1 else 0 end) >= 0.5 then 'YES' else 'NO' end as result
     from public.votes where question_id = p_question_id and country_code = p_country
+  ), user_vote as (
+    select coalesce((select vote from public.votes where question_id = p_question_id and device_id = p_device_id limit 1), 'YES') as vote
   )
   select json_build_object(
     'worldYesPercent', world.yes_percent,
     'countryYesPercent', country.yes_percent,
     'worldResult', world.result,
     'countryResult', country.result,
-    'userVote', 'YES'
-  ) from world, country;
+    'userVote', user_vote.vote
+  ) from world, country, user_vote;
 $$;
 
 create or replace function public.get_country_heatmap(p_question_id uuid)
