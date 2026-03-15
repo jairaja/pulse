@@ -1,7 +1,7 @@
 create extension if not exists "uuid-ossp";
 
 create table if not exists public.users (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   anonymous_uuid uuid not null unique,
   device_id text not null unique,
   device_fingerprint text not null unique,
@@ -19,7 +19,7 @@ create table if not exists public.countries (
 );
 
 create table if not exists public.questions (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   question_text text not null,
   source_language text not null default 'en',
   asked_on date not null unique,
@@ -29,7 +29,7 @@ create table if not exists public.questions (
 );
 
 create table if not exists public.question_translations (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   question_id uuid not null references public.questions(id) on delete cascade,
   language_code text not null,
   provider text not null check (provider in ('google', 'openai', 'selected')),
@@ -39,7 +39,7 @@ create table if not exists public.question_translations (
 );
 
 create table if not exists public.votes (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   question_id uuid not null references public.questions(id) on delete cascade,
   device_id text not null,
   device_fingerprint text not null,
@@ -52,7 +52,7 @@ create table if not exists public.votes (
 );
 
 create table if not exists public.predictions (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   question_id uuid not null references public.questions(id) on delete cascade,
   device_id text not null,
   prediction text not null check (prediction in ('YES', 'NO')),
@@ -61,7 +61,7 @@ create table if not exists public.predictions (
 );
 
 create table if not exists public.question_submissions (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   submitted_by_device_id text not null,
   source_language text not null,
   submitted_text text not null,
@@ -73,7 +73,7 @@ create table if not exists public.question_submissions (
 );
 
 create table if not exists public.submission_votes (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   submission_id uuid not null references public.question_submissions(id) on delete cascade,
   device_id text not null,
   created_at timestamptz not null default now()
