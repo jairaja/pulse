@@ -1,15 +1,16 @@
 import { Drawer } from 'expo-router/drawer';
+import { colors } from '@/constants/theme';
 
 export default function DrawerLayout() {
   return (
     <Drawer
       screenOptions={{
-        headerStyle: { backgroundColor: '#070910' },
-        headerTintColor: '#f5f8ff',
-        sceneStyle: { backgroundColor: '#04060b' },
-        drawerStyle: { backgroundColor: '#090d17' },
-        drawerActiveTintColor: '#4cf0ff',
-        drawerInactiveTintColor: '#9ca8bf'
+        headerStyle: { backgroundColor: colors.card },
+        headerTintColor: colors.text,
+        sceneStyle: { backgroundColor: colors.bg },
+        drawerStyle: { backgroundColor: colors.card },
+        drawerActiveTintColor: colors.accent,
+        drawerInactiveTintColor: colors.muted
       }}
     >
       <Drawer.Screen name="index" options={{ title: 'Home' }} />
