@@ -1,0 +1,10 @@
+{
+  "cli": { "version": ">= 13.3.0" },
+  "build": {
+    "preview": { "distribution": "internal" },
+    "production": {}
+  },
+  "submit": {
+    "production": {}
+  }
+}
