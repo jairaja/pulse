@@ -28,16 +28,21 @@
    supabase login
    supabase link --project-ref <project-ref>
    ```
-2. Push DB changes + seed:
+2. Push DB changes:
    ```bash
    supabase db push
-   psql "$SUPABASE_DB_URL" -f supabase/seed/seed.sql
    ```
-3. Deploy edge function:
+3. Seed data (choose one):
+   - With `psql` installed:
+     ```bash
+     psql "$SUPABASE_DB_URL" -f supabase/seed/seed.sql
+     ```
+   - Without `psql`: run `supabase/seed/seed.sql` in Supabase Dashboard SQL Editor.
+4. Deploy edge function:
    ```bash
    supabase functions deploy daily-notification
    ```
-4. Configure scheduler for 12:00 GMT invocation.
+5. Configure scheduler for 12:00 GMT invocation.
 
 ## Secrets policy (critical)
 

@@ -68,10 +68,15 @@ npx expo start
    ```bash
    supabase db push
    ```
-8. Seed demo data:
-   ```bash
-   psql "$SUPABASE_DB_URL" -f supabase/seed/seed.sql
-   ```
+8. Seed demo data (choose one):
+   - If `psql` is installed:
+     ```bash
+     psql "$SUPABASE_DB_URL" -f supabase/seed/seed.sql
+     ```
+   - If `psql` is not installed, use Supabase Dashboard SQL Editor:
+     1. Open SQL Editor in your Supabase project.
+     2. Paste `supabase/seed/seed.sql`.
+     3. Run it.
 9. Deploy function:
    ```bash
    supabase functions deploy daily-notification
