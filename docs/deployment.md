@@ -42,16 +42,18 @@
    ```bash
    supabase functions deploy daily-notification
    ```
-5. Configure scheduler for 12:00 GMT invocation.
+5. Configure function secrets:
+   ```bash
+   supabase secrets set FCM_SERVER_KEY="<fcm-server-key>" --project-ref <project-ref>
+   supabase secrets set GOOGLE_TRANSLATE_API_KEY="<google-key>" --project-ref <project-ref>
+   supabase secrets set OPENAI_API_KEY="<openai-key>" --project-ref <project-ref>
+   ```
+6. Configure scheduler for 12:00 GMT invocation.
+   - Cron: `0 12 * * *`
+   - Timezone: `Etc/UTC`
 
 ## Secrets policy (critical)
 
 - Safe in mobile app runtime: **Project URL + Publishable key**.
 - Never in mobile app runtime: `service_role` / `secret key`.
 - Keep server-only secrets in Supabase Edge Function secrets.
-
-## FCM
-
-1. Create Firebase service account credentials.
-2. Store credentials as Supabase function secrets.
-3. Send daily topic notification (`pulse_daily`) from `daily-notification`.

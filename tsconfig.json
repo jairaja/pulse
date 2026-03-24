@@ -4,8 +4,7 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@components/*": ["app/components/*"]
+      "@/*": ["src/*"]
     },
     "types": ["vitest/globals"]
   },

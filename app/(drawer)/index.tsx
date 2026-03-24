@@ -1,12 +1,12 @@
 import NetInfo from '@react-native-community/netinfo';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
-import { OfflineBanner } from '@components/OfflineBanner';
-import { PredictionCard } from '@components/PredictionCard';
-import { ResultsCard } from '@components/ResultsCard';
-import { ShareCard } from '@components/ShareCard';
-import { VoteCard } from '@components/VoteCard';
-import { WorldHeatMap } from '@components/WorldHeatMap';
+import { OfflineBanner } from '@/components/OfflineBanner';
+import { PredictionCard } from '@/components/PredictionCard';
+import { ResultsCard } from '@/components/ResultsCard';
+import { ShareCard } from '@/components/ShareCard';
+import { VoteCard } from '@/components/VoteCard';
+import { WorldHeatMap } from '@/components/WorldHeatMap';
 import { colors } from '@/constants/theme';
 import { useHeatMap, useResults, useSubmitPrediction, useSubmitVote, useTodayQuestion } from '@/hooks/usePulseData';
 import { useSessionStore } from '@/stores/sessionStore';

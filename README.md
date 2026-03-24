@@ -20,18 +20,6 @@ In this project:
 - Keep server-only secrets in Supabase Edge Function secrets or your server runtime.
 - Enforce RLS + policies for all client-accessible tables.
 
-## What was legacy in previous guidance?
-
-Items updated to current recommendations:
-1. **“Anon key” wording** → replaced with **publishable key** naming.
-2. `EXPO_PUBLIC_SUPABASE_ANON_KEY` → replaced with `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
-3. Deployment docs now reference publishable key for mobile builds.
-
-Still valid (not legacy):
-- Using Supabase Edge Functions for scheduled jobs.
-- Using `supabase db push` for migration deployment.
-- Using SQL migration files in source control.
-
 ## Why FCM if Supabase has push support?
 
 Supabase does not directly replace APNs/FCM delivery rails for native mobile push.
@@ -81,9 +69,37 @@ npx expo start
    ```bash
    supabase functions deploy daily-notification
    ```
-10. Add function secrets (FCM + translation keys + server-only Supabase secret if needed).
-11. Configure scheduler for daily 12:00 GMT invocation.
+10. Configure function secrets:
+   ```bash
+   supabase secrets set FCM_SERVER_KEY="<fcm-server-key>" --project-ref <project-ref>
+   supabase secrets set GOOGLE_TRANSLATE_API_KEY="<google-key>" --project-ref <project-ref>
+   supabase secrets set OPENAI_API_KEY="<openai-key>" --project-ref <project-ref>
+   ```
+11. Set scheduler (daily 12:00 GMT):
+   - Supabase Dashboard → Edge Functions → `daily-notification` → Schedules → New schedule
+   - Cron: `0 12 * * *`
+   - Timezone: `Etc/UTC`
 12. Run app and verify: today question, prediction insert, vote insert, results RPC, heatmap RPC.
+
+## Expo Go troubleshooting (exact fixes)
+
+### A) Route warnings: files in `app/components` and `app/providers`
+Fix: keep only routes/layouts under `app/`. Move shared components/providers to `src/components` and `src/providers`.
+
+### B) Worklets mismatch (`0.7.4 vs 0.5.1`)
+Fix sequence:
+1. Ensure Expo Go app version matches SDK 52.
+2. Reinstall with Expo-managed versions:
+   ```bash
+   npx expo install react-native-reanimated react-native-gesture-handler
+   ```
+3. Clear metro cache:
+   ```bash
+   npx expo start -c
+   ```
+
+### C) MMKV TurboModules error in Expo Go
+`react-native-mmkv` 3.x requires new architecture. For Expo Go compatibility use MMKV 2.x.
 
 ## `.env.example` purpose + your action
 
@@ -95,13 +111,3 @@ Your action:
 1. Copy to `.env`.
 2. Fill real values.
 3. Never commit `.env`.
-
-## `202603070001_init.sql` purpose + your action
-
-Purpose:
-- Baseline migration for core schema and RPC functions.
-
-Your action:
-1. Apply with `supabase db push`.
-2. Seed with `supabase/seed/seed.sql`.
-3. Add future changes as new migration files.
