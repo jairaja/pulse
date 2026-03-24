@@ -27,6 +27,35 @@ Recommended pattern:
 - Supabase = orchestration (data, scheduling, targeting, function execution)
 - FCM/APNs = push transport
 
+
+## SDK 54 upgrade playbook (required for iOS Expo Go)
+
+If Expo Go on iOS is SDK 54, your project must also be SDK 54.
+You cannot install an older Expo Go on iOS.
+
+1. Upgrade core versions in `package.json` (Expo 54 / React 19.1 / RN 0.81 / Expo Router 6).
+2. Reinstall dependencies:
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+3. Force Expo-managed compatibility pinning:
+   ```bash
+   npx expo install --fix
+   ```
+4. Align reanimated/worklets native+JS versions:
+   ```bash
+   npx expo install react-native-reanimated react-native-worklets react-native-gesture-handler
+   ```
+5. Clear Metro cache and restart:
+   ```bash
+   npx expo start -c
+   ```
+6. Validate project health:
+   ```bash
+   npx expo-doctor
+   ```
+
 ## Install commands
 
 ```bash
