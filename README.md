@@ -16,7 +16,17 @@ The only acceptance criteria for this step are:
 > Do not use arbitrary `npm update` commands. Expo native dependencies must match the Expo SDK, not merely be the newest versions published to npm.
 
 1. Use a current Node.js LTS release (Node 20 or newer).
-2. From the repository root, remove old dependency state:
+2. Verify that the checkout contains only the Step 1 runtime files:
+   ```bash
+   npm run verify:step1
+   ```
+   If this fails, you have old source files from an earlier scaffold. Do **not** install the old libraries to silence the errors. First update your branch to this commit. If the obsolete files are untracked, preview then remove them:
+   ```bash
+   git clean -nd
+   git clean -fd
+   ```
+   `git clean -fd` permanently deletes untracked files; commit or copy work you need before running it.
+3. From the repository root, remove old dependency state:
    ```bash
    rm -rf node_modules package-lock.json
    ```
@@ -24,24 +34,24 @@ The only acceptance criteria for this step are:
    ```powershell
    Remove-Item -Recurse -Force node_modules, package-lock.json -ErrorAction SilentlyContinue
    ```
-3. Install the declared SDK 54 baseline, including Expo Router's direct native peer dependencies (`expo-constants` and `expo-linking`):
+4. Install the declared SDK 54 baseline, including Expo Router's direct native peer dependencies (`expo-constants` and `expo-linking`):
    ```bash
    npm install
    ```
-4. Ask Expo to align every native package to SDK 54 and update `package.json`/lockfile as necessary:
+5. Ask Expo to align every native package to SDK 54 and update `package.json`/lockfile as necessary:
    ```bash
    npx expo install --fix
    ```
-5. Validate dependency health. **Do not continue if `expo-doctor` reports any failed checks.**
+6. Validate dependency health. **Do not continue if `expo-doctor` or typecheck reports any failed checks.**
    ```bash
    npx expo-doctor
    npm run typecheck
    ```
-6. Start with a clean Metro cache:
+7. Start with a clean Metro cache:
    ```bash
    npx expo start --clear
    ```
-7. Open the app in Expo Go. The Expo Go app must support SDK 54.
+8. Open the app in Expo Go. The Expo Go app must support SDK 54.
 
 ### If Expo Doctor reports missing Expo Router peers
 
