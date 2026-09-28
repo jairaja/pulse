@@ -47,9 +47,9 @@ The only acceptance criteria for this step are:
    npx expo-doctor
    npm run typecheck
    ```
-7. Start with a clean Metro cache:
+7. Start with a clean Metro cache through the guarded project command:
    ```bash
-   npx expo start --clear
+   npm run start -- --clear
    ```
 8. Open the app in Expo Go. The Expo Go app must support SDK 54.
 
@@ -82,6 +82,22 @@ npx expo-doctor
 ```
 
 The project manifest declares those peers so this should not recur after a clean install. If it does, delete `node_modules` and `package-lock.json`, then repeat the full setup sequence above.
+
+### If Expo Router tries to bundle `app/(drawer)` or `app/components`
+
+That source tree does not exist in the current Step 1 branch. Its presence means you are either on an old branch/commit or you still have untracked legacy files locally. This is **not** fixed by adding the old dependencies.
+
+First, inspect tracked versus untracked legacy paths:
+
+```bash
+git ls-files "app/(drawer)/**" "app/components/**" "app/providers/**" "src/**"
+git status --short
+```
+
+- If the first command prints files, your current branch is old. Switch to or merge the branch containing this Step 1 change before continuing.
+- If it prints nothing but `npm run verify:step1` fails, the paths are untracked leftovers. Preview their deletion with `git clean -nd`, then remove them with `git clean -fd` only after safeguarding work you need.
+
+Start the app with `npm run start -- --clear`, not `npx expo start --clear`. The project start command now runs the stale-source guard first and will refuse to bundle an invalid checkout.
 
 ## Dependency decision log
 

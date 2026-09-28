@@ -4,10 +4,10 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
+    "start": "npm run verify:step1 && expo start",
+    "android": "npm run verify:step1 && expo start --android",
+    "ios": "npm run verify:step1 && expo start --ios",
+    "web": "npm run verify:step1 && expo start --web",
     "typecheck": "tsc --noEmit",
     "doctor": "expo-doctor",
     "verify:step1": "node scripts/verify-step1.mjs"
