@@ -8,9 +8,10 @@
     "android": "npm run verify:step1 && expo start --android",
     "ios": "npm run verify:step1 && expo start --ios",
     "web": "npm run verify:step1 && expo start --web",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --project tsconfig.json",
     "doctor": "expo-doctor",
-    "verify:step1": "node scripts/verify-step1.mjs"
+    "verify:step1": "node scripts/verify-step1.mjs",
+    "verify:typecheck-scope": "node scripts/verify-typecheck-scope.mjs"
   },
   "dependencies": {
     "expo": "~54.0.0",

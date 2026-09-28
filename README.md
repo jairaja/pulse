@@ -45,6 +45,7 @@ The only acceptance criteria for this step are:
 6. Validate dependency health. **Do not continue if `expo-doctor` or typecheck reports any failed checks.**
    ```bash
    npx expo-doctor
+   npm run verify:typecheck-scope
    npm run typecheck
    ```
 7. Start with a clean Metro cache through the guarded project command:
@@ -98,6 +99,19 @@ git status --short
 - If it prints nothing but `npm run verify:step1` fails, the paths are untracked leftovers. Preview their deletion with `git clean -nd`, then remove them with `git clean -fd` only after safeguarding work you need.
 
 Start the app with `npm run start -- --clear`, not `npx expo start --clear`. The project start command now runs the stale-source guard first and will refuse to bundle an invalid checkout.
+
+### If `npm run typecheck` reports a Deno import under `supabase/functions`
+
+The mobile TypeScript project must not typecheck Supabase Edge Functions. Their imports use Deno URLs and are validated by Supabase/Deno tooling, not by the React Native compiler.
+
+The Step 1 `tsconfig.json` uses an explicit `files` list containing only `app/_layout.tsx` and `app/index.tsx`. Run:
+
+```bash
+npm run verify:typecheck-scope
+npm run typecheck
+```
+
+If the Deno function still appears in the error output, your checkout does not contain the current `tsconfig.json`; update or merge this change before debugging dependencies.
 
 ## Dependency decision log
 
