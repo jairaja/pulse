@@ -24,7 +24,7 @@ The only acceptance criteria for this step are:
    ```powershell
    Remove-Item -Recurse -Force node_modules, package-lock.json -ErrorAction SilentlyContinue
    ```
-3. Install the declared SDK 54 baseline:
+3. Install the declared SDK 54 baseline, including Expo Router's direct native peer dependencies (`expo-constants` and `expo-linking`):
    ```bash
    npm install
    ```
@@ -32,7 +32,7 @@ The only acceptance criteria for this step are:
    ```bash
    npx expo install --fix
    ```
-5. Validate dependency health:
+5. Validate dependency health. **Do not continue if `expo-doctor` reports any failed checks.**
    ```bash
    npx expo-doctor
    npm run typecheck
@@ -42,6 +42,17 @@ The only acceptance criteria for this step are:
    npx expo start --clear
    ```
 7. Open the app in Expo Go. The Expo Go app must support SDK 54.
+
+### If Expo Doctor reports missing Expo Router peers
+
+Run the Expo-managed installer rather than selecting versions manually:
+
+```bash
+npx expo install expo-constants expo-linking
+npx expo-doctor
+```
+
+The project manifest declares those peers so this should not recur after a clean install. If it does, delete `node_modules` and `package-lock.json`, then repeat the full setup sequence above.
 
 ## Dependency decision log
 
