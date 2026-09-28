@@ -4,8 +4,6 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "clean": "rm -rf node_modules package-lock.json",
-    "cleaninstall": "npm clean && npm install",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
