@@ -34,7 +34,7 @@ The only acceptance criteria for this step are:
    ```powershell
    Remove-Item -Recurse -Force node_modules, package-lock.json -ErrorAction SilentlyContinue
    ```
-4. Install the declared SDK 54 baseline, including Expo Router's direct native peer dependencies (`expo-constants` and `expo-linking`):
+4. Install the declared SDK 54 baseline, including Expo Router's direct native peer dependencies (`expo-constants` and `expo-linking`) and its explicitly declared Babel preset:
    ```bash
    npm install
    ```
@@ -52,6 +52,25 @@ The only acceptance criteria for this step are:
    npx expo start --clear
    ```
 8. Open the app in Expo Go. The Expo Go app must support SDK 54.
+
+### If Metro reports `Cannot find module 'babel-preset-expo'`
+
+This indicates an incomplete or stale `node_modules` installation. `babel.config.js` uses the Expo preset and the project now explicitly declares the matching SDK 54 preset as a development dependency. Do not install a global Babel package.
+
+Run the complete clean-install sequence in this order:
+
+```bash
+rm -rf node_modules package-lock.json
+npm install
+npx expo install --fix
+npx expo start --clear
+```
+
+On Windows PowerShell, replace the first command with:
+
+```powershell
+Remove-Item -Recurse -Force node_modules, package-lock.json -ErrorAction SilentlyContinue
+```
 
 ### If Expo Doctor reports missing Expo Router peers
 
