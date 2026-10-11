@@ -4,17 +4,24 @@
 
 See the editable four-state launch mockup: [Vote today, discover the world tomorrow](docs/design/pulse-phase1-launch-flow.svg).
 
-The mockup is for design approval. The current local interaction prototype has not yet been replaced with this production flow.
+The runtime now follows this approved direction. It remains a local prototype until backend voting is introduced.
 
-## Current stage: Step 1 — local Expo foundation
+## Current stage: Phase 1 local UX
 
-This branch intentionally runs **without** Supabase, FCM, a database, MMKV, maps, charts, push notifications, or a drawer. They were removed from the runtime because the prior scaffold attempted to integrate too much before the application could be verified.
+The runtime now implements the approved matte Phase 1 experience and drawer navigation. It still runs **without** Supabase, FCM, a database, persistence, maps, charts, or push notifications. The vote is local and resets when the app reloads.
+
+Phase 1 deliberately excludes prediction and live trends. It contains:
+
+- **Today:** one question and a direct YES/NO vote.
+- **Past Results:** the eventual home for delayed results from questions the user answered.
+- **Brewing Questions:** a placeholder for community questions, including a disabled “Ask a question” action.
+- **About:** the privacy and product explanation.
 
 The only acceptance criteria for this step are:
 
 1. The app opens in Expo Go without warnings/errors.
 2. The Home screen renders.
-3. The local interaction completes without a runtime error.
+3. The local vote completes without a runtime error.
 4. No network request is made.
 
 ## Required local setup
@@ -22,7 +29,7 @@ The only acceptance criteria for this step are:
 > Do not use arbitrary `npm update` commands. Expo native dependencies must match the Expo SDK, not merely be the newest versions published to npm.
 
 1. Use a current Node.js LTS release (Node 20 or newer).
-2. Verify that the checkout contains only the Step 1 runtime files:
+2. Verify that discarded scaffold directories have not been restored:
    ```bash
    npm run verify:step1
    ```
@@ -40,7 +47,7 @@ The only acceptance criteria for this step are:
    ```powershell
    Remove-Item -Recurse -Force node_modules, package-lock.json -ErrorAction SilentlyContinue
    ```
-4. Install the declared SDK 54 baseline, including Expo Router's direct native peer dependencies (`expo-constants` and `expo-linking`) and its explicitly declared Babel preset:
+4. Install the declared SDK 54 baseline, including the Expo-compatible drawer dependencies:
    ```bash
    npm install
    ```
@@ -90,9 +97,9 @@ npx expo-doctor
 
 The project manifest declares those peers so this should not recur after a clean install. If it does, delete `node_modules` and `package-lock.json`, then repeat the full setup sequence above.
 
-### If Expo Router tries to bundle `app/(drawer)` or `app/components`
+### If Expo Router tries to bundle old `app/(drawer)` or `app/components` files
 
-That source tree does not exist in the current Step 1 branch. Its presence means you are either on an old branch/commit or you still have untracked legacy files locally. This is **not** fixed by adding the old dependencies.
+Those source trees are not part of the current flat-route architecture. Their presence means you are either on an old branch/commit or you still have untracked legacy files locally. This is **not** fixed by adding their old dependencies.
 
 First, inspect tracked versus untracked legacy paths:
 
@@ -110,7 +117,7 @@ Start the app with `npm run start -- --clear`, not `npx expo start --clear`. The
 
 The mobile TypeScript project must not typecheck Supabase Edge Functions. Their imports use Deno URLs and are validated by Supabase/Deno tooling, not by the React Native compiler.
 
-The Step 1 `tsconfig.json` uses an explicit `files` list containing only `app/_layout.tsx` and `app/index.tsx`. Run:
+The mobile `tsconfig.json` includes every Expo Router screen while leaving Supabase's Deno function outside the mobile compiler. Run:
 
 ```bash
 npm run verify:typecheck-scope
@@ -121,13 +128,13 @@ If the Deno function still appears in the error output, your checkout does not c
 
 ## Dependency decision log
 
-Removed from the **Step 1 runtime** because they are premature or were causing native-version risks:
+Still deferred because they are premature for the local Phase 1 UX:
 
 - `react-native-mmkv`: requires native configuration and is not needed before local app behavior is proven.
-- `react-native-reanimated`, `react-native-worklets`, `react-native-gesture-handler`, and drawer navigation: deferred until navigation is introduced and Expo resolves their SDK-compatible versions.
+- The drawer uses Expo SDK 54-compatible `react-native-reanimated`, `react-native-worklets`, and `react-native-gesture-handler` versions installed through `npx expo install`.
 - `react-native-maps`, `victory-native`, and `react-native-svg`: deferred until the results/heatmap step.
 - Supabase, React Query, Zustand, NetInfo, notifications, translation APIs, and FCM: deferred until the local UX is proven.
 
-## What comes next—only after Step 1 passes
+## What comes next—only after this local UX passes
 
-Step 2 will introduce navigation and persistent local settings. Step 3 will introduce Supabase connectivity with a read-only health check. Voting, identity enforcement, FCM, translations, charts, maps, and moderation remain later steps.
+The next step should introduce Supabase connectivity with a read-only health check. Persistent voting, identity enforcement, settings, FCM, translations, charts, maps, and moderation remain later steps. Prediction belongs to Phase 2; current vote trends belong to Phase 3.

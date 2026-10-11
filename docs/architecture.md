@@ -4,19 +4,20 @@
 
 Each step must start, be manually tested, and be understood before the next step changes the dependency graph or adds a remote service.
 
-## Step 1 — local foundation (current)
+## Phase 1 — local UX (current)
 
 - Expo SDK 54 app shell
-- One temporary local interaction flow; the approved Phase 1 target is question → vote → next-day result
+- Direct question → vote → local receipt interaction; the backend will reveal results the next day
 - No database, push, identity, map, chart, or API dependency at runtime
 
-**Exit criteria:** Expo Go opens the app without red-screen errors; the temporary local interaction completes; no network request is made.
+**Exit criteria:** Expo Go opens the app without red-screen errors; all drawer destinations open; the local vote completes; no network request is made.
 
-## Step 2 — navigation and local state
+## Step 2 — navigation and local UX
 
-- Add Expo Router navigation only after Step 1 passes.
+- Expo Router provides a four-destination drawer: Today, Past Results, Brewing Questions, and About.
+- Prediction and live trends are not part of the Phase 1 runtime.
 - Add SDK-aligned navigation dependencies using `npx expo install`.
-- Persist non-sensitive UI state with an Expo-compatible storage option.
+- Keep vote state ephemeral until the secure backend write path is designed; a reload resets this prototype.
 
 ## Step 3 — Supabase read-only connectivity
 

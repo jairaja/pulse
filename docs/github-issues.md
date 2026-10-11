@@ -1,11 +1,13 @@
 # PULSE staged backlog
 
-1. **Step 1:** Verify local Expo foundation (current).
-2. **Step 2:** Add navigation and local persistence.
+1. **Step 1:** Verify local Expo foundation (complete).
+2. **Step 2:** Validate matte direct-vote UX and drawer navigation (current).
 3. **Step 3:** Add Supabase project configuration and read-only health check.
-4. **Step 4:** Add anonymous identity and secure prediction/vote write path.
-5. **Step 5:** Add results aggregation, charts, and heatmap.
+4. **Step 4:** Add anonymous identity, durable local state, and a secure vote write path.
+5. **Step 5:** Add delayed results aggregation and visualization.
 6. **Step 6:** Add submissions, moderation, and translation.
 7. **Step 7:** Add FCM HTTP v1 push delivery and scheduling.
+8. **Phase 2:** Evaluate prediction only after the direct-vote product is validated.
+9. **Phase 3:** Evaluate current vote trends with explicit anti-bias research.
 
 No issue proceeds until the prior step has explicit acceptance evidence.
