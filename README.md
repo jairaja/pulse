@@ -10,7 +10,7 @@ The runtime now follows this approved direction. It remains a local prototype un
 
 The runtime now implements the approved matte Phase 1 experience and drawer navigation. It still runs **without** Supabase, FCM, a database, persistence, maps, charts, or push notifications. The vote is local and resets when the app reloads.
 
-Phase 1 deliberately excludes prediction and live trends. It contains:
+Phase 1 deliberately exposes no in-progress voting data. It contains:
 
 - **Today:** one question and a direct YES/NO vote.
 - **Past Results:** the eventual home for delayed results from questions the user answered.
@@ -137,4 +137,4 @@ Still deferred because they are premature for the local Phase 1 UX:
 
 ## What comes next—only after this local UX passes
 
-The next step should introduce Supabase connectivity with a read-only health check. Persistent voting, identity enforcement, settings, FCM, translations, charts, maps, and moderation remain later steps. Prediction belongs to Phase 2; current vote trends belong to Phase 3.
+The next step should introduce Supabase connectivity with a read-only health check. Persistent voting, identity enforcement, settings, FCM, translations, charts, maps, and moderation remain later steps. In-progress vote trends are explicitly out of scope.

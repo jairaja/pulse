@@ -15,7 +15,7 @@ Each step must start, be manually tested, and be understood before the next step
 ## Step 2 — navigation and local UX
 
 - Expo Router provides a four-destination drawer: Today, Past Results, Brewing Questions, and About.
-- Prediction and live trends are not part of the Phase 1 runtime.
+- In-progress vote results are not exposed.
 - Add SDK-aligned navigation dependencies using `npx expo install`.
 - Keep vote state ephemeral until the secure backend write path is designed; a reload resets this prototype.
 

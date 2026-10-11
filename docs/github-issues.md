@@ -7,7 +7,6 @@
 5. **Step 5:** Add delayed results aggregation and visualization.
 6. **Step 6:** Add submissions, moderation, and translation.
 7. **Step 7:** Add FCM HTTP v1 push delivery and scheduling.
-8. **Phase 2:** Evaluate prediction only after the direct-vote product is validated.
-9. **Phase 3:** Evaluate current vote trends with explicit anti-bias research.
+8. **Later:** Evaluate in-progress vote trends only with explicit anti-bias research.
 
 No issue proceeds until the prior step has explicit acceptance evidence.

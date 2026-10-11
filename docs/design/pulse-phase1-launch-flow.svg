@@ -25,7 +25,7 @@
   <rect width="1800" height="980" fill="#E9EAE6"/>
   <text x="82" y="65" class="ui stateNumber">PULSE · PHASE 1</text>
   <text x="82" y="103" class="ui" fill="#1B1C1A" font-size="34" font-weight="750" letter-spacing="-0.8">Vote today. Discover the world tomorrow.</text>
-  <text x="82" y="134" class="ui" fill="#62666D" font-size="15">One question, one explicit vote, one delayed reveal. No prediction and no live trend.</text>
+  <text x="82" y="134" class="ui" fill="#62666D" font-size="15">One question, one explicit vote, one delayed reveal. No in-progress results.</text>
 
   <!-- Screen 1 -->
   <g transform="translate(74 176)">
@@ -168,5 +168,5 @@
     </g>
   </g>
 
-  <text x="900" y="954" text-anchor="middle" class="ui" fill="#777E87" font-size="13">Concept mockup · system typography · neutral surfaces · one blue accent · no live trend</text>
+  <text x="900" y="954" text-anchor="middle" class="ui" fill="#777E87" font-size="13">Concept mockup · system typography · neutral surfaces · one blue accent · delayed results</text>
 </svg>
