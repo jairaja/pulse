@@ -7,10 +7,10 @@ Each step must start, be manually tested, and be understood before the next step
 ## Step 1 — local foundation (current)
 
 - Expo SDK 54 app shell
-- One local prediction-before-vote flow
+- One temporary local interaction flow; the approved Phase 1 target is question → vote → next-day result
 - No database, push, identity, map, chart, or API dependency at runtime
 
-**Exit criteria:** Expo Go opens the app without red-screen errors; the prediction unlocks the local vote; the local confirmation appears.
+**Exit criteria:** Expo Go opens the app without red-screen errors; the temporary local interaction completes; no network request is made.
 
 ## Step 2 — navigation and local state
 

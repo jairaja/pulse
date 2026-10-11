@@ -1,5 +1,11 @@
 # PULSE — Step-by-step build
 
+## Phase 1 UX concept
+
+See the editable four-state launch mockup: [Vote today, discover the world tomorrow](docs/design/pulse-phase1-launch-flow.svg).
+
+The mockup is for design approval. The current local interaction prototype has not yet been replaced with this production flow.
+
 ## Current stage: Step 1 — local Expo foundation
 
 This branch intentionally runs **without** Supabase, FCM, a database, MMKV, maps, charts, push notifications, or a drawer. They were removed from the runtime because the prior scaffold attempted to integrate too much before the application could be verified.
@@ -8,8 +14,8 @@ The only acceptance criteria for this step are:
 
 1. The app opens in Expo Go without warnings/errors.
 2. The Home screen renders.
-3. A prediction must be selected before the vote buttons become active.
-4. A vote shows a local confirmation only—no network request is made.
+3. The local interaction completes without a runtime error.
+4. No network request is made.
 
 ## Required local setup
 
