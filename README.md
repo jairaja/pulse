@@ -13,13 +13,17 @@ The runtime now implements the approved matte Phase 1 experience and drawer navi
 Phase 1 deliberately exposes no in-progress voting data. It contains:
 
 - **Today:** one question and a direct YES/NO vote.
-- **Past Results:** the eventual home for delayed results from questions the user answered.
+- **Past Results:** every finalized question, with the user's vote shown when one exists locally.
 - **Brewing Questions:** a placeholder for community questions, including a disabled “Ask a question” action.
 - **About:** the privacy and product explanation.
 
 Phase 1 is world-first and does not collect or infer a user's country. Phone locale, SIM/calling
 code, and IP geolocation are not reliable proof of residence, so the app must not label aggregates
 as “your country” without an explicit, optional country declaration and minimum sample safeguards.
+
+The future account prompt is optional and exists only to preserve answered-question history across
+devices. Email authentication is sufficient; first and last names are not required for syncing and
+should remain optional profile fields if they are introduced later.
 
 The only acceptance criteria for this step are:
 

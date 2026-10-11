@@ -19,6 +19,7 @@ Each step must start, be manually tested, and be understood before the next step
 - Results compare the user's vote with the finalized aggregate from PULSE voters; Phase 1 stores no country.
 - Add SDK-aligned navigation dependencies using `npx expo install`.
 - Keep vote state ephemeral until the secure backend write path is designed; a reload resets this prototype.
+- Past Results lists every finalized question; participation controls only whether “Your vote” is shown.
 
 ## Step 3 — Supabase read-only connectivity
 

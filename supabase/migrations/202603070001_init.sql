@@ -117,31 +117,28 @@ as $$
   limit 1;
 $$;
 
-create or replace function public.get_final_results(p_question_id uuid, p_device_id text)
+create or replace function public.get_final_results(p_question_id uuid)
 returns jsonb
 language sql
 stable
 security definer
 set search_path = ''
 as $$
-  with user_vote as (
-    select v.vote
-    from public.votes v
-    join public.questions q on q.id = v.question_id
-    where v.question_id = p_question_id
-      and v.device_id = p_device_id
+  with eligible_question as (
+    select q.id, q.results_finalized_at
+    from public.questions q
+    where q.id = p_question_id
       and q.status = 'archived'
       and q.results_finalized_at is not null
       and q.results_finalized_at <= now()
       and q.asked_on < (now() at time zone 'utc')::date
-    limit 1
   ), world as (
     select
       count(*) filter (where v.vote = 'YES') as yes_count,
       count(*) filter (where v.vote = 'NO') as no_count
     from public.votes v
     where v.question_id = p_question_id
-      and exists (select 1 from user_vote)
+      and exists (select 1 from eligible_question)
   )
   select jsonb_build_object(
     'globalYesPercent', round(100.0 * world.yes_count / nullif(world.yes_count + world.no_count, 0), 1),
@@ -152,9 +149,7 @@ as $$
       when world.no_count > world.yes_count then 'NO'
       else 'TIE'
     end,
-    'userVote', user_vote.vote,
     'finalizedAt', q.results_finalized_at
   )
-  from world, user_vote
-  join public.questions q on q.id = p_question_id;
+  from world, eligible_question q;
 $$;

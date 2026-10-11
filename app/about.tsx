@@ -15,8 +15,9 @@ export default function AboutScreen() {
           thinks they should think.
         </Text>
         <Text style={styles.body}>
-          We do not need your name, age, gender, or exact location. There are no ads. If a question
-          is sponsored, we will say so plainly.
+          You can use PULSE without an account. An optional email account may be offered to protect
+          your voting history across devices; a name is not required for that. There are no ads. If
+          a question is sponsored, we will say so plainly.
         </Text>
         <Text style={styles.body}>
           Questions may repeat because people change. “Am I happy today?” can have a very different
