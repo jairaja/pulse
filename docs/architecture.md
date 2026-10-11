@@ -16,6 +16,7 @@ Each step must start, be manually tested, and be understood before the next step
 
 - Expo Router provides a four-destination drawer: Today, Past Results, Brewing Questions, and About.
 - In-progress vote results are not exposed.
+- Results compare the user's vote with the finalized aggregate from PULSE voters; Phase 1 stores no country.
 - Add SDK-aligned navigation dependencies using `npx expo install`.
 - Keep vote state ephemeral until the secure backend write path is designed; a reload resets this prototype.
 
@@ -24,6 +25,15 @@ Each step must start, be manually tested, and be understood before the next step
 - Configure the project URL and publishable key.
 - Enable RLS and add safe read-only policies.
 - Add one health/read query. Do not send votes yet.
+
+## Country comparisons — deferred decision
+
+Do not infer residence from a phone calling code, SIM, device locale, or IP address. These signals
+describe an account or network location, not necessarily the country a person identifies with or
+lives in. A future country comparison requires an optional self-declared country, clear labeling as
+an unweighted sample of PULSE participants, minimum sample thresholds, and a way to prevent users
+from repeatedly changing country to inspect or manipulate small cohorts. Until that design is
+approved, the database and result contract remain global-only.
 
 ## Later steps
 

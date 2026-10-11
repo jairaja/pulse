@@ -26,7 +26,7 @@ export default function TodayScreen() {
             <Text style={styles.receiptMark}>✓</Text>
             <Text style={styles.receiptTitle}>Your voice is in.</Text>
             <Text style={styles.receiptBody}>
-              You voted {submittedVote}. Come back tomorrow to see how the world answered.
+              You voted {submittedVote}. Come back tomorrow to see how PULSE voters answered.
             </Text>
           </View>
         ) : (

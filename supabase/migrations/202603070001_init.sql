@@ -5,17 +5,9 @@ create table if not exists public.users (
   anonymous_uuid uuid not null unique,
   device_id text not null unique,
   device_fingerprint text not null unique,
-  country_code char(2) not null default 'GB',
   language_code text not null default 'en',
   created_at timestamptz not null default now(),
   last_seen_at timestamptz not null default now()
-);
-
-create table if not exists public.countries (
-  code char(2) primary key,
-  name text not null,
-  latitude double precision not null,
-  longitude double precision not null
 );
 
 create table if not exists public.questions (
@@ -44,7 +36,6 @@ create table if not exists public.votes (
   question_id uuid not null references public.questions(id) on delete cascade,
   device_id text not null,
   device_fingerprint text not null,
-  country_code char(2) not null,
   vote text not null check (vote in ('YES', 'NO')),
   ip_hash text,
   created_at timestamptz not null default now(),
@@ -106,10 +97,12 @@ create trigger prevent_finalized_vote_changes
 before insert or update or delete on public.votes
 for each row execute function public.prevent_finalized_vote_changes();
 
-create or replace function public.get_today_question(p_country char(2))
+create or replace function public.get_today_question()
 returns json
 language sql
+stable
 security definer
+set search_path = ''
 as $$
   select json_build_object(
     'id', q.id,
@@ -119,7 +112,8 @@ as $$
   from public.questions q
   left join public.question_translations t
     on t.question_id = q.id and t.language_code = 'en' and t.provider = 'selected'
-  where q.asked_on = current_date and q.status = 'live'
+  where q.asked_on = (now() at time zone 'utc')::date
+    and q.status = 'live'
   limit 1;
 $$;
 
@@ -131,7 +125,7 @@ security definer
 set search_path = ''
 as $$
   with user_vote as (
-    select v.vote, v.country_code
+    select v.vote
     from public.votes v
     join public.questions q on q.id = v.question_id
     where v.question_id = p_question_id
@@ -148,30 +142,19 @@ as $$
     from public.votes v
     where v.question_id = p_question_id
       and exists (select 1 from user_vote)
-  ), country as (
-    select
-      count(*) filter (where v.vote = 'YES') as yes_count,
-      count(*) filter (where v.vote = 'NO') as no_count
-    from public.votes v
-    join user_vote uv on uv.country_code = v.country_code
-    where v.question_id = p_question_id
   )
   select jsonb_build_object(
-    'worldYesPercent', round(100.0 * world.yes_count / nullif(world.yes_count + world.no_count, 0), 1),
-    'countryYesPercent', round(100.0 * country.yes_count / nullif(country.yes_count + country.no_count, 0), 1),
-    'worldResult', case
+    'globalYesPercent', round(100.0 * world.yes_count / nullif(world.yes_count + world.no_count, 0), 1),
+    'globalNoPercent', round(100.0 * world.no_count / nullif(world.yes_count + world.no_count, 0), 1),
+    'totalVotes', world.yes_count + world.no_count,
+    'globalResult', case
       when world.yes_count > world.no_count then 'YES'
       when world.no_count > world.yes_count then 'NO'
-      else 'TIE'
-    end,
-    'countryResult', case
-      when country.yes_count > country.no_count then 'YES'
-      when country.no_count > country.yes_count then 'NO'
       else 'TIE'
     end,
     'userVote', user_vote.vote,
     'finalizedAt', q.results_finalized_at
   )
-  from world, country, user_vote
+  from world, user_vote
   join public.questions q on q.id = p_question_id;
 $$;

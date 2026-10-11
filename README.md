@@ -17,6 +17,10 @@ Phase 1 deliberately exposes no in-progress voting data. It contains:
 - **Brewing Questions:** a placeholder for community questions, including a disabled “Ask a question” action.
 - **About:** the privacy and product explanation.
 
+Phase 1 is world-first and does not collect or infer a user's country. Phone locale, SIM/calling
+code, and IP geolocation are not reliable proof of residence, so the app must not label aggregates
+as “your country” without an explicit, optional country declaration and minimum sample safeguards.
+
 The only acceptance criteria for this step are:
 
 1. The app opens in Expo Go without warnings/errors.
