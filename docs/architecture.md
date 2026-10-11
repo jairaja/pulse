@@ -14,7 +14,8 @@ Each step must start, be manually tested, and be understood before the next step
 
 ## Step 2 — navigation and local UX
 
-- Expo Router provides a four-destination drawer: Today, Past Results, Brewing Questions, and About.
+- Expo Router provides a five-destination drawer: Today, Past Results, My Pulse, Brewing Questions,
+  and About.
 - In-progress vote results are not exposed.
 - Results compare the user's vote with the finalized aggregate from PULSE voters; Phase 1 stores no country.
 - Add SDK-aligned navigation dependencies using `npx expo install`.

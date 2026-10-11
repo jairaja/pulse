@@ -31,6 +31,7 @@ export default function RootLayout() {
           name="past-results"
           options={{ drawerLabel: 'Past Results', title: 'Past Results' }}
         />
+        <Drawer.Screen name="my-pulse" options={{ drawerLabel: 'My Pulse', title: 'My Pulse' }} />
         <Drawer.Screen
           name="brewing-questions"
           options={{ drawerLabel: 'Brewing Questions', title: 'Brewing Questions' }}
