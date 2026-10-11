@@ -6,7 +6,10 @@ export default function AboutScreen() {
     <SafeAreaView edges={['bottom']} style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.eyebrow}>ABOUT PULSE</Text>
-        <Text style={styles.title}>One question. One world. No awkward profile form.</Text>
+        <Text style={styles.title}>
+          One world. One question. One answer today.
+        </Text>
+        <Text style={styles.title}>No awkward profile form.</Text>
         <Text style={styles.body}>
           PULSE is a small experiment in finding out what people think today—not what an algorithm
           thinks they should think.
