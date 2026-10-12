@@ -145,6 +145,8 @@ The project targets Expo SDK 57, the latest stable SDK. SDK 58 is still pre-rele
 for production. Expo-managed native packages follow the SDK 57 compatibility matrix rather than
 their independent npm `latest` tags. Run `npx expo install --fix` after every SDK change and commit
 the generated `package-lock.json`; do not use `npm update` to choose native package versions.
+The `verify:dependencies` command delegates to `expo install --check`; the repository does not
+duplicate Expo's compatibility table in a hand-maintained script.
 
 Still deferred because they are premature for the local Phase 1 UX:
 
