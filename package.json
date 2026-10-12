@@ -11,6 +11,8 @@
     "start": "npm run verify:step1 && expo start",
     "android": "npm run verify:step1 && expo start --android",
     "ios": "npm run verify:step1 && expo start --ios",
+    "issues:create": "node scripts/create-github-issues.mjs",
+    "issues:preview": "node scripts/create-github-issues.mjs",
     "lint": "expo lint",
     "web": "npm run verify:step1 && expo start --web",
     "typecheck": "tsc --noEmit --project tsconfig.json",

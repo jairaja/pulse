@@ -1,12 +1,34 @@
-# PULSE staged backlog
+# PULSE GitHub delivery backlog
 
-1. **Step 1:** Verify local Expo foundation (complete).
-2. **Step 2:** Validate matte direct-vote UX and drawer navigation (current).
-3. **Step 3:** Add Supabase project configuration and read-only health check.
-4. **Step 4:** Add anonymous identity, durable local state, and a secure vote write path.
-5. **Step 5:** Add delayed results aggregation and visualization.
-6. **Step 6:** Add submissions, moderation, and translation.
-7. **Step 7:** Add FCM HTTP v1 push delivery and scheduling.
-8. **Later:** Evaluate in-progress vote trends only with explicit anti-bias research.
+The issue catalog is stored in [`github-issues.json`](./github-issues.json). It separates technical
+enablers from functional product decisions so an infrastructure task cannot quietly decide user
+behavior, and a UX issue cannot bypass security prerequisites.
 
-No issue proceeds until the prior step has explicit acceptance evidence.
+## Create the issues
+
+Prerequisites:
+
+1. Install GitHub CLI (`gh`).
+2. Authenticate with `gh auth login` using an account that can create issues.
+3. Ensure the repository has a GitHub remote, or pass `--repo OWNER/REPO`.
+
+Preview without writing:
+
+```bash
+npm run issues:preview -- --repo jairaja/pulse
+```
+
+Create missing issues:
+
+```bash
+npm run issues:create -- --repo jairaja/pulse --apply
+```
+
+The importer is idempotent. Every issue body contains a stable `pulse-issue-id` marker; an issue is
+skipped when that marker already exists in an open or closed issue.
+
+## Delivery rule
+
+Technical issues `T01` through `T12` are intentionally ordered. No step proceeds until the previous
+step has acceptance evidence. Functional issues may be refined in parallel, but implementation must
+respect their `Depends on` sections.
