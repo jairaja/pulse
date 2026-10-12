@@ -8,8 +8,17 @@ const migrationFiles = (await readdir(migrationsDirectory))
   .sort();
 
 if (migrationFiles.length !== 1 || migrationFiles[0] !== expectedMigration) {
+  const legacyFiles = migrationFiles.filter((file) => file !== expectedMigration);
   throw new Error(
-    `Expected exactly ${expectedMigration}; found: ${migrationFiles.join(', ') || 'none'}`,
+    [
+      `Expected exactly ${expectedMigration}; found: ${migrationFiles.join(', ') || 'none'}.`,
+      legacyFiles.length > 0
+        ? 'The legacy files are real inputs to Supabase, not harmless cache files.'
+        : 'The baseline migration is missing.',
+      legacyFiles.length > 0
+        ? 'Preview the allowlisted cleanup with "npm run db:baseline:clean", then run "npm run db:baseline:clean -- --apply".'
+        : 'Restore the baseline from Git before running database commands.',
+    ].join('\n'),
   );
 }
 

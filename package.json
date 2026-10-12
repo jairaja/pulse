@@ -10,6 +10,7 @@
   "scripts": {
     "start": "npm run verify:step1 && expo start",
     "android": "npm run verify:step1 && expo start --android",
+    "db:baseline:clean": "node scripts/clean-legacy-migrations.mjs",
     "ios": "npm run verify:step1 && expo start --ios",
     "issues:create": "node scripts/create-github-issues.mjs",
     "issues:preview": "node scripts/create-github-issues.mjs",

@@ -39,6 +39,23 @@ npx supabase db lint --local
 `supabase init` creates `supabase/config.toml`; commit it. `db reset` is intentionally destructive
 to the **local** database and proves that the migration plus `supabase/seed.sql` are reproducible.
 
+### If verification still finds the four prototype migrations
+
+Those files are not a cache: the Supabase CLI will execute every SQL file in
+`supabase/migrations`. This means the squash was not fully applied to that checkout. First preview
+the repository's narrowly allowlisted cleanup, then apply it:
+
+```bash
+npm run db:baseline:clean
+npm run db:baseline:clean -- --apply
+npm run verify:database
+git status --short
+```
+
+The cleanup command only recognizes the four superseded migration filenames; it will not delete an
+unknown or future migration. Commit the displayed deletions if Git reports them as changes. Do not
+make the verifier ignore extra migrations—doing so would hide SQL that Supabase will execute.
+
 ## 2. Inspect the local database
 
 Open the Studio URL printed by `supabase start` and verify:
