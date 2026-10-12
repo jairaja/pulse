@@ -160,3 +160,7 @@ Still deferred because they are premature for the local Phase 1 UX:
 ## What comes next—only after this local UX passes
 
 The next step should introduce Supabase connectivity with a read-only health check. Persistent voting, identity enforcement, settings, FCM, translations, charts, maps, and moderation remain later steps. In-progress vote trends are explicitly out of scope.
+
+The database has been consolidated into one pre-production baseline. Follow
+[`docs/supabase-setup.md`](docs/supabase-setup.md) to build and test a fresh local and remote Supabase
+project; do not apply the squashed baseline over a database containing real data.

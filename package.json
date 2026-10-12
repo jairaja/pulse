@@ -18,6 +18,7 @@
     "typecheck": "tsc --noEmit --project tsconfig.json",
     "doctor": "expo-doctor",
     "verify:dependencies": "expo install --check",
+    "verify:database": "node scripts/verify-database-baseline.mjs",
     "verify:step1": "node scripts/verify-step1.mjs",
     "verify:typecheck-scope": "node scripts/verify-typecheck-scope.mjs"
   },

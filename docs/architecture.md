@@ -27,6 +27,7 @@ Each step must start, be manually tested, and be understood before the next step
 - Configure the project URL and publishable key.
 - Enable RLS and add safe read-only policies.
 - Add one health/read query. Do not send votes yet.
+- Start from the single reviewed baseline migration described in `docs/supabase-setup.md`.
 
 ## Country comparisons — deferred decision
 
@@ -45,4 +46,5 @@ approved, the database and result contract remain global-only.
 - Translation workflow
 - Push notifications and FCM HTTP v1
 
-The existing `supabase/` schema/functions are retained as historical draft material. They are not connected to the Step 1 mobile runtime and must be reviewed before use.
+The `supabase/` directory now contains one pre-production baseline and database tests. It remains
+disconnected from the mobile runtime until the read-only connectivity step.
