@@ -37,7 +37,7 @@ The only acceptance criteria for this step are:
 
 > Do not use arbitrary `npm update` commands. Expo native dependencies must match the Expo SDK, not merely be the newest versions published to npm.
 
-1. Use a current Node.js LTS release (Node 20 or newer).
+1. Use Node.js 22.13 or newer. SDK 57 does not support older Node releases.
 2. Verify that discarded scaffold directories have not been restored:
    ```bash
    npm run verify:step1
@@ -56,29 +56,33 @@ The only acceptance criteria for this step are:
    ```powershell
    Remove-Item -Recurse -Force node_modules, package-lock.json -ErrorAction SilentlyContinue
    ```
-4. Install the declared SDK 54 baseline, including the Expo-compatible drawer dependencies:
+4. Install the declared SDK 57 baseline, including the Expo-compatible drawer dependencies:
    ```bash
    npm install
    ```
-5. Ask Expo to align every native package to SDK 54 and update `package.json`/lockfile as necessary:
+5. Ask Expo to validate every native package against SDK 57 and update `package.json`/lockfile as necessary:
    ```bash
    npx expo install --fix
    ```
 6. Validate dependency health. **Do not continue if `expo-doctor` or typecheck reports any failed checks.**
    ```bash
    npx expo-doctor
+   npm run verify:dependencies
    npm run verify:typecheck-scope
+   npm run lint
    npm run typecheck
    ```
 7. Start with a clean Metro cache through the guarded project command:
    ```bash
    npm run start -- --clear
    ```
-8. Open the app in Expo Go. The Expo Go app must support SDK 54.
+8. Open the app in an SDK 57 development build. Expo Go may be used for this local prototype, but
+   a development build is the production-oriented workflow and must be regenerated after native
+   dependency upgrades.
 
 ### If Metro reports `Cannot find module 'babel-preset-expo'`
 
-This indicates an incomplete or stale `node_modules` installation. `babel.config.js` uses the Expo preset and the project now explicitly declares the matching SDK 54 preset as a development dependency. Do not install a global Babel package.
+This indicates an incomplete or stale `node_modules` installation. `babel.config.js` uses the Expo preset and the project explicitly declares the matching SDK 57 preset as a development dependency. Do not install a global Babel package.
 
 Run the complete clean-install sequence in this order:
 
@@ -137,10 +141,17 @@ If the Deno function still appears in the error output, your checkout does not c
 
 ## Dependency decision log
 
+The project targets Expo SDK 57, the latest stable SDK. SDK 58 is still pre-release and is not used
+for production. Expo-managed native packages follow the SDK 57 compatibility matrix rather than
+their independent npm `latest` tags. Run `npx expo install --fix` after every SDK change and commit
+the generated `package-lock.json`; do not use `npm update` to choose native package versions.
+
 Still deferred because they are premature for the local Phase 1 UX:
 
 - `react-native-mmkv`: requires native configuration and is not needed before local app behavior is proven.
-- The drawer uses Expo SDK 54-compatible `react-native-reanimated`, `react-native-worklets`, and `react-native-gesture-handler` versions installed through `npx expo install`.
+- Expo Router 57 bundles the drawer navigator. The app directly installs only its SDK-compatible
+  native peers: `react-native-reanimated`, `react-native-worklets`, and
+  `react-native-gesture-handler`.
 - `react-native-maps`, `victory-native`, and `react-native-svg`: deferred until the results/heatmap step.
 - Supabase, React Query, Zustand, NetInfo, notifications, translation APIs, and FCM: deferred until the local UX is proven.
 

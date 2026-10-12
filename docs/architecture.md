@@ -6,7 +6,7 @@ Each step must start, be manually tested, and be understood before the next step
 
 ## Phase 1 — local UX (current)
 
-- Expo SDK 54 app shell
+- Expo SDK 57 app shell
 - Direct question → vote → local receipt interaction; the backend will reveal results the next day
 - No database, push, identity, map, chart, or API dependency at runtime
 
