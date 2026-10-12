@@ -1,0 +1,92 @@
+[
+  {
+    "id": "T01",
+    "title": "[Technical] Establish repeatable CI and release-quality baseline",
+    "body": "## Objective\nMake the current Expo SDK 57 baseline reproducible before remote services are added.\n\n## Scope\n- Commit and enforce `package-lock.json` with `npm ci`.\n- Run dependency check, Expo Doctor, lint, typecheck, and checkout guards in CI.\n- Add smoke-test evidence for all drawer routes and the direct-vote flow.\n- Define supported Android/iOS versions and test large text and short screens.\n\n## Acceptance criteria\n- A clean clone passes all checks using the pinned Node/npm toolchain.\n- CI fails on dependency drift or an uncommitted lockfile change.\n- Manual smoke-test evidence is attached.\n\n## Out of scope\nBackend connectivity and product data."
+  },
+  {
+    "id": "T02",
+    "title": "[Technical] Audit and harden the Supabase migration baseline",
+    "body": "## Objective\nTurn the existing draft SQL into a trustworthy pre-production baseline.\n\n## Scope\n- Apply all migrations from zero in disposable local Supabase.\n- Review table purpose, constraints, UTC boundaries, `security definer` search paths, grants, and revocations.\n- Enable RLS on every exposed table and add SQL access tests.\n- Test zero votes, ties, duplicate votes, disabled questions, finalization, and missing records.\n- If no shared environment has consumed these migrations, squash them into one clean baseline; otherwise add forward-only fixes.\n\n## Acceptance criteria\n- Local reset succeeds from an empty database.\n- Automated tests prove active results cannot leak and finalized votes cannot mutate.\n- The migration strategy is documented.\n\n## Depends on\nT01."
+  },
+  {
+    "id": "T03",
+    "title": "[Technical] Add Supabase read-only health connectivity",
+    "body": "## Objective\nProve safe mobile-to-Supabase connectivity before reading or writing product data.\n\n## Scope\n- Add the current compatible Supabase JavaScript client.\n- Configure `EXPO_PUBLIC_SUPABASE_URL` and the publishable key only.\n- Add typed configuration validation and a harmless health endpoint/query.\n- Render missing-config, connecting, success, and failure states.\n\n## Security constraints\nNever embed a secret/service-role key, database password, FCM credential, or translation API key.\n\n## Acceptance criteria\n- Android and iOS development builds connect successfully.\n- Missing or invalid configuration fails clearly.\n- Bundle inspection finds no server secrets.\n\n## Depends on\nT02."
+  },
+  {
+    "id": "T04",
+    "title": "[Technical] Replace the hardcoded Today question with a read-only query",
+    "body": "## Objective\nLoad the active UTC daily question from Supabase without enabling voting writes.\n\n## Scope\n- Add a typed API module, TanStack Query provider, and `useTodayQuestion` hook.\n- Implement loading, empty, error, retry, and cached-last-known states.\n- Validate UTC rollover and refresh behavior.\n\n## Acceptance criteria\n- Updating the active question in Supabase updates the app without rebuilding.\n- No vote mutation is introduced.\n- Date rollover tests pass.\n\n## Depends on\nT03."
+  },
+  {
+    "id": "T05",
+    "title": "[Technical] Connect paginated finalized Past Results with caching",
+    "body": "## Objective\nReplace preview records with all public finalized questions.\n\n## Scope\n- Add one paginated result summary endpoint/query; avoid N+1 card requests.\n- Return question, asked date, finalization time, YES/NO percentages, result, and vote count.\n- Add pagination, pull-to-refresh, errors, empty state, and persisted cache.\n- Join personal vote markers locally; do not expose personal history through the public RPC.\n\n## Acceptance criteria\n- Active/unfinalized results never appear.\n- Results are available regardless of participation.\n- Previously loaded pages remain readable offline.\n\n## Depends on\nT04."
+  },
+  {
+    "id": "T06",
+    "title": "[Technical] Implement an idempotent secure vote write path",
+    "body": "## Objective\nAccept one immutable server-confirmed vote per installation and question.\n\n## Scope\n- Use a secured Edge Function or RPC to validate question status, UTC window, and YES/NO input.\n- Issue and verify an installation credential; do not trust arbitrary client device IDs or fingerprints.\n- Enforce uniqueness, rate limits, and idempotency/replay handling server-side.\n- Derive network abuse signals server-side and return an immutable vote receipt ID.\n\n## Acceptance criteria\n- Duplicate, late, malformed, and replayed requests are rejected deterministically.\n- A retry returns the original accepted receipt rather than adding a vote.\n- The UI records only server-confirmed votes.\n\n## Depends on\nT04 and T02."
+  },
+  {
+    "id": "T07",
+    "title": "[Technical] Add durable local cache and offline behavior",
+    "body": "## Objective\nAllow offline browsing without compromising vote integrity.\n\n## Scope\n- Monitor connectivity and show a non-blocking offline state.\n- Persist finalized-result pages and server-confirmed vote receipts.\n- Disable voting offline with clear copy.\n- Never queue a vote for later upload.\n\n## Acceptance criteria\n- Airplane mode can browse previously downloaded results/history.\n- Offline voting cannot appear accepted.\n- Cache migration and corruption recovery are tested.\n\n## Depends on\nT05 and T06."
+  },
+  {
+    "id": "T08",
+    "title": "[Technical] Add optional email account and canonical history merge",
+    "body": "## Objective\nLet users preserve answered-question history across devices without making signup mandatory.\n\n## Scope\n- Add verified email OTP/magic-link authentication; names remain optional.\n- Link the authenticated account using `auth.uid()`, never a client-supplied account ID.\n- Claim server-known installation votes transactionally and idempotently.\n- Preserve the established account vote on duplicate-question conflicts.\n- Add account-only history RLS, audit records, logout cache cleanup, and deletion/anonymization flow.\n\n## Acceptance criteria\n- Device A history restores on Device B after verified login.\n- Retried/interrupted merges do not duplicate or overwrite votes.\n- Anonymous use remains fully functional.\n\n## Depends on\nT06 and T07."
+  },
+  {
+    "id": "T09",
+    "title": "[Technical] Implement tested My Pulse calculations",
+    "body": "## Objective\nReplace the placeholder with trustworthy personal agreement insights.\n\n## Scope\n- Calculate answered count, agreement/disagreement counts and percentages from canonical history and finalized results.\n- Require at least 10 eligible finalized answers.\n- Define ties explicitly; recommended: exclude ties from agreement denominator and show them separately.\n- Add unit tests for 0, 9, 10+, ties, missing results, and merged histories.\n\n## Acceptance criteria\n- Metrics are deterministic and explainable.\n- No insight appears before the threshold.\n- UI clearly states denominator and tie behavior.\n\n## Depends on\nT08 and T05."
+  },
+  {
+    "id": "T10",
+    "title": "[Technical] Implement Brewing Questions submissions and moderation safely",
+    "body": "## Objective\nDeliver community question submission and selection without automating abuse.\n\n## Scope\n- Add approved-submission read list, one daily upvote, weekly submission limit, and immutable submissions.\n- Add moderation states, duplicate links, veto/disable controls, audit trail, and authenticated admin panel.\n- Define calendar-week versus rolling-seven-day semantics.\n- Add automatic tomorrow selection only after moderation and rollback work.\n\n## Acceptance criteria\n- Duplicate/abusive/vetoed submissions cannot be selected.\n- Limits are enforced server-side under concurrency.\n- Admin override is audited.\n\n## Depends on\nT06 and T08."
+  },
+  {
+    "id": "T11",
+    "title": "[Technical] Introduce server-side translation workflow incrementally",
+    "body": "## Objective\nTranslate questions without exposing provider keys or paying two providers by default.\n\n## Scope\n- Start with one server-side provider, preserve original text, cache by question/language/version, and support admin correction.\n- Capture quality and cost metrics.\n- Run a measured comparison before adding a second provider or automated evaluator.\n\n## Acceptance criteria\n- No translation key appears in the mobile bundle.\n- Original language is always viewable.\n- Failed translation falls back safely.\n- A documented experiment determines whether dual providers are justified.\n\n## Depends on\nT10."
+  },
+  {
+    "id": "T12",
+    "title": "[Technical] Add FCM HTTP v1 daily notification delivery",
+    "body": "## Objective\nNotify opted-in users when the daily question goes live at 12:00 UTC.\n\n## Scope\n- Add permission UX and server-side token registration/rotation/removal.\n- Send through FCM HTTP v1 using service-account OAuth, never a legacy server key.\n- Schedule at 12:00 UTC and monitor delivery failures/invalid tokens.\n- Deep-link into Today and support opt-out.\n\n## Acceptance criteria\n- Test devices receive one notification per daily publication.\n- Invalid tokens are retired.\n- Credentials remain server-side.\n- Delivery is observable and retry-safe.\n\n## Depends on\nT06; do not launch until the core daily loop is reliable."
+  },
+  {
+    "id": "F01",
+    "title": "[Feature] Show total vote count with every finalized result",
+    "body": "## User outcome\nA result shows not only percentages but how many accepted votes produced it.\n\n## Requirements\n- Display a localized count such as `128,421 votes` on result detail/cards where space permits.\n- Count only accepted votes included at finalization.\n- Define zero-vote and tie presentation.\n- Do not imply statistical representativeness; label the population as PULSE voters.\n\n## Acceptance criteria\n- Count matches the finalized server aggregate.\n- Large counts use locale-aware formatting.\n- Accessibility reads result, percentages, and count coherently.\n\n## Depends on\nT05."
+  },
+  {
+    "id": "F02",
+    "title": "[Research] Define minimum sample and reliability rule for any future country result",
+    "body": "## Decision needed\nWhat minimum evidence is required before showing a country-level split?\n\n## Constraints\nCountry reporting is deferred and must not be inferred from phone code, locale, SIM, or IP. A future implementation requires optional self-declared country, privacy review, anti-switching controls, and honest “PULSE voters in X” labels.\n\n## Research scope\n- Choose a minimum sample threshold and whether it varies with margin of error.\n- Define copy: `Not enough votes for a reliable country result.`\n- Suppress percentages and winner below threshold.\n- Evaluate small-cohort privacy and manipulation risk.\n- Require sample size and unweighted-sample disclosure above threshold.\n\n## Acceptance criteria\nA written product/statistical/privacy decision is approved before country data or UI is implemented.\n\n## Out of scope\nImplementing country collection now."
+  },
+  {
+    "id": "F03",
+    "title": "[Feature] Gate yesterday’s landing-page reveal while keeping Past Results public",
+    "body": "## User outcome\nA returning voter sees yesterday’s result on Today; a non-voter gets warm, non-punitive copy directing them to Past Results, where all finalized questions remain public.\n\n## Copy direction\nAvoid guilt or false assumptions such as “you were busy.” Recommended tone: `We missed your voice yesterday. Explore the result in Past Results.`\n\n## Rules\n- Landing-page reveal checks canonical/local participation for yesterday’s question.\n- Non-voters do not receive the inline reveal, but can open the same public result in Past Results.\n- Account/device changes must not incorrectly hide a known account vote after sync.\n- Accessibility and deep links must still reach Past Results.\n\n## Acceptance criteria\nVoter and non-voter paths are tested, including logged-out, restored-account, missing-cache, and offline states.\n\n## Depends on\nT05, T07, and eventually T08 for cross-device accuracy."
+  },
+  {
+    "id": "F04",
+    "title": "[Feature] Show result publication countdown in the device timezone",
+    "body": "## User outcome\nEveryday UI explains result timing locally: `Results in 6h 12m` or `Results tomorrow at 1:00 PM`.\n\n## Requirements\n- Treat 12:00 UTC as the canonical server boundary.\n- Derive display from a server timestamp, not a hardcoded 24-hour client timer.\n- Use device locale/timezone and handle DST, timezone changes, clock skew, backgrounding, and minute rollover.\n- An information screen may explain that the global question changes daily at 12:00 UTC.\n\n## Acceptance criteria\nTests cover UTC± offsets, half-hour/quarter-hour zones, DST transitions, device timezone changes, and a stale client clock.\n\n## Depends on\nT04."
+  },
+  {
+    "id": "F05",
+    "title": "[Feature] Implement the post-vote counted receipt and live countdown",
+    "body": "## User outcome\nAfter server acceptance, show:\n\n`Vote counted`  \n`You voted YES`  \n`Results in 18h 41m`  \n`Come back when tomorrow’s question goes live.`\n\n## Requirements\n- Show only after the server returns an accepted immutable receipt.\n- Use the canonical publication timestamp and the shared localized countdown component.\n- Persist the receipt across restarts.\n- Distinguish pending, rejected, duplicate/idempotent success, and accepted states.\n\n## Acceptance criteria\nThe receipt survives restart, never appears for a rejected/offline vote, and remains accessible at large text sizes.\n\n## Depends on\nT06, T07, and F04."
+  },
+  {
+    "id": "F06",
+    "title": "[Feature] Notify a submitter when their question is selected",
+    "body": "## User outcome\nA submitter can opt to learn that their question was selected for the daily Pulse.\n\n## Identity decision\nA device signature is not a communication channel and is not durable after reinstall. Use:\n- push notification to an opted-in installation token for anonymous users; and/or\n- verified email for users who voluntarily link an account.\nDo not require email merely to submit a question.\n\n## Requirements\n- Store submission ownership as installation identity plus optional account ID—not raw email on the submission.\n- Record a durable `selected` event and send each configured channel idempotently.\n- Define behavior after reinstall, logout, token rotation, account merge, duplicate marking, veto, and selection reversal.\n- Keep notification preferences and unsubscribe controls.\n\n## Acceptance criteria\nThe submitter receives at most one notification per selection event through opted-in channels; no device fingerprint is treated as an address.\n\n## Depends on\nT10, T12, and optionally T08."
+  }
+]
