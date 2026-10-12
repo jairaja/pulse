@@ -164,3 +164,6 @@ The next step should introduce Supabase connectivity with a read-only health che
 The database has been consolidated into one pre-production baseline. Follow
 [`docs/supabase-setup.md`](docs/supabase-setup.md) to build and test a fresh local and remote Supabase
 project; do not apply the squashed baseline over a database containing real data.
+
+Database files are not bundled into, or executed by, the installed mobile app. They are applied by a
+developer or CI job to Supabase before the app connects to that remote service.
