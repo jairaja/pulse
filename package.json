@@ -24,6 +24,7 @@
     "verify:typecheck-scope": "node scripts/verify-typecheck-scope.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
     "expo": "~57.0.27",
     "expo-constants": "~57.0.21",
     "expo-linking": "~57.0.11",
