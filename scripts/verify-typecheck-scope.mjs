@@ -1,7 +1,13 @@
 import { readFileSync } from 'node:fs';
 
 const config = JSON.parse(readFileSync('tsconfig.json', 'utf8'));
-const expectedInclude = ['app/**/*.tsx', '.expo/types/**/*.ts', 'expo-env.d.ts'];
+const expectedInclude = [
+  'app/**/*.tsx',
+  'lib/**/*.ts',
+  'lib/**/*.tsx',
+  '.expo/types/**/*.ts',
+  'expo-env.d.ts'
+];
 
 if (!Array.isArray(config.include) || config.include.length !== expectedInclude.length) {
   throw new Error('tsconfig.json must include the complete Expo Router app surface.');

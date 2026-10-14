@@ -1,7 +1,12 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAppTheme, type ThemeColors } from '../lib/theme';
+
 export default function MyPulseScreen() {
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>
       <View style={styles.content}>
@@ -25,23 +30,25 @@ export default function MyPulseScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { backgroundColor: '#E9EAE6', flex: 1 },
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+  screen: { backgroundColor: colors.canvas, flex: 1 },
   content: { flex: 1, justifyContent: 'space-between', padding: 24, paddingBottom: 48 },
-  eyebrow: { color: '#315FC7', fontSize: 12, fontWeight: '700', letterSpacing: 1.2 },
+  eyebrow: { color: colors.accent, fontSize: 12, fontWeight: '700', letterSpacing: 1.2 },
   message: { gap: 12 },
-  title: { color: '#1B1C1A', fontSize: 32, fontWeight: '700', letterSpacing: -0.7, lineHeight: 39 },
-  body: { color: '#6F716C', fontSize: 16, lineHeight: 24 },
+  title: { color: colors.ink, fontSize: 32, fontWeight: '700', letterSpacing: -0.7, lineHeight: 39 },
+  body: { color: colors.muted, fontSize: 16, lineHeight: 24 },
   placeholder: {
     alignItems: 'center',
-    backgroundColor: '#F3F1EC',
-    borderColor: '#D6D2C9',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
     borderRadius: 24,
     borderWidth: 1,
     gap: 8,
     padding: 24
   },
-  placeholderValue: { color: '#315FC7', fontSize: 42, fontWeight: '700' },
-  placeholderLabel: { color: '#1B1C1A', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
-  placeholderNote: { color: '#777872', fontSize: 13, lineHeight: 19, textAlign: 'center' }
+  placeholderValue: { color: colors.accent, fontSize: 42, fontWeight: '700' },
+  placeholderLabel: { color: colors.ink, fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  placeholderNote: { color: colors.disabledText, fontSize: 13, lineHeight: 19, textAlign: 'center' }
 });
+}

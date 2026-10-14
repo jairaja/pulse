@@ -1,8 +1,11 @@
 # Deployment status
 
-No backend or mobile-store deployment is part of Step 1.
+No mobile-store deployment is part of the current step. The Supabase baseline must already be
+deployed before the in-app connection check can pass.
 
-Do not configure Supabase secrets, FCM, scheduled functions, EAS credentials, translations, or production database policies until Step 1 has passed its local acceptance criteria.
+Configure only `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for the client.
+Never expose a Supabase secret/service-role key. FCM, scheduled functions, translations, and voting
+writes remain deferred.
 
 ## Step 1 run command
 

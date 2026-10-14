@@ -7,6 +7,9 @@ who want their answered-question history to survive device replacement. Email au
 sufficient for this purpose. First and last name add personal data without improving sync, so they
 must not be required; a display name can be an optional profile feature later.
 
+The corresponding user-facing flows and safe public-attribution rules are documented in
+[`account-auth-ux.md`](./account-auth-ux.md).
+
 ## Data authority
 
 The server-accepted vote is authoritative. Device storage is a cache of question IDs, choices, and

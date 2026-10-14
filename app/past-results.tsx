@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useAppTheme, type ThemeColors } from '../lib/theme';
 
 type PastResult = {
   date: string;
@@ -33,6 +36,8 @@ const previewResults: PastResult[] = [
 ];
 
 export default function PastResultsScreen() {
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -75,46 +80,48 @@ export default function PastResultsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { backgroundColor: '#E9EAE6', flex: 1 },
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+  screen: { backgroundColor: colors.canvas, flex: 1 },
   content: { gap: 28, padding: 24, paddingBottom: 48 },
   intro: { gap: 12 },
-  eyebrow: { color: '#315FC7', fontSize: 12, fontWeight: '700', letterSpacing: 1.2 },
-  title: { color: '#1B1C1A', fontSize: 32, fontWeight: '700', letterSpacing: -0.7, lineHeight: 39 },
-  body: { color: '#6F716C', fontSize: 16, lineHeight: 24 },
+  eyebrow: { color: colors.accent, fontSize: 12, fontWeight: '700', letterSpacing: 1.2 },
+  title: { color: colors.ink, fontSize: 32, fontWeight: '700', letterSpacing: -0.7, lineHeight: 39 },
+  body: { color: colors.muted, fontSize: 16, lineHeight: 24 },
   results: { gap: 12 },
   resultCard: {
-    backgroundColor: '#F3F1EC',
-    borderColor: '#D6D2C9',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
     borderRadius: 20,
     borderWidth: 1,
     gap: 11,
     padding: 18
   },
-  date: { color: '#777872', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  question: { color: '#1B1C1A', fontSize: 18, fontWeight: '700', lineHeight: 25 },
+  date: { color: colors.disabledText, fontSize: 11, fontWeight: '700', letterSpacing: 1 },
+  question: { color: colors.ink, fontSize: 18, fontWeight: '700', lineHeight: 25 },
   resultRow: { alignItems: 'baseline', flexDirection: 'row', justifyContent: 'space-between' },
-  result: { color: '#315FC7', fontSize: 26, fontWeight: '800' },
-  percentage: { color: '#1B1C1A', fontSize: 14, fontWeight: '700' },
-  voted: { color: '#315FC7', fontSize: 13, fontWeight: '700' },
-  notVoted: { color: '#777872', fontSize: 13 },
+  result: { color: colors.accent, fontSize: 26, fontWeight: '800' },
+  percentage: { color: colors.ink, fontSize: 14, fontWeight: '700' },
+  voted: { color: colors.accent, fontSize: 13, fontWeight: '700' },
+  notVoted: { color: colors.disabledText, fontSize: 13 },
   accountCard: {
-    backgroundColor: '#E1E5ED',
+    backgroundColor: colors.activeSurface,
     borderRadius: 24,
     gap: 12,
     padding: 20
   },
-  accountEyebrow: { color: '#315FC7', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
-  accountTitle: { color: '#1B1C1A', fontSize: 22, fontWeight: '700' },
-  accountBody: { color: '#565853', fontSize: 15, lineHeight: 22 },
+  accountEyebrow: { color: colors.accent, fontSize: 11, fontWeight: '800', letterSpacing: 1 },
+  accountTitle: { color: colors.ink, fontSize: 22, fontWeight: '700' },
+  accountBody: { color: colors.body, fontSize: 15, lineHeight: 22 },
   accountButton: {
     alignItems: 'center',
-    backgroundColor: '#C9CEDA',
+    backgroundColor: colors.disabledSurface,
     borderRadius: 16,
     justifyContent: 'center',
     minHeight: 54,
     marginTop: 4
   },
-  accountButtonText: { color: '#676B73', fontSize: 14, fontWeight: '700' },
-  accountNote: { color: '#6F716C', fontSize: 12, lineHeight: 18, textAlign: 'center' }
+  accountButtonText: { color: colors.disabledText, fontSize: 14, fontWeight: '700' },
+  accountNote: { color: colors.muted, fontSize: 12, lineHeight: 18, textAlign: 'center' }
 });
+}

@@ -1,21 +1,25 @@
 import { Drawer } from 'expo-router/drawer';
 import { StatusBar } from 'expo-status-bar';
 
-const colors = {
-  accent: '#315FC7',
-  canvas: '#E9EAE6',
-  ink: '#1B1C1A',
-  muted: '#6F716C',
-  surface: '#F3F1EC'
-};
+import { AppThemeProvider, useAppTheme } from '../lib/theme';
 
 export default function RootLayout() {
   return (
+    <AppThemeProvider>
+      <AppDrawer />
+    </AppThemeProvider>
+  );
+}
+
+function AppDrawer() {
+  const { colors, isDark } = useAppTheme();
+
+  return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <Drawer
         screenOptions={{
-          drawerActiveBackgroundColor: '#E1E5ED',
+          drawerActiveBackgroundColor: colors.activeSurface,
           drawerActiveTintColor: colors.accent,
           drawerInactiveTintColor: colors.ink,
           drawerLabelStyle: { fontSize: 16, fontWeight: '600' },
@@ -36,6 +40,7 @@ export default function RootLayout() {
           name="brewing-questions"
           options={{ drawerLabel: 'Brewing Questions', title: 'Brewing Questions' }}
         />
+        <Drawer.Screen name="settings" options={{ drawerLabel: 'Settings', title: 'Settings' }} />
         <Drawer.Screen name="about" options={{ drawerLabel: 'About', title: 'About PULSE' }} />
       </Drawer>
     </>

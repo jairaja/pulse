@@ -7,15 +7,14 @@ Metro does not bundle them, and installing or opening the mobile app does not ex
 seed data, database tests, or Edge Function source. A developer or CI job applies a migration once
 to a Supabase project; every installed app then talks to that already-running remote API.
 
-The only Supabase values that will eventually ship in the mobile bundle are the project URL and a
+The only Supabase values that ship in the mobile bundle are the project URL and a
 publishable key. A publishable key is designed for public clients and is constrained by database
 grants and RLS. Database passwords, secret keys, service-role credentials, and third-party API keys
 must never be placed in an `EXPO_PUBLIC_*` variable or committed to this repository.
 
 ## Is local Supabase required?
 
-It is not required for an end user's device and it is not required while the current app remains a
-local-only prototype. It **is the recommended requirement for anyone changing or deploying this
+It is not required for an end user's device. It **is the recommended requirement for anyone changing or deploying this
 schema**: it catches SQL, RLS, seed, and migration-order failures before the shared remote project is
 touched. Skipping local validation turns the remote project into a test environment and makes
 recovery harder.
@@ -204,16 +203,18 @@ Open the project's **Connect** dialog and copy its project URL and **publishable
 **Settings → API Keys** to select/create a publishable key. Do not use the legacy `anon` key for new
 work, and never put a secret key in the mobile app.
 
-The values will be introduced only when the read-only connectivity step is implemented:
+The read-only connectivity check uses these values from the root `.env` file:
 
 ```dotenv
 EXPO_PUBLIC_SUPABASE_URL=https://pnbfhbobymtypmdtzfsq.supabase.co
 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_REPLACE_ME
 ```
 
-Do not add these variables to the current `.env.example` yet: the current runtime intentionally
-makes no Supabase request, so adding configuration now would create false confidence without testing
-the client integration.
+Copy `.env.example` to `.env`, replace both placeholders, and fully reload the app. Do not paste keys
+directly into `lib/supabase.ts`. Non-route helpers live outside `app/` so Expo Router cannot mistake
+them for screens. The publishable key is intentionally public, but environment
+configuration still keeps development and production projects separate and prevents accidental
+commits of project-specific values.
 
 ## 4. Recommended environment strategy
 

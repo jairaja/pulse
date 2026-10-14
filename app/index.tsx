@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useAppTheme, type ThemeColors } from '../lib/theme';
 
 type Vote = 'YES' | 'NO';
 
 export default function TodayScreen() {
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [selection, setSelection] = useState<Vote | null>(null);
   const [submittedVote, setSubmittedVote] = useState<Vote | null>(null);
 
@@ -35,10 +39,16 @@ export default function TodayScreen() {
             <View style={styles.buttonRow}>
               <VoteButton
                 label="YES"
+                styles={styles}
                 selected={selection === 'YES'}
                 onPress={() => setSelection('YES')}
               />
-              <VoteButton label="NO" selected={selection === 'NO'} onPress={() => setSelection('NO')} />
+              <VoteButton
+                label="NO"
+                styles={styles}
+                selected={selection === 'NO'}
+                onPress={() => setSelection('NO')}
+              />
             </View>
             {selection ? (
               <>
@@ -68,9 +78,10 @@ type VoteButtonProps = {
   label: Vote;
   onPress: () => void;
   selected: boolean;
+  styles: ReturnType<typeof createStyles>;
 };
 
-function VoteButton({ label, onPress, selected }: VoteButtonProps) {
+function VoteButton({ label, onPress, selected, styles }: VoteButtonProps) {
   return (
     <Pressable
       accessibilityLabel={`Vote ${label.toLowerCase()}`}
@@ -88,8 +99,9 @@ function VoteButton({ label, onPress, selected }: VoteButtonProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { backgroundColor: '#E9EAE6', flex: 1 },
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+  screen: { backgroundColor: colors.canvas, flex: 1 },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'space-between',
@@ -98,48 +110,49 @@ const styles = StyleSheet.create({
     paddingTop: 18
   },
   identity: { gap: 2 },
-  eyebrow: { color: '#6F716C', fontSize: 11, fontWeight: '700', letterSpacing: 1.8 },
-  wordmark: { color: '#1B1C1A', fontSize: 28, fontWeight: '800', letterSpacing: 1.5 },
+  eyebrow: { color: colors.muted, fontSize: 11, fontWeight: '700', letterSpacing: 1.8 },
+  wordmark: { color: colors.ink, fontSize: 28, fontWeight: '800', letterSpacing: 1.5 },
   questionArea: { gap: 16, paddingVertical: 36 },
-  date: { color: '#315FC7', fontSize: 12, fontWeight: '700', letterSpacing: 1.1 },
-  question: { color: '#1B1C1A', fontSize: 36, fontWeight: '700', letterSpacing: -1, lineHeight: 43 },
+  date: { color: colors.accent, fontSize: 12, fontWeight: '700', letterSpacing: 1.1 },
+  question: { color: colors.ink, fontSize: 36, fontWeight: '700', letterSpacing: -1, lineHeight: 43 },
   actionArea: { gap: 18 },
-  prompt: { color: '#6F716C', fontSize: 12, fontWeight: '700', letterSpacing: 1.2 },
+  prompt: { color: colors.muted, fontSize: 12, fontWeight: '700', letterSpacing: 1.2 },
   buttonRow: { flexDirection: 'row', gap: 12 },
   voteButton: {
     alignItems: 'center',
-    backgroundColor: '#FAF9F6',
-    borderColor: '#C8C5BD',
+    backgroundColor: colors.control,
+    borderColor: colors.disabledBorder,
     borderRadius: 18,
     borderWidth: 1,
     flex: 1,
     minHeight: 64,
     justifyContent: 'center'
   },
-  voteButtonPressed: { backgroundColor: '#E1E5ED', borderColor: '#315FC7', transform: [{ scale: 0.98 }] },
-  voteButtonSelected: { backgroundColor: '#315FC7', borderColor: '#315FC7' },
-  voteButtonText: { color: '#315FC7', fontSize: 17, fontWeight: '800', letterSpacing: 0.8 },
-  voteButtonTextSelected: { color: '#FAF9F6' },
+  voteButtonPressed: { backgroundColor: colors.activeSurface, borderColor: colors.accent, transform: [{ scale: 0.98 }] },
+  voteButtonSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
+  voteButtonText: { color: colors.accent, fontSize: 17, fontWeight: '800', letterSpacing: 0.8 },
+  voteButtonTextSelected: { color: colors.onPrimary },
   submitButton: {
     alignItems: 'center',
-    backgroundColor: '#1B1C1A',
+    backgroundColor: colors.primary,
     borderRadius: 18,
     minHeight: 60,
     justifyContent: 'center'
   },
   submitButtonPressed: { opacity: 0.82, transform: [{ scale: 0.99 }] },
-  submitButtonText: { color: '#FAF9F6', fontSize: 15, fontWeight: '800', letterSpacing: 0.7 },
-  disclosure: { color: '#6F716C', fontSize: 14, lineHeight: 20, textAlign: 'center' },
+  submitButtonText: { color: colors.onPrimary, fontSize: 15, fontWeight: '800', letterSpacing: 0.7 },
+  disclosure: { color: colors.muted, fontSize: 14, lineHeight: 20, textAlign: 'center' },
   receipt: {
     alignItems: 'center',
-    backgroundColor: '#F3F1EC',
-    borderColor: '#D6D2C9',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
     borderRadius: 24,
     borderWidth: 1,
     gap: 10,
     padding: 24
   },
-  receiptMark: { color: '#315FC7', fontSize: 28, fontWeight: '700' },
-  receiptTitle: { color: '#1B1C1A', fontSize: 22, fontWeight: '700' },
-  receiptBody: { color: '#6F716C', fontSize: 15, lineHeight: 22, textAlign: 'center' },
+  receiptMark: { color: colors.accent, fontSize: 28, fontWeight: '700' },
+  receiptTitle: { color: colors.ink, fontSize: 22, fontWeight: '700' },
+  receiptBody: { color: colors.muted, fontSize: 15, lineHeight: 22, textAlign: 'center' }
 });
+}

@@ -1,6 +1,13 @@
 import { existsSync } from 'node:fs';
 
-const legacyRuntimePaths = ['app/(drawer)', 'app/components', 'app/providers', 'src'];
+const legacyRuntimePaths = [
+  'app/(drawer)',
+  'app/components',
+  'app/providers',
+  'app/utils',
+  'app/theme.tsx',
+  'src'
+];
 
 const found = legacyRuntimePaths.filter(existsSync);
 

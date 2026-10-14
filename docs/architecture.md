@@ -4,25 +4,27 @@
 
 Each step must start, be manually tested, and be understood before the next step changes the dependency graph or adds a remote service.
 
-## Phase 1 — local UX (current)
+## Phase 1 — local product data
 
 - Expo SDK 57 app shell
 - Direct question → vote → local receipt interaction; the backend will reveal results the next day
-- No database, push, identity, map, chart, or API dependency at runtime
+- A read-only Supabase connection check exists; product data and votes remain local
+- No database writes, push, identity, map, or chart dependency at runtime
 
-**Exit criteria:** Expo Go opens the app without red-screen errors; all drawer destinations open; the local vote completes; no network request is made.
+**Exit criteria:** Expo Go opens the app without red-screen errors; all drawer destinations open; the
+local vote completes; and the Settings screen reports an explicit Supabase connected/error state.
 
 ## Step 2 — navigation and local UX
 
-- Expo Router provides a five-destination drawer: Today, Past Results, My Pulse, Brewing Questions,
-  and About.
+- Expo Router provides a six-destination drawer: Today, Past Results, My Pulse, Brewing Questions,
+  Settings, and About.
 - In-progress vote results are not exposed.
 - Results compare the user's vote with the finalized aggregate from PULSE voters; Phase 1 stores no country.
 - Add SDK-aligned navigation dependencies using `npx expo install`.
 - Keep vote state ephemeral until the secure backend write path is designed; a reload resets this prototype.
 - Past Results lists every finalized question; participation controls only whether “Your vote” is shown.
 
-## Step 3 — Supabase read-only connectivity
+## Step 3 — Supabase read-only connectivity (implemented)
 
 - Configure the project URL and publishable key.
 - Enable RLS and add safe read-only policies.
@@ -50,5 +52,11 @@ Translation is a product-integrity concern, not merely presentation. The propose
 decision gates are documented in [`translation-strategy.md`](./translation-strategy.md); no runtime
 translation should be introduced until that decision is approved.
 
-The `supabase/` directory now contains one pre-production baseline and database tests. It remains
-disconnected from the mobile runtime until the read-only connectivity step.
+Optional account UX, account-enumeration constraints, contextual sign-in entry points, notification
+ownership, logout behavior, and safe share attribution are proposed in
+[`account-auth-ux.md`](./account-auth-ux.md). Account UI must not precede server-confirmed vote and
+canonical history-merge contracts.
+
+The `supabase/` directory contains one pre-production baseline and database tests. The mobile runtime
+now exercises only the read-only `get_today_question` RPC as a connection check; it does not yet use
+the response as product content or write votes.
