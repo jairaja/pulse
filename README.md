@@ -157,6 +157,10 @@ Still deferred because they are premature for the local Phase 1 UX:
 - `react-native-maps`, `victory-native`, and `react-native-svg`: deferred until the results/heatmap step.
 - Supabase, React Query, Zustand, NetInfo, notifications, translation APIs, and FCM: deferred until the local UX is proven.
 
+For dynamic question localization, see the proposed
+[`translation strategy`](docs/translation-strategy.md). It recommends publication-time, persisted
+translations rather than per-user real-time AI translation.
+
 ## What comes next—only after this local UX passes
 
 The next step should introduce Supabase connectivity with a read-only health check. Persistent voting, identity enforcement, settings, FCM, translations, charts, maps, and moderation remain later steps. In-progress vote trends are explicitly out of scope.

@@ -46,5 +46,9 @@ approved, the database and result contract remain global-only.
 - Translation workflow
 - Push notifications and FCM HTTP v1
 
+Translation is a product-integrity concern, not merely presentation. The proposed approach and its
+decision gates are documented in [`translation-strategy.md`](./translation-strategy.md); no runtime
+translation should be introduced until that decision is approved.
+
 The `supabase/` directory now contains one pre-production baseline and database tests. It remains
 disconnected from the mobile runtime until the read-only connectivity step.
