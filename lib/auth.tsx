@@ -67,8 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       Platform.OS === 'web'
         ? null
         : AppState.addEventListener('change', (state) => {
-            if (state === 'active') supabase.auth.startAutoRefresh();
-            else supabase.auth.stopAutoRefresh();
+            if (state === 'active') supabase!.auth.startAutoRefresh();
+            else supabase!.auth.stopAutoRefresh();
           });
 
     return () => {
