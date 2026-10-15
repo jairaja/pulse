@@ -25,6 +25,7 @@ const forbidden = [
 
 const clientSourceFiles = [
   ...(await sourceFiles(path.resolve('app'))),
+  ...(await sourceFiles(path.resolve('components'))),
   ...(await sourceFiles(path.resolve('lib')))
 ];
 

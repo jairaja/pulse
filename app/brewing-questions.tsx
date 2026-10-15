@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AccountPrompt } from '../components/AccountPrompt';
 import { useAppTheme, type ThemeColors } from '../lib/theme';
 
 export default function BrewingQuestionsScreen() {
@@ -15,13 +16,17 @@ export default function BrewingQuestionsScreen() {
           <Text style={styles.title}>Tomorrow’s question starts here.</Text>
           <Text style={styles.body}>Community questions and voting are coming in a later step.</Text>
         </View>
-        <Pressable
-          accessibilityRole="button"
-          disabled
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>Ask a question · Coming soon</Text>
-        </Pressable>
+        <View style={styles.actions}>
+          <AccountPrompt
+            action="Sign in and save"
+            body="Save future question submissions across devices and know if one goes live."
+            source="brewing-questions"
+            title="Save this question"
+          />
+          <Pressable accessibilityRole="button" disabled style={styles.button}>
+            <Text style={styles.buttonText}>Ask a question · Coming soon</Text>
+          </Pressable>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -33,6 +38,7 @@ function createStyles(colors: ThemeColors) {
   content: { flex: 1, justifyContent: 'space-between', padding: 24 },
   eyebrow: { color: colors.accent, fontSize: 12, fontWeight: '700', letterSpacing: 1.2 },
   message: { gap: 12 },
+  actions: { gap: 12 },
   title: { color: colors.ink, fontSize: 32, fontWeight: '700', letterSpacing: -0.7, lineHeight: 39 },
   body: { color: colors.muted, fontSize: 16, lineHeight: 24 },
   button: {

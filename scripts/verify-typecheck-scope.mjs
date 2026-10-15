@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 const config = JSON.parse(readFileSync('tsconfig.json', 'utf8'));
 const expectedInclude = [
   'app/**/*.tsx',
+  'components/**/*.tsx',
   'lib/**/*.ts',
   'lib/**/*.tsx',
   '.expo/types/**/*.ts',

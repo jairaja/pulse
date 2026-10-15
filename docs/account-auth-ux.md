@@ -1,7 +1,9 @@
 # Optional account and authentication UX
 
-**Status:** Proposed. Authentication must not be implemented before secure server-side voting and
-canonical history merge prerequisites are complete.
+**Status:** The email-code session, device-only nickname, contextual prompts, and local logout UX
+are implemented as an authentication foundation. Cross-device history, vote ownership, question
+ownership, notifications, and account deletion remain blocked on the secure server-side voting and
+canonical merge work below. The UI must not claim those capabilities are active yet.
 
 ## Product position
 
@@ -209,3 +211,21 @@ ready, use non-unique display names without `@` and do not imply identity unique
 Authentication is not the next coding step merely because the Supabase client now connects. The
 server-side identity, merge, notification ownership, privacy, and abuse contracts must be approved
 first.
+
+## Dashboard setup for the implemented email-code foundation
+
+1. In Supabase, open **Authentication → Providers → Email** and keep email authentication enabled.
+2. Open **Authentication → Email Templates → Magic Link**. Include `{{ .Token }}` in the template;
+   the app verifies this six-digit token rather than relying on the magic-link redirect.
+3. Configure a production SMTP provider before inviting real users. Supabase's default sender is
+   for limited testing, not production delivery.
+4. Configure Auth rate limits and CAPTCHA before public launch. A resend timer in the client is only
+   UX; it is not an abuse boundary.
+5. Test a new email and an existing email. Both must show the same outward flow: email → code →
+   verified account. The client deliberately does not check whether an account exists.
+6. Test expiry, invalid code, delayed email, offline, app background/foreground, logout, and restart
+   on physical Android and iOS devices.
+
+The current foundation uses `shouldCreateUser: true`, so a verified code signs in an existing user
+or creates a new one. Nicknames use device storage keyed by the authenticated user ID and are
+deleted from that device at logout. They are never written to Supabase.

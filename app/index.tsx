@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AccountPrompt } from '../components/AccountPrompt';
 import { useAppTheme, type ThemeColors } from '../lib/theme';
 
 type Vote = 'YES' | 'NO';
@@ -32,6 +33,12 @@ export default function TodayScreen() {
             <Text style={styles.receiptBody}>
               You voted {submittedVote}. Come back tomorrow to see how PULSE voters answered.
             </Text>
+            <AccountPrompt
+              action="Keep this vote"
+              body="Sign in so future server-confirmed votes can follow you to another device."
+              source="vote-receipt"
+              title="Keep this vote across devices"
+            />
           </View>
         ) : (
           <View style={styles.actionArea}>

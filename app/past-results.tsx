@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AccountPrompt } from '../components/AccountPrompt';
 import { useAppTheme, type ThemeColors } from '../lib/theme';
 
 type PastResult = {
@@ -63,18 +64,12 @@ export default function PastResultsScreen() {
           ))}
         </View>
 
-        <View style={styles.accountCard}>
-          <Text style={styles.accountEyebrow}>CHANGING PHONES SOMEDAY?</Text>
-          <Text style={styles.accountTitle}>Keep your voting history.</Text>
-          <Text style={styles.accountBody}>
-            PULSE works without an account. Add an email later if you want your answered-question
-            history to follow you to another device.
-          </Text>
-          <Pressable accessibilityRole="button" disabled style={styles.accountButton}>
-            <Text style={styles.accountButtonText}>Protect my history · Coming soon</Text>
-          </Pressable>
-          <Text style={styles.accountNote}>Email is enough. Your name should be optional.</Text>
-        </View>
+        <AccountPrompt
+          action="Protect my history"
+          body="Keep future server-confirmed answers available when you change phones."
+          source="past-results"
+          title="Changing phones someday?"
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -104,24 +99,5 @@ function createStyles(colors: ThemeColors) {
   percentage: { color: colors.ink, fontSize: 14, fontWeight: '700' },
   voted: { color: colors.accent, fontSize: 13, fontWeight: '700' },
   notVoted: { color: colors.disabledText, fontSize: 13 },
-  accountCard: {
-    backgroundColor: colors.activeSurface,
-    borderRadius: 24,
-    gap: 12,
-    padding: 20
-  },
-  accountEyebrow: { color: colors.accent, fontSize: 11, fontWeight: '800', letterSpacing: 1 },
-  accountTitle: { color: colors.ink, fontSize: 22, fontWeight: '700' },
-  accountBody: { color: colors.body, fontSize: 15, lineHeight: 22 },
-  accountButton: {
-    alignItems: 'center',
-    backgroundColor: colors.disabledSurface,
-    borderRadius: 16,
-    justifyContent: 'center',
-    minHeight: 54,
-    marginTop: 4
-  },
-  accountButtonText: { color: colors.disabledText, fontSize: 14, fontWeight: '700' },
-  accountNote: { color: colors.muted, fontSize: 12, lineHeight: 18, textAlign: 'center' }
 });
 }

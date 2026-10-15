@@ -1,7 +1,9 @@
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAuth } from '../lib/auth';
 import { useAppTheme, type ThemeColors, type ThemePreference } from '../lib/theme';
 import {
   checkSupabaseConnection,
@@ -20,6 +22,8 @@ const themeOptions: Array<{ label: string; value: ThemePreference }> = [
 ];
 
 export default function SettingsScreen() {
+  const router = useRouter();
+  const { loading: authLoading, nickname, session } = useAuth();
   const { colors, preference, resolvedTheme, setPreference } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [connection, setConnection] = useState<ConnectionState>(() =>
@@ -44,7 +48,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.section}>
           <Text style={styles.eyebrow}>APPEARANCE</Text>
           <Text style={styles.title}>Choose how PULSE looks.</Text>
@@ -76,6 +80,37 @@ export default function SettingsScreen() {
           <Text style={styles.note}>
             Active theme: {resolvedTheme}. System follows your device and changes automatically.
           </Text>
+        </View>
+
+        <View style={styles.accountCard}>
+          <Text style={styles.eyebrow}>ACCOUNT</Text>
+          <Text style={styles.connectionTitle}>
+            {authLoading
+              ? 'Checking this device…'
+              : session
+                ? nickname || 'Your Pulse is connected'
+                : 'Using PULSE without an account'}
+          </Text>
+          <Text style={styles.connectionMessage}>
+            {session
+              ? session.user.email
+              : 'Sign in with an email code to keep future server-confirmed history and questions across devices.'}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            disabled={authLoading}
+            onPress={() => router.push({ pathname: '/account', params: { source: 'settings' } })}
+            style={({ pressed }) => [
+              styles.accountButton,
+              authLoading && styles.retryButtonDisabled,
+              pressed && styles.optionPressed
+            ]}
+          >
+            <Text style={styles.accountButtonText}>
+              {session ? 'Manage account' : 'Sign in or create account'}
+            </Text>
+          </Pressable>
+          {!session ? <Text style={styles.note}>Optional, always.</Text> : null}
         </View>
 
         <View style={styles.connectionCard}>
@@ -112,7 +147,7 @@ export default function SettingsScreen() {
             <Text style={styles.retryButtonText}>Check again</Text>
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -120,7 +155,7 @@ export default function SettingsScreen() {
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     screen: { backgroundColor: colors.canvas, flex: 1 },
-    content: { flex: 1, gap: 30, padding: 24, paddingBottom: 48 },
+    content: { gap: 30, padding: 24, paddingBottom: 48 },
     section: { gap: 16 },
     eyebrow: { color: colors.accent, fontSize: 12, fontWeight: '700', letterSpacing: 1.2 },
     title: { color: colors.ink, fontSize: 30, fontWeight: '700', letterSpacing: -0.6, lineHeight: 37 },
@@ -160,6 +195,20 @@ function createStyles(colors: ThemeColors) {
       gap: 12,
       padding: 20
     },
+    accountCard: {
+      backgroundColor: colors.activeSurface,
+      borderRadius: 24,
+      gap: 12,
+      padding: 20
+    },
+    accountButton: {
+      alignItems: 'center',
+      backgroundColor: colors.primary,
+      borderRadius: 15,
+      justifyContent: 'center',
+      minHeight: 52
+    },
+    accountButtonText: { color: colors.onPrimary, fontSize: 14, fontWeight: '800' },
     connectionHeading: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
     connectionTitle: { color: colors.ink, fontSize: 21, fontWeight: '700' },
     connectionMessage: { color: colors.body, fontSize: 14, lineHeight: 21 },

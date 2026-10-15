@@ -1,12 +1,15 @@
 import { Drawer } from 'expo-router/drawer';
 import { StatusBar } from 'expo-status-bar';
 
+import { AuthProvider } from '../lib/auth';
 import { AppThemeProvider, useAppTheme } from '../lib/theme';
 
 export default function RootLayout() {
   return (
     <AppThemeProvider>
-      <AppDrawer />
+      <AuthProvider>
+        <AppDrawer />
+      </AuthProvider>
     </AppThemeProvider>
   );
 }
@@ -41,6 +44,14 @@ function AppDrawer() {
           options={{ drawerLabel: 'Brewing Questions', title: 'Brewing Questions' }}
         />
         <Drawer.Screen name="settings" options={{ drawerLabel: 'Settings', title: 'Settings' }} />
+        <Drawer.Screen
+          name="account"
+          options={{
+            drawerItemStyle: { display: 'none' },
+            drawerLabel: 'Account',
+            title: 'Keep your Pulse'
+          }}
+        />
         <Drawer.Screen name="about" options={{ drawerLabel: 'About', title: 'About PULSE' }} />
       </Drawer>
     </>

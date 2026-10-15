@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AccountPrompt } from '../components/AccountPrompt';
 import { useAppTheme, type ThemeColors } from '../lib/theme';
 
 export default function MyPulseScreen() {
@@ -25,6 +26,13 @@ export default function MyPulseScreen() {
           <Text style={styles.placeholderLabel}>QUESTIONS ANSWERED</Text>
           <Text style={styles.placeholderNote}>Insights are coming in a later phase.</Text>
         </View>
+
+        <AccountPrompt
+          action="Keep my history"
+          body="Keep answered-question history and future insights available when you change devices."
+          source="my-pulse"
+          title="Keep your Pulse"
+        />
       </View>
     </SafeAreaView>
   );

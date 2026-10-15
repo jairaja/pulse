@@ -9,7 +9,8 @@ Each step must start, be manually tested, and be understood before the next step
 - Expo SDK 57 app shell
 - Direct question → vote → local receipt interaction; the backend will reveal results the next day
 - A read-only Supabase connection check exists; product data and votes remain local
-- No database writes, push, identity, map, or chart dependency at runtime
+- No product-data writes, push, map, or chart dependency at runtime. Optional email-code
+  authentication exists, but it is not yet connected to votes, history, or submissions.
 
 **Exit criteria:** Expo Go opens the app without red-screen errors; all drawer destinations open; the
 local vote completes; and the Settings screen reports an explicit Supabase connected/error state.
@@ -40,9 +41,22 @@ an unweighted sample of PULSE participants, minimum sample thresholds, and a way
 from repeatedly changing country to inspect or manipulate small cohorts. Until that design is
 approved, the database and result contract remain global-only.
 
+## Account foundation — implemented with hard boundaries
+
+- Settings is the canonical account-management location; the account route is hidden from the
+  primary drawer to keep navigation focused on product destinations.
+- Contextual prompts link to the same route from My Pulse, Past Results, Brewing Questions, and the
+  local post-vote receipt.
+- Supabase email-code authentication, persisted sessions, foreground refresh, confirmed local
+  logout, and a device-only nickname are implemented.
+- Cross-device history, vote ownership, submission ownership, notifications, account deletion, and
+  public attribution are **not** implemented and must not be implied by the client.
+
+See [`account-implementation-boundary.md`](./account-implementation-boundary.md).
+
 ## Later steps
 
-- Auth/anonymous identity and voting integrity
+- Installation identity, voting integrity, and canonical account-history merge
 - Submission and moderation workflows
 - Results, charts, and maps
 - Translation workflow
@@ -53,9 +67,9 @@ decision gates are documented in [`translation-strategy.md`](./translation-strat
 translation should be introduced until that decision is approved.
 
 Optional account UX, account-enumeration constraints, contextual sign-in entry points, notification
-ownership, logout behavior, and safe share attribution are proposed in
-[`account-auth-ux.md`](./account-auth-ux.md). Account UI must not precede server-confirmed vote and
-canonical history-merge contracts.
+ownership, logout behavior, and safe share attribution are specified in
+[`account-auth-ux.md`](./account-auth-ux.md). The implemented foundation deliberately avoids claims
+that require server-confirmed votes or canonical history merge.
 
 The `supabase/` directory contains one pre-production baseline and database tests. The mobile runtime
 now exercises only the read-only `get_today_question` RPC as a connection check; it does not yet use
