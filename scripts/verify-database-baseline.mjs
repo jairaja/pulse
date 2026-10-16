@@ -2,27 +2,31 @@ import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const migrationsDirectory = path.resolve('supabase/migrations');
-const expectedMigration = '202610120001_baseline.sql';
+const expectedMigrations = [
+  '202610120001_baseline.sql',
+  '202610160001_secure_voting.sql',
+];
 const migrationFiles = (await readdir(migrationsDirectory))
   .filter((file) => file.endsWith('.sql'))
   .sort();
 
-if (migrationFiles.length !== 1 || migrationFiles[0] !== expectedMigration) {
-  const legacyFiles = migrationFiles.filter((file) => file !== expectedMigration);
+if (JSON.stringify(migrationFiles) !== JSON.stringify(expectedMigrations)) {
+  const legacyFiles = migrationFiles.filter((file) => !expectedMigrations.includes(file));
   throw new Error(
     [
-      `Expected exactly ${expectedMigration}; found: ${migrationFiles.join(', ') || 'none'}.`,
+      `Expected exactly ${expectedMigrations.join(', ')}; found: ${migrationFiles.join(', ') || 'none'}.`,
       legacyFiles.length > 0
         ? 'The legacy files are real inputs to Supabase, not harmless cache files.'
-        : 'The baseline migration is missing.',
+        : 'A required reviewed migration is missing.',
       legacyFiles.length > 0
         ? 'Preview the allowlisted cleanup with "npm run db:baseline:clean", then run "npm run db:baseline:clean -- --apply".'
-        : 'Restore the baseline from Git before running database commands.',
+        : 'Restore the migrations from Git before running database commands.',
     ].join('\n'),
   );
 }
 
-const baseline = await readFile(path.join(migrationsDirectory, expectedMigration), 'utf8');
+const baseline = await readFile(path.join(migrationsDirectory, expectedMigrations[0]), 'utf8');
+const secureVoting = await readFile(path.join(migrationsDirectory, expectedMigrations[1]), 'utf8');
 const requiredStatements = [
   'alter table public.questions enable row level security',
   'alter table public.question_translations enable row level security',
@@ -50,9 +54,25 @@ for (const statement of requiredStatements) {
 }
 
 for (const object of forbiddenLegacyObjects) {
-  if (baseline.toLowerCase().includes(object)) {
+  if (`${baseline}\n${secureVoting}`.toLowerCase().includes(object)) {
     throw new Error(`Baseline restored a retired object: ${object}`);
   }
 }
 
-console.log('Database baseline guard passed: one migration, RLS, and finalized-only reads.');
+const requiredVotingStatements = [
+  'create table private.vote_idempotency',
+  'create table private.vote_rate_limits',
+  'security definer',
+  "set search_path = ''",
+  'create or replace function public.register_installation',
+  'create or replace function public.submit_vote',
+  'revoke all on function public.submit_vote',
+];
+
+for (const statement of requiredVotingStatements) {
+  if (!secureVoting.toLowerCase().includes(statement)) {
+    throw new Error(`Secure voting migration is missing required SQL: ${statement}`);
+  }
+}
+
+console.log('Database guard passed: reviewed baseline, finalized-only reads, and secure voting RPCs.');

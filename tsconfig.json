@@ -3,10 +3,5 @@
   "compilerOptions": {
     "strict": true
   },
-  "include": [
-    "app/**/*.tsx",
-    "components/**/*.tsx",
-    "lib/**/*.ts",
-    "lib/**/*.tsx"
-  ]
+  "include": ["app/**/*.tsx", "components/**/*.tsx", "lib/**/*.ts", "lib/**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }

@@ -2,14 +2,17 @@ import { Drawer } from 'expo-router/drawer';
 import { StatusBar } from 'expo-status-bar';
 
 import { AuthProvider } from '../lib/auth';
+import { QueryProvider } from '../lib/query';
 import { AppThemeProvider, useAppTheme } from '../lib/theme';
 
 export default function RootLayout() {
   return (
     <AppThemeProvider>
-      <AuthProvider>
-        <AppDrawer />
-      </AuthProvider>
+      <QueryProvider>
+        <AuthProvider>
+          <AppDrawer />
+        </AuthProvider>
+      </QueryProvider>
     </AppThemeProvider>
   );
 }

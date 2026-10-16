@@ -38,18 +38,25 @@ export default function AccountScreen() {
   const [stage, setStage] = useState<Stage>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
-  const [nicknameDraft, setNicknameDraft] = useState(nickname);
+  const [nicknameDraftState, setNicknameDraftState] = useState({
+    sourceNickname: nickname,
+    value: nickname
+  });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [resendSeconds, setResendSeconds] = useState(0);
   const [includeNickname, setIncludeNickname] = useState(false);
 
-  useEffect(() => setNicknameDraft(nickname), [nickname]);
   useEffect(() => {
     if (resendSeconds <= 0) return;
     const timer = setTimeout(() => setResendSeconds((seconds) => Math.max(0, seconds - 1)), 1000);
     return () => clearTimeout(timer);
   }, [resendSeconds]);
+
+  const nicknameDraft =
+    nicknameDraftState.sourceNickname === nickname ? nicknameDraftState.value : nickname;
+  const updateNicknameDraft = (value: string) =>
+    setNicknameDraftState({ sourceNickname: nickname, value });
 
   async function requestCode() {
     setBusy(true);
@@ -148,7 +155,7 @@ export default function AccountScreen() {
                 busy={busy}
                 error={error}
                 nickname={nicknameDraft}
-                onChange={setNicknameDraft}
+                onChange={updateNicknameDraft}
                 onSave={() => void saveNickname()}
                 styles={styles}
               />
@@ -272,7 +279,7 @@ export default function AccountScreen() {
               busy={busy}
               error={error}
               nickname={nicknameDraft}
-              onChange={setNicknameDraft}
+              onChange={updateNicknameDraft}
               onSave={() => void saveNickname()}
               styles={styles}
             />

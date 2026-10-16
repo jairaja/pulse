@@ -4,14 +4,13 @@
 
 See the editable four-state launch mockup: [Vote today, discover the world tomorrow](docs/design/pulse-phase1-launch-flow.svg).
 
-The runtime now follows this approved direction. It remains a local prototype until backend voting is introduced.
+The runtime now follows this approved direction and implements the connected daily question, vote, and finalized-results loop.
 
-## Current stage: Phase 1 local UX
+## Current stage: Phase 1 connected daily loop
 
-The runtime now implements the approved matte Phase 1 experience and drawer navigation. It includes
-a read-only Supabase connection check and persisted appearance preference, but product data and the
-vote remain local. It does not write to Supabase and still has no FCM, maps, charts, or push
-notifications. The vote resets when the app reloads.
+The runtime implements the approved matte Phase 1 experience, drawer navigation, persisted
+appearance, server-backed daily questions, atomic voting, local confirmed receipts, and paginated
+finalized results. It still has no FCM, maps, charts, translations, or push notifications.
 
 Phase 1 deliberately exposes no in-progress voting data. It contains:
 
@@ -38,7 +37,7 @@ The only acceptance criteria for this step are:
 
 1. The app opens in Expo Go without warnings/errors.
 2. The Home screen renders.
-3. The local vote completes without a runtime error.
+3. An online vote receives and persists a server-confirmed receipt; offline voting is refused.
 4. Settings reports the Supabase connection state without crashing or exposing a secret key.
 5. Light, Dark, and System theme choices apply to every screen and survive an app restart.
 
@@ -174,22 +173,23 @@ Still deferred because they are premature for the local Phase 1 UX:
   native peers: `react-native-reanimated`, `react-native-worklets`, and
   `react-native-gesture-handler`.
 - `react-native-maps`, `victory-native`, and `react-native-svg`: deferred until the results/heatmap step.
-- React Query, Zustand, NetInfo, notifications, translation APIs, and FCM remain deferred. The
-  Supabase client is used only for the Settings connection check; product reads and writes are not
-  implemented yet.
+- Zustand, notifications, translation APIs, and FCM remain deferred. TanStack Query and NetInfo now
+  provide persisted public reads, reconnect behavior, and explicit offline voting protection.
 
 For dynamic question localization, see the proposed
 [`translation strategy`](docs/translation-strategy.md). It recommends publication-time, persisted
 translations rather than per-user real-time AI translation.
 
-## What comes next—only after this local UX passes
+## Connected daily loop
 
-The read-only Supabase health check is now established. The next step should replace only today's
-hardcoded question with the existing read RPC and proper loading/error/empty states. Persistent
-voting, identity enforcement, FCM, translations, charts, maps, and moderation remain later steps.
-In-progress vote trends are explicitly out of scope.
+Today and Past Results now use the finalized-only RPC contract. Vote submission uses an opaque
+credential held in SecureStore, server-side hashing, atomic uniqueness, idempotent receipts, and no
+offline queue. These controls enforce one vote per registered installation/account, not one human;
+multi-device and multi-account abuse remains an explicit product/security risk. FCM, translations,
+charts, maps, moderation, and in-progress vote trends remain out of scope.
 
-The database has been consolidated into one pre-production baseline. Follow
+The database starts with one pre-production baseline and uses forward migrations after that baseline
+is deployed. Follow
 [`docs/supabase-setup.md`](docs/supabase-setup.md) to build and test a fresh local and remote Supabase
 project; do not apply the squashed baseline over a database containing real data.
 

@@ -1,6 +1,6 @@
 begin;
 
-select plan(18);
+select plan(31);
 
 select has_table('public', 'questions', 'questions table exists');
 select has_table('public', 'question_translations', 'translations table exists');
@@ -50,6 +50,79 @@ select ok(
   not has_table_privilege('anon', 'public.votes', 'INSERT'),
   'anonymous clients cannot insert votes directly'
 );
+
+insert into public.questions (id, question_text, asked_on, status)
+values (
+  '20000000-0000-4000-8000-000000000001',
+  'Database test question?',
+  (now() at time zone 'utc')::date,
+  'live'
+)
+on conflict (asked_on) do update
+set status = 'live', results_finalized_at = null;
+
+select lives_ok(
+  $$ select public.register_installation('test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa') $$,
+  'a valid opaque installation credential can be registered'
+);
+select is(
+  public.register_installation('test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
+  public.register_installation('test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
+  'installation registration is idempotent'
+);
+select ok(
+  not exists (
+    select 1 from public.installations
+    where token_hash = 'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+  ),
+  'raw installation credentials are never stored'
+);
+select is(
+  (
+    select status from public.submit_vote(
+      'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      (select id from public.questions where asked_on = (now() at time zone 'utc')::date),
+      'YES',
+      '30000000-0000-4000-8000-000000000001'
+    )
+  ),
+  'ACCEPTED',
+  'a valid vote is accepted'
+);
+select is(
+  (
+    select status from public.submit_vote(
+      'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      (select id from public.questions where asked_on = (now() at time zone 'utc')::date),
+      'YES',
+      '30000000-0000-4000-8000-000000000001'
+    )
+  ),
+  'ACCEPTED',
+  'an idempotent retry returns the accepted receipt'
+);
+select is(
+  (
+    select status from public.submit_vote(
+      'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      (select id from public.questions where asked_on = (now() at time zone 'utc')::date),
+      'NO',
+      '30000000-0000-4000-8000-000000000002'
+    )
+  ),
+  'ALREADY_VOTED',
+  'an accepted vote cannot be changed'
+);
+select is(
+  (
+    select count(*)::integer from public.votes
+    where installation_id = public.register_installation(
+      'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    )
+  ),
+  1,
+  'retries and conflicts create only one vote'
+);
 select ok(
   not has_table_privilege('authenticated', 'public.votes', 'SELECT'),
   'authenticated clients cannot read raw votes'
@@ -73,6 +146,38 @@ select has_index(
   'question_translations',
   'question_translations_one_selected',
   'only one selected translation is allowed per language'
+);
+
+select has_function(
+  'public',
+  'register_installation',
+  array['text'],
+  'installation registration RPC exists'
+);
+select has_function(
+  'public',
+  'submit_vote',
+  array['text', 'uuid', 'text', 'uuid'],
+  'idempotent vote RPC exists'
+);
+select has_table('private', 'vote_idempotency', 'vote idempotency records are private');
+select has_table('private', 'vote_rate_limits', 'vote rate limits are private');
+select ok(
+  not has_table_privilege('anon', 'private.vote_idempotency', 'SELECT'),
+  'anonymous clients cannot read idempotency records'
+);
+select ok(
+  (
+    select bool_and(
+      p.prosecdef
+      and coalesce(array_to_string(p.proconfig, ','), '') like '%search_path=%'
+    )
+    from pg_catalog.pg_proc p
+    join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname in ('register_installation', 'submit_vote')
+  ),
+  'privileged voting RPCs are definers with an empty search path'
 );
 
 select * from finish();

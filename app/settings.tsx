@@ -15,7 +15,7 @@ type ConnectionState =
   | { status: 'connected'; message: string }
   | { status: 'error'; message: string };
 
-const themeOptions: Array<{ label: string; value: ThemePreference }> = [
+const themeOptions: { label: string; value: ThemePreference }[] = [
   { label: 'Light', value: 'light' },
   { label: 'Dark', value: 'dark' },
   { label: "System's theme", value: 'system' }
@@ -33,14 +33,19 @@ export default function SettingsScreen() {
   );
 
   const verifyConnection = useCallback(async () => {
-    setConnection({ status: 'checking', message: 'Checking the read-only API…' });
-    const result = await checkSupabaseConnection();
-    setConnection(
-      result.ok
-        ? { status: 'connected', message: 'Connected to the PULSE database.' }
-        : { status: 'error', message: result.message }
-    );
+    void checkSupabaseConnection().then((result) => {
+      setConnection(
+        result.ok
+          ? { status: 'connected', message: 'Connected to the PULSE database.' }
+          : { status: 'error', message: result.message }
+      );
+    });
   }, []);
+
+  const handleVerifyConnection = useCallback(() => {
+    setConnection({ status: 'checking', message: 'Checking the read-only API…' });
+    void verifyConnection();
+  }, [verifyConnection]);
 
   useEffect(() => {
     if (!supabaseConfigurationError) void verifyConnection();
@@ -137,7 +142,7 @@ export default function SettingsScreen() {
           <Pressable
             accessibilityRole="button"
             disabled={connection.status === 'checking'}
-            onPress={() => void verifyConnection()}
+            onPress={handleVerifyConnection}
             style={({ pressed }) => [
               styles.retryButton,
               connection.status === 'checking' && styles.retryButtonDisabled,

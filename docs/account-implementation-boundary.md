@@ -14,9 +14,9 @@ The current account surface proves email-code authentication and session lifecyc
 
 ## Deliberately not implemented
 
-- vote or question history merge;
+- account-history or question-history merge;
 - cross-device restoration;
-- account-linked vote uniqueness;
+- cross-device restoration of account-linked vote receipts;
 - question submission ownership or selected-question notifications;
 - public nickname attribution on real share images;
 - account deletion/export;

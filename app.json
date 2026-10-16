@@ -9,11 +9,23 @@
     "backgroundColor": "#E9EAE6",
     "ios": {
       "bundleIdentifier": "com.pulse.worldtoday",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "supportsTablet": true
     },
     "android": {
       "package": "com.pulse.worldtoday"
     },
-    "plugins": ["expo-router", "expo-system-ui"]
+    "plugins": [
+      "expo-router",
+      "expo-system-ui",
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true
+        }
+      ]
+    ]
   }
 }

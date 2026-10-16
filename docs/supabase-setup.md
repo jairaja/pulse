@@ -22,8 +22,8 @@ recovery harder.
 ## Decision: start with a fresh project
 
 PULSE is not connected to a production database and has no production data to preserve. The safest
-choice is therefore a new Supabase project plus one reviewed baseline migration. The four prototype
-migrations were removed rather than carrying corrective history into production.
+choice is therefore a new Supabase project plus the reviewed baseline and forward secure-voting
+migration. The four prototype migrations were removed rather than carrying corrective history into production.
 
 If any existing Supabase project contains real user data, **stop**. Do not reset it, delete it, or
 apply this baseline over it. That situation needs a forward-only data migration and backup plan.
@@ -38,8 +38,8 @@ apply this baseline over it. That situation needs a forward-only data migration 
 - No direct client access to installations or raw votes.
 - Read-only, security-invoker RPCs for today's question and paginated finalized results.
 
-Question submissions, moderation, vote-write RPCs, account merge, push tokens, and translation jobs
-are deliberately absent. Each belongs in a reviewed forward migration when its feature is built.
+Question submissions, moderation, account-history merge, push tokens, and translation jobs are
+deliberately absent. Vote writes exist only through the restricted atomic RPC.
 
 ## 1. Set up Supabase locally (recommended for this repository)
 
@@ -52,7 +52,7 @@ are deliberately absent. Each belongs in a reviewed forward migration when its f
    docker version
    ```
 
-3. From the repository root, confirm the checkout contains only the baseline migration:
+3. From the repository root, confirm the checkout contains the baseline and secure-voting migration:
 
    ```powershell
    npm run verify:database
@@ -275,5 +275,5 @@ import the generated type file into the app until the read-only Supabase client 
 - `npx supabase db reset` succeeds from an empty local database.
 - `npx supabase test db` passes.
 - `npx supabase db lint --local` has no blocking findings.
-- Remote dry-run lists only `202610120001_baseline.sql`.
-- The development remote applies the baseline without seed or schema drift.
+- Remote dry-run lists exactly the unapplied reviewed migrations in timestamp order.
+- The development remote applies both reviewed migrations without seed or schema drift.
