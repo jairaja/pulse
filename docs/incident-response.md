@@ -1,4 +1,5 @@
 <<<<<<< ours
+<<<<<<< ours
 # Incident response and operational drills
 
 The code supplies monitoring and a reversible database drill. A real incident response capability
@@ -80,6 +81,8 @@ production game day. After an incident, publish a blameless review within two wo
 corrective actions open until their verification passes. Store detailed security evidence privately;
 the public issue should link only to authorized, sanitized material.
 =======
+=======
+>>>>>>> theirs
 # Vote-integrity incident response and drills
 
 ## Ownership and severity
@@ -112,4 +115,3 @@ Assign a named incident commander and backup before launch. A critical incident 
 6. **Rollback:** deploy a deliberately failing staging function, roll back, and prove voting receipts remain idempotent.
 
 Each drill records date, environment, participants, evidence links, detection time, recovery time, failures, owner, and remediation deadline. A document is not a completed drill.
->>>>>>> theirs
