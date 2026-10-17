@@ -5,6 +5,7 @@ const migrationsDirectory = path.resolve('supabase/migrations');
 const expectedMigrations = [
   '202610120001_baseline.sql',
   '202610160001_secure_voting.sql',
+  '202610170001_operations_finalization_history.sql',
 ];
 const migrationFiles = (await readdir(migrationsDirectory))
   .filter((file) => file.endsWith('.sql'))
@@ -27,6 +28,7 @@ if (JSON.stringify(migrationFiles) !== JSON.stringify(expectedMigrations)) {
 
 const baseline = await readFile(path.join(migrationsDirectory, expectedMigrations[0]), 'utf8');
 const secureVoting = await readFile(path.join(migrationsDirectory, expectedMigrations[1]), 'utf8');
+const operations = await readFile(path.join(migrationsDirectory, expectedMigrations[2]), 'utf8');
 const requiredStatements = [
   'alter table public.questions enable row level security',
   'alter table public.question_translations enable row level security',
@@ -54,7 +56,7 @@ for (const statement of requiredStatements) {
 }
 
 for (const object of forbiddenLegacyObjects) {
-  if (`${baseline}\n${secureVoting}`.toLowerCase().includes(object)) {
+  if (`${baseline}\n${secureVoting}\n${operations}`.toLowerCase().includes(object)) {
     throw new Error(`Baseline restored a retired object: ${object}`);
   }
 }
@@ -75,4 +77,28 @@ for (const statement of requiredVotingStatements) {
   }
 }
 
-console.log('Database guard passed: reviewed baseline, finalized-only reads, and secure voting RPCs.');
+const requiredOperations = [
+  'create table private.runtime_controls',
+  'create table private.account_vote_history',
+  'create or replace function public.claim_installation_history',
+  'create or replace function public.list_my_vote_history',
+  'create or replace function private.finalize_daily_pulse',
+  "cron.schedule('pulse-daily-finalization', '0 12 * * *'",
+  'grant execute on function public.submit_vote(text, uuid, uuid, text, uuid) to service_role'
+];
+for (const statement of requiredOperations) {
+  if (!operations.toLowerCase().includes(statement)) {
+    throw new Error(`Operations migration is missing required SQL: ${statement}`);
+  }
+}
+
+const voteFunction = await readFile(path.resolve('supabase/functions/vote/index.ts'), 'utf8');
+const supabaseConfig = await readFile(path.resolve('supabase/config.toml'), 'utf8');
+for (const statement of ["auth.getUser(bearer)", "admin.rpc('submit_vote'", "Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')"]) {
+  if (!voteFunction.includes(statement)) throw new Error(`Vote gateway is missing: ${statement}`);
+}
+if (!supabaseConfig.includes('[functions.vote]') || !supabaseConfig.includes('verify_jwt = false')) {
+  throw new Error('Vote gateway must use explicit in-function JWT verification.');
+}
+
+console.log('Database guard passed: baseline, gateway-only voting, finalization, and account history.');

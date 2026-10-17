@@ -11,6 +11,7 @@ import {
 import { AppState, Platform } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 
+import { claimAccountHistory } from './pulseApi';
 import { supabase, supabaseConfigurationError } from './supabase';
 
 type AuthResult = { ok: true } | { ok: false; message: string };
@@ -77,6 +78,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       appStateListener?.remove();
     };
   }, []);
+
+  useEffect(() => {
+    if (!session?.user.id) return;
+    // Sync is idempotent and server-authoritative. Authentication remains usable if it fails.
+    void claimAccountHistory().catch(() => undefined);
+  }, [session?.user.id]);
 
   useEffect(() => {
     let mounted = true;

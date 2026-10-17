@@ -22,8 +22,7 @@ recovery harder.
 ## Decision: start with a fresh project
 
 PULSE is not connected to a production database and has no production data to preserve. The safest
-choice is therefore a new Supabase project plus the reviewed baseline and forward secure-voting
-migration. The four prototype migrations were removed rather than carrying corrective history into production.
+choice is therefore a new Supabase project plus the reviewed baseline plus forward secure-voting and operations migrations. The four prototype migrations were removed rather than carrying corrective history into production.
 
 If any existing Supabase project contains real user data, **stop**. Do not reset it, delete it, or
 apply this baseline over it. That situation needs a forward-only data migration and backup plan.
@@ -52,7 +51,7 @@ deliberately absent. Vote writes exist only through the restricted atomic RPC.
    docker version
    ```
 
-3. From the repository root, confirm the checkout contains the baseline and secure-voting migration:
+3. From the repository root, confirm the checkout contains the baseline, secure-voting, and operations migrations:
 
    ```powershell
    npm run verify:database
@@ -270,10 +269,23 @@ import the generated type file into the app until the read-only Supabase client 
 - [API keys](https://supabase.com/docs/guides/getting-started/api-keys)
 - [Seed data](https://supabase.com/docs/guides/local-development/seeding-your-database)
 
+## Deploy the vote gateway
+
+After migrations succeed, deploy the gateway before distributing a client that can vote:
+
+```bash
+npx supabase functions deploy vote --project-ref pnbfhbobymtypmdtzfsq --no-verify-jwt
+```
+
+`verify_jwt = false` delegates optional-user JWT verification to the function so anonymous voting can
+work; the function still verifies JWT-shaped user bearer tokens with Auth before deriving `account_id`.
+The service-role secret is supplied by the Supabase runtime and must never enter `.env` or EAS. Verify
+that anonymous/authenticated roles cannot execute the underlying vote RPCs directly after deployment.
+
 ## Exit criteria
 
 - `npx supabase db reset` succeeds from an empty local database.
 - `npx supabase test db` passes.
 - `npx supabase db lint --local` has no blocking findings.
 - Remote dry-run lists exactly the unapplied reviewed migrations in timestamp order.
-- The development remote applies both reviewed migrations without seed or schema drift.
+- The development remote applies all reviewed migrations without seed or schema drift.

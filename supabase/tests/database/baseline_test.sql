@@ -1,6 +1,6 @@
 begin;
 
-select plan(31);
+select plan(37);
 
 select has_table('public', 'questions', 'questions table exists');
 select has_table('public', 'question_translations', 'translations table exists');
@@ -81,6 +81,7 @@ select is(
   (
     select status from public.submit_vote(
       'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      null,
       (select id from public.questions where asked_on = (now() at time zone 'utc')::date),
       'YES',
       '30000000-0000-4000-8000-000000000001'
@@ -93,6 +94,7 @@ select is(
   (
     select status from public.submit_vote(
       'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      null,
       (select id from public.questions where asked_on = (now() at time zone 'utc')::date),
       'YES',
       '30000000-0000-4000-8000-000000000001'
@@ -105,6 +107,7 @@ select is(
   (
     select status from public.submit_vote(
       'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      null,
       (select id from public.questions where asked_on = (now() at time zone 'utc')::date),
       'NO',
       '30000000-0000-4000-8000-000000000002'
@@ -178,6 +181,17 @@ select ok(
       and p.proname in ('register_installation', 'submit_vote')
   ),
   'privileged voting RPCs are definers with an empty search path'
+);
+
+
+select has_table('private', 'runtime_controls', 'runtime kill switch exists');
+select has_table('private', 'account_vote_history', 'canonical account history links exist');
+select has_function('public', 'claim_installation_history', array['text'], 'history claim RPC exists');
+select has_function('public', 'list_my_vote_history', array['timestamp with time zone', 'integer'], 'account history RPC exists');
+select has_function('private', 'finalize_daily_pulse', array['timestamp with time zone'], 'atomic daily finalizer exists');
+select ok(
+  not has_function_privilege('anon', 'public.submit_vote(text,uuid,uuid,text,uuid)', 'EXECUTE'),
+  'anonymous clients cannot bypass the vote Edge Function'
 );
 
 select * from finish();

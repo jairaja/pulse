@@ -18,40 +18,19 @@ export default function TodayScreen() {
   const storedReceipt = useVoteReceipt(question?.id);
   const vote = useSubmitVote(question?.id);
   const resetVote = vote.reset;
-  const [selectionState, setSelectionState] = useState<{
-    questionId: string;
-    choice: VoteChoice;
-  } | null>(null);
-  const [closedQuestion, setClosedQuestion] = useState<{
-    questionId: string;
-    updatedAt: number;
-  } | null>(null);
-  const selection =
-    selectionState && selectionState.questionId === question?.id ? selectionState.choice : null;
-  const questionId = question?.id;
-  const serverTime = question?.serverTime;
-  const votingClosesAt = question?.votingClosesAt;
+  const [selection, setSelection] = useState<VoteChoice | null>(null);
+  const estimatedServerNow = question
+    ? Date.parse(question.serverTime) + Math.max(0, Date.now() - today.dataUpdatedAt)
+    : Number.POSITIVE_INFINITY;
+  const isCurrentQuestion = Boolean(
+    question && estimatedServerNow < Date.parse(question.votingClosesAt)
+  );
 
   useEffect(() => {
+    setSelection(null);
     resetVote();
   }, [question?.id, resetVote]);
 
-  useEffect(() => {
-    if (!questionId || !serverTime || !votingClosesAt) return;
-    const estimatedServerNow =
-      Date.parse(serverTime) + Math.max(0, Date.now() - today.dataUpdatedAt);
-    const untilClose = Date.parse(votingClosesAt) - estimatedServerNow;
-    const timer = setTimeout(
-      () => setClosedQuestion({ questionId, updatedAt: today.dataUpdatedAt }),
-      Math.max(0, untilClose)
-    );
-    return () => clearTimeout(timer);
-  }, [questionId, serverTime, votingClosesAt, today.dataUpdatedAt]);
-
-  const isCurrentQuestion = Boolean(
-    question &&
-      (closedQuestion?.questionId !== question.id || closedQuestion.updatedAt !== today.dataUpdatedAt)
-  );
   const receipt = vote.data ?? storedReceipt.data;
   const voteDisabled =
     !isCurrentQuestion ||
@@ -134,14 +113,14 @@ export default function TodayScreen() {
                     label="YES"
                     styles={styles}
                     selected={selection === 'YES'}
-                    onPress={() => setSelectionState({ questionId: question.id, choice: 'YES' })}
+                    onPress={() => setSelection('YES')}
                   />
                   <VoteButton
                     disabled={voteDisabled}
                     label="NO"
                     styles={styles}
                     selected={selection === 'NO'}
-                    onPress={() => setSelectionState({ questionId: question.id, choice: 'NO' })}
+                    onPress={() => setSelection('NO')}
                   />
                 </View>
                 {vote.error ? (

@@ -134,24 +134,12 @@ export async function fetchFinalizedResults({
 
 export async function submitVote(questionId: string, choice: VoteChoice): Promise<VoteReceipt> {
   const credential = await getInstallationCredential();
-  const api = client();
-  const registration = await api.rpc('register_installation', { p_credential: credential });
-  if (registration.error) {
-    throw new PulseApiError('Could not prepare this device to vote.', registration.error.code, true);
-  }
-
-  const { data, error } = await api.rpc('submit_vote', {
-    p_credential: credential,
-    p_question_id: questionId,
-    p_choice: choice,
-    p_idempotency_key: Crypto.randomUUID()
+  const { data, error } = await client().functions.invoke('vote', {
+    body: { credential, questionId, choice, idempotencyKey: Crypto.randomUUID() }
   });
-  if (error) throw new PulseApiError('Could not submit your vote.', error.code, true);
-  if (!Array.isArray(data) || data.length !== 1) {
-    throw new PulseApiError('The server returned an invalid vote receipt.', 'INVALID_RESPONSE');
-  }
+  if (error) throw new PulseApiError('Could not submit your vote.', 'VOTE_GATEWAY_ERROR', true);
 
-  const row = record(data[0]);
+  const row = record(data);
   const status = requiredString(row.status, 'vote status');
   if (status !== 'ACCEPTED') {
     const messages: Record<string, string> = {
@@ -161,7 +149,8 @@ export async function submitVote(questionId: string, choice: VoteChoice): Promis
       INVALID_INSTALLATION: 'This device could not be verified. Please try again.',
       INVALID_REQUEST: 'The vote request was invalid.',
       QUESTION_CLOSED: 'Voting for this question has closed.',
-      RATE_LIMITED: 'Too many attempts. Wait ten minutes and try again.'
+      RATE_LIMITED: 'Too many attempts. Wait ten minutes and try again.',
+      VOTING_DISABLED: 'Voting is temporarily unavailable.'
     };
     throw new PulseApiError(messages[status] ?? 'The vote was not accepted.', status);
   }
@@ -178,4 +167,12 @@ export async function submitVote(questionId: string, choice: VoteChoice): Promis
   };
   await storeVoteReceipt(receipt);
   return receipt;
+}
+
+export async function claimAccountHistory() {
+  const credential = await getInstallationCredential();
+  const { data, error } = await client().rpc('claim_installation_history', { p_credential: credential });
+  if (error) throw new PulseApiError('Could not synchronize vote history.', error.code, true);
+  const row = record(Array.isArray(data) ? data[0] : data);
+  return { claimedCount: safeCount(row.claimed_count, 'claimed count'), conflictCount: safeCount(row.conflict_count, 'conflict count') };
 }

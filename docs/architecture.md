@@ -90,6 +90,5 @@ ownership, logout behavior, and safe share attribution are specified in
 [`account-auth-ux.md`](./account-auth-ux.md). The implemented foundation deliberately avoids claims
 that require server-confirmed votes or canonical history merge.
 
-The `supabase/` directory contains the pre-production baseline, a forward secure-voting migration,
-and database tests. The mobile runtime uses the question, finalized-results, installation, and vote
+The `supabase/` directory contains the pre-production baseline, forward secure-voting and operations migrations, and database tests. The mobile runtime uses the question, finalized-results, installation, and vote
 RPCs; direct table writes remain unavailable to public clients.

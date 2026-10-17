@@ -36,7 +36,9 @@
 
 This implementation provides one accepted vote per installation and, once authenticated, per
 account. It cannot prove one human. A determined actor can reinstall, use multiple devices, automate
-new installation credentials, or use multiple email accounts. The database attempt window limits
+new installation credentials, or use multiple email accounts. Android removes SecureStore data on uninstall;
+iOS Keychain data can survive reinstall but Apple does not guarantee that behavior as a permanent app identity.
+The product must therefore treat reinstall resistance as best-effort, not an identity guarantee. The database attempt window limits
 noise from one credential; it is not global bot prevention.
 
 Before a public global launch, put registration/voting behind a globally distributed abuse gateway,
@@ -52,3 +54,23 @@ claim statistically representative world opinion.
 - Never edit an applied migration; add a reviewed forward migration.
 - Never publish live vote totals.
 - Never count a client-only receipt as an accepted vote.
+
+
+## Production operations added after T04–T07
+
+- Mobile vote traffic uses the `vote` Edge Function; the underlying privileged RPCs execute only for
+  `service_role`. The function derives an optional account id from a verified bearer token and never
+  accepts an account id from request JSON.
+- A database kill switch can suspend voting without shipping a client update. This is an emergency
+  control, not a substitute for monitoring or incident response.
+- `private.finalize_daily_pulse` atomically snapshots every expired live question, archives it, and
+  activates today's scheduled question. `pg_cron` invokes it at 12:00 UTC; the transaction lock and
+  conflict handling make retries safe.
+- Authenticated users can idempotently claim server-known votes from the current installation.
+  Conflicts preserve the account's existing question link and are audit-counted; accepted votes and
+  finalized aggregates are never rewritten.
+
+Automation breaks one-human-one-vote because software can create many fresh installation credentials,
+run many app instances/emulators, and obtain multiple accounts much faster than a person using the UI.
+Cryptographic randomness proves that credentials are distinct; it does not prove they belong to distinct
+humans. Attestation raises abuse cost but likewise does not establish human uniqueness.
