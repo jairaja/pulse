@@ -7,6 +7,7 @@ const expectedMigrations = [
   '202610160001_secure_voting.sql',
   '202610170001_operations_finalization_history.sql',
   '202610180001_device_fingerprint.sql',
+  '202610190001_operational_monitoring.sql',
 ];
 const migrationFiles = (await readdir(migrationsDirectory))
   .filter((file) => file.endsWith('.sql'))
@@ -31,6 +32,7 @@ const baseline = await readFile(path.join(migrationsDirectory, expectedMigration
 const secureVoting = await readFile(path.join(migrationsDirectory, expectedMigrations[1]), 'utf8');
 const operations = await readFile(path.join(migrationsDirectory, expectedMigrations[2]), 'utf8');
 const deviceFingerprint = await readFile(path.join(migrationsDirectory, expectedMigrations[3]), 'utf8');
+const monitoring = await readFile(path.join(migrationsDirectory, expectedMigrations[4]), 'utf8');
 const requiredStatements = [
   'alter table public.questions enable row level security',
   'alter table public.question_translations enable row level security',
@@ -58,8 +60,17 @@ for (const statement of requiredStatements) {
 }
 
 for (const object of forbiddenLegacyObjects) {
-  if (`${baseline}\n${secureVoting}\n${operations}\n${deviceFingerprint}`.toLowerCase().includes(object)) {
+  if (`${baseline}\n${secureVoting}\n${operations}\n${deviceFingerprint}\n${monitoring}`.toLowerCase().includes(object)) {
     throw new Error(`Baseline restored a retired object: ${object}`);
+  }
+}
+
+for (const statement of [
+  'create or replace function public.get_operational_health',
+  'grant execute on function public.get_operational_health() to service_role'
+]) {
+  if (!monitoring.toLowerCase().includes(statement)) {
+    throw new Error(`Monitoring migration is missing required SQL: ${statement}`);
   }
 }
 
@@ -112,12 +123,17 @@ for (const statement of [
   "admin.rpc('submit_vote'",
   "Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')",
   "Deno.env.get('DEVICE_FINGERPRINT_PEPPER')",
-  'p_device_fingerprint_hash: deviceFingerprintHash'
+  'p_device_fingerprint_hash: deviceFingerprintHash',
+  "Deno.env.get('TURNSTILE_EXPECTED_HOSTNAME')",
+  'result.cdata === expectedCdata'
 ]) {
   if (!voteFunction.includes(statement)) throw new Error(`Vote gateway is missing: ${statement}`);
 }
 if (!supabaseConfig.includes('[functions.vote]') || !supabaseConfig.includes('verify_jwt = false')) {
   throw new Error('Vote gateway must use explicit in-function JWT verification.');
+}
+if (!supabaseConfig.includes('[functions.turnstile-challenge]') || !supabaseConfig.includes('[functions.operational-health]')) {
+  throw new Error('Turnstile and operational health functions must be explicitly configured.');
 }
 
 console.log('Database guard passed: baseline, gateway-only voting, finalization, and account history.');

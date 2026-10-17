@@ -3,3 +3,9 @@ project_id = "pulse"
 [functions.vote]
 # The function verifies optional user JWTs itself and permits anonymous voting.
 verify_jwt = false
+
+[functions.turnstile-challenge]
+verify_jwt = false
+
+[functions.operational-health]
+verify_jwt = false

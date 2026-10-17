@@ -3,7 +3,8 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AccountPrompt } from '../components/AccountPrompt';
-import { useVoteVerification } from '../components/VoteVerification';
+import { TurnstileChallenge } from '../components/TurnstileChallenge';
+import { getCaptchaChallengeUrl, prepareVoteAttempt, type PendingVoteAttempt } from '../lib/captcha';
 import { PulseApiError } from '../lib/pulseApi';
 import { useSubmitVote, useTodayQuestion, useVoteReceipt } from '../lib/pulseQueries';
 import type { VoteChoice } from '../lib/pulseTypes';
@@ -17,32 +18,26 @@ export default function TodayScreen() {
   const today = useTodayQuestion();
   const question = today.data;
   const storedReceipt = useVoteReceipt(question?.id);
-  const { verify, verification, cancelVerification } = useVoteVerification();
-  const vote = useSubmitVote(question?.id, verify);
+  const vote = useSubmitVote(question?.id);
   const resetVote = vote.reset;
-  const [selectedVote, setSelectedVote] = useState<{ questionId: string; choice: VoteChoice } | null>(null);
-  const selection = selectedVote?.questionId === question?.id ? selectedVote?.choice : null;
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const [selection, setSelection] = useState<VoteChoice | null>(null);
+  const [pendingAttempt, setPendingAttempt] = useState<PendingVoteAttempt | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
   const estimatedServerNow = question
-    ? Date.parse(question.serverTime) + Math.max(0, now - today.dataUpdatedAt)
+    ? Date.parse(question.serverTime) + Math.max(0, Date.now() - today.dataUpdatedAt)
     : Number.POSITIVE_INFINITY;
   const isCurrentQuestion = Boolean(
     question && estimatedServerNow < Date.parse(question.votingClosesAt)
   );
 
   useEffect(() => {
+    setSelection(null);
+    setPendingAttempt(null);
+    setVerificationError(null);
     resetVote();
-    cancelVerification();
-  }, [question?.id, resetVote, cancelVerification]);
-  useEffect(() => {
-    if (!isCurrentQuestion) cancelVerification();
-  }, [isCurrentQuestion, cancelVerification]);
+  }, [question?.id, resetVote]);
 
-  const receipt = vote.data?.questionId === question?.id ? vote.data : storedReceipt.data;
+  const receipt = vote.data ?? storedReceipt.data;
   const voteDisabled =
     !isCurrentQuestion ||
     today.isFetching ||
@@ -50,9 +45,20 @@ export default function TodayScreen() {
     !connectivity.online ||
     vote.isPending;
 
+  async function beginVote() {
+    if (!question || !selection) return;
+    try {
+      const attempt = await prepareVoteAttempt(question.id, selection);
+      getCaptchaChallengeUrl(attempt.captchaBinding);
+      setVerificationError(null);
+      setPendingAttempt(attempt);
+    } catch (error) {
+      setVerificationError(error instanceof Error ? error.message : 'Human verification could not start.');
+    }
+  }
+
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>
-      {verification}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.identity}>
           <Text style={styles.eyebrow}>THE WORLD TODAY</Text>
@@ -125,25 +131,28 @@ export default function TodayScreen() {
                     label="YES"
                     styles={styles}
                     selected={selection === 'YES'}
-                    onPress={() => setSelectedVote({ questionId: question.id, choice: 'YES' })}
+                    onPress={() => setSelection('YES')}
                   />
                   <VoteButton
                     disabled={voteDisabled}
                     label="NO"
                     styles={styles}
                     selected={selection === 'NO'}
-                    onPress={() => setSelectedVote({ questionId: question.id, choice: 'NO' })}
+                    onPress={() => setSelection('NO')}
                   />
                 </View>
                 {vote.error ? (
                   <Text accessibilityLiveRegion="polite" style={styles.error}>{errorMessage(vote.error)}</Text>
+                ) : null}
+                {verificationError ? (
+                  <Text accessibilityLiveRegion="polite" style={styles.error}>{verificationError}</Text>
                 ) : null}
                 {selection ? (
                   <>
                     <Pressable
                       accessibilityRole="button"
                       disabled={voteDisabled}
-                      onPress={() => vote.mutate(selection)}
+                      onPress={() => void beginVote()}
                       style={({ pressed }) => [
                         styles.submitButton,
                         voteDisabled && styles.disabled,
@@ -166,6 +175,17 @@ export default function TodayScreen() {
           </>
         )}
       </ScrollView>
+      {pendingAttempt ? (
+        <TurnstileChallenge
+          binding={pendingAttempt.captchaBinding}
+          onCancel={() => setPendingAttempt(null)}
+          onToken={(captchaToken) => {
+            const attempt = { ...pendingAttempt, captchaToken };
+            setPendingAttempt(null);
+            vote.mutate(attempt);
+          }}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }

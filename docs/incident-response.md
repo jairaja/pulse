@@ -1,3 +1,4 @@
+<<<<<<< ours
 # Incident response and operational drills
 
 The code supplies monitoring and a reversible database drill. A real incident response capability
@@ -78,3 +79,37 @@ sanitized evidence, shortcomings, owner and due date for each fix. Run staging e
 production game day. After an incident, publish a blameless review within two working days and keep
 corrective actions open until their verification passes. Store detailed security evidence privately;
 the public issue should link only to authorized, sanitized material.
+=======
+# Vote-integrity incident response and drills
+
+## Ownership and severity
+
+Assign a named incident commander and backup before launch. A critical incident is any credible duplicate-vote bypass, leaked server secret, accepted emulator/modified-client traffic, unavailable finalization, or unexplained vote-volume spike.
+
+## First 15 minutes
+
+1. Preserve evidence without logging raw credentials, CAPTCHA/attestation tokens, email, auth UUIDs, or raw IP addresses.
+2. Disable voting with the `private.runtime_controls` kill switch; keep read-only results available.
+3. Rotate any suspected Edge Function secret and revoke compromised credentials.
+4. Record UTC start time, request IDs, affected question IDs, deployments, and decisions.
+5. Notify the incident owner and privacy/legal owner when personal data may be affected.
+
+## Triage and recovery
+
+- Query aggregate status distributions and operational health; never inspect or export raw device identifiers unnecessarily.
+- Determine whether accepted votes are affected. Do not silently delete or rewrite finalized snapshots.
+- Fix in staging, run database/security tests, deploy with rollback prepared, and re-run the health check.
+- Re-enable voting only after two-person approval and a documented validation result.
+- Publish a correction when integrity or published totals were materially affected.
+
+## Required quarterly drills
+
+1. **Kill switch:** disable voting, confirm `VOTING_DISABLED`, confirm reads continue, then restore with approval.
+2. **Secret compromise:** rotate Turnstile, fingerprint pepper strategy, monitor token, service credentials, and alert webhook as applicable. Rotation that changes identity derivation requires a migration plan—never improvise it during an incident.
+3. **CAPTCHA outage:** confirm fail-closed voting and accessible user messaging; do not bypass CAPTCHA globally without an explicit incident decision.
+4. **Alert delivery:** force an unhealthy health response and verify the primary and backup on-call destinations receive it.
+5. **Finalizer replay:** exercise delayed/duplicate execution in staging and verify one immutable snapshot.
+6. **Rollback:** deploy a deliberately failing staging function, roll back, and prove voting receipts remain idempotent.
+
+Each drill records date, environment, participants, evidence links, detection time, recovery time, failures, owner, and remediation deadline. A document is not a completed drill.
+>>>>>>> theirs

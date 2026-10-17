@@ -7,7 +7,7 @@ import {
 import { useEffect } from 'react';
 
 import { fetchFinalizedResults, fetchTodayQuestion, submitVote } from './pulseApi';
-import type { VoteChoice } from './pulseTypes';
+import type { VoteAttempt } from './captcha';
 import { getStoredVoteReceipt } from './voteReceipts';
 
 export const pulseKeys = {
@@ -61,12 +61,12 @@ export function useVoteReceipt(questionId: string | undefined) {
   });
 }
 
-export function useSubmitVote(questionId: string | undefined, verify: import('./captcha').VerifyVote) {
+export function useSubmitVote(questionId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (choice: VoteChoice) => {
+    mutationFn: async (attempt: VoteAttempt) => {
       if (!questionId) throw new Error('There is no open question.');
-      return submitVote(questionId, choice, verify);
+      return submitVote(attempt);
     },
     onSuccess: (receipt) => {
       queryClient.setQueryData(pulseKeys.voteReceipt(receipt.questionId), receipt);

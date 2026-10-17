@@ -1,6 +1,10 @@
 begin;
 
+<<<<<<< ours
 select plan(40);
+=======
+select plan(42);
+>>>>>>> theirs
 
 select has_table('public', 'questions', 'questions table exists');
 select has_table('public', 'question_translations', 'translations table exists');
@@ -228,5 +232,14 @@ select ok(
   'anonymous clients cannot bypass the vote Edge Function'
 );
 
+<<<<<<< ours
+=======
+select has_function('public', 'get_operational_health', array[]::text[], 'operational health RPC exists');
+select ok(
+  not has_function_privilege('anon', 'public.get_operational_health()', 'EXECUTE'),
+  'anonymous clients cannot read operational health'
+);
+
+>>>>>>> theirs
 select * from finish();
 rollback;

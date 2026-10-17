@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-10-17T15:19:12.492Z",
+  "environment": "staging",
+  "passed": true,
+  "checks": [
+    "database kill-switch rejection",
+    "finalizer replay snapshot invariance",
+    "transaction rollback"
+  ],
+  "limitations": [
+    "Does not demonstrate committed gateway shutdown",
+    "Does not rotate provider secrets",
+    "Does not demonstrate paging or deployment rollback"
+  ]
+}
