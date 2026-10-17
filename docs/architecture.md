@@ -69,9 +69,10 @@ See [`account-implementation-boundary.md`](./account-implementation-boundary.md)
 - Voting is never queued offline. Only server-confirmed receipts are stored locally and displayed as
   counted.
 
-This prevents accidental duplicate writes and ordinary replay, but it does **not** prove one human
-per device. Reinstalling, using multiple devices, or creating multiple accounts remains a Sybil-abuse
-problem requiring the separate threat-model work in R01.
+This prevents accidental duplicate writes and ordinary replay. The product rule is one accepted vote
+per eligible physical device and question, not one human. The current credential proves only an app
+installation; platform attestation and best-effort reinstall signals remain launch-gate work. See
+[`device-integrity-policy.md`](./device-integrity-policy.md).
 
 ## Later steps
 

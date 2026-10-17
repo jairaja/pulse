@@ -29,7 +29,7 @@ skipped when that marker already exists in an open or closed issue.
 
 ## Delivery rule
 
-Technical issues `T01` through `T13` are ordered by dependency rather than by ID alone. No dependent
+Technical issues `T01` through `T17` are ordered by dependency rather than by ID alone. No dependent
 step proceeds until its prerequisite has acceptance evidence. Functional and research issues may be
 refined in parallel, but implementation must respect their `Depends on` sections and explicit
 out-of-scope boundaries.

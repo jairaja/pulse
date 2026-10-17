@@ -35,8 +35,9 @@
 ## Security boundary
 
 This implementation provides one accepted vote per installation and, once authenticated, per
-account. It cannot prove one human. A determined actor can reinstall, use multiple devices, automate
-new installation credentials, or use multiple email accounts. Android removes SecureStore data on uninstall;
+account. The product rule is one eligible physical device per question, not one human. A determined
+actor can currently reinstall, use multiple devices, automate new installation credentials, or use
+multiple email accounts. Android removes SecureStore data on uninstall;
 iOS Keychain data can survive reinstall but Apple does not guarantee that behavior as a permanent app identity.
 The product must therefore treat reinstall resistance as best-effort, not an identity guarantee. The database attempt window limits
 noise from one credential; it is not global bot prevention.
@@ -70,7 +71,8 @@ claim statistically representative world opinion.
   Conflicts preserve the account's existing question link and are audit-counted; accepted votes and
   finalized aggregates are never rewritten.
 
-Automation breaks one-human-one-vote because software can create many fresh installation credentials,
-run many app instances/emulators, and obtain multiple accounts much faster than a person using the UI.
-Cryptographic randomness proves that credentials are distinct; it does not prove they belong to distinct
-humans. Attestation raises abuse cost but likewise does not establish human uniqueness.
+Automation breaks installation-only enforcement because software can create many fresh installation
+credentials and run many app instances or emulators much faster than a person using the UI.
+Cryptographic randomness proves only that credentials are distinct. Request-bound platform
+attestation is required to reject scripts, modified builds, and emulated environments; CAPTCHA is only
+a supplemental bot signal. See [`device-integrity-policy.md`](./device-integrity-policy.md).

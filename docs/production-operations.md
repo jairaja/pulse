@@ -17,6 +17,23 @@ account-history claims. These are necessary but not sufficient for a global laun
 5. Complete T14's platform attestation, abuse controls, independent review, load test, and privacy
    sign-off before a public global launch.
 
+The intended launch rule is one **eligible physical device** per question, not one human. The current
+installation credential alone does not meet that rule across reinstall. Follow
+[`device-integrity-policy.md`](./device-integrity-policy.md), and fail closed for voting when a required
+platform verdict is missing or invalid.
+
+## Remaining deployment-work issue coverage
+
+- **T14:** platform attestation, gateway/network controls, monitoring, alerts, incident response,
+  rollback, load/penetration tests, independent review, and privacy sign-off.
+- **T15:** staging soak tests and operational validation of the 12:00 UTC finalizer.
+- **T16:** account-history sync UX, conflict recovery, export, deletion, and retention.
+- **R03:** global youth-safety and country-by-country legal review.
+- **T17:** physical-device attestation, reinstall resistance, and CAPTCHA step-up rollout.
+
+These issues are launch gates. Repository code cannot complete store enrollment, beta access,
+provider dashboards, independent review, or staging soak evidence.
+
 ## Emergency controls
 
 Disable voting with a privileged SQL change:

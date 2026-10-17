@@ -184,8 +184,10 @@ translations rather than per-user real-time AI translation.
 
 Today and Past Results now use the finalized-only RPC contract. Vote submission uses an opaque
 credential held in SecureStore, server-side hashing, atomic uniqueness, idempotent receipts, and no
-offline queue. These controls enforce one vote per registered installation/account, not one human;
-multi-device and multi-account abuse remains an explicit product/security risk. FCM, translations,
+offline queue. These controls currently enforce one vote per registered installation/account, not one
+eligible physical device across reinstall. The approved integrity policy and unavoidable platform
+limits are documented in `docs/device-integrity-policy.md`. Multi-device and multi-account abuse
+remains an explicit product/security risk. FCM, translations,
 charts, maps, moderation, and in-progress vote trends remain out of scope.
 
 The database starts with one pre-production baseline and uses forward migrations after that baseline

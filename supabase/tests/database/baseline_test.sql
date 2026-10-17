@@ -62,12 +62,15 @@ on conflict (asked_on) do update
 set status = 'live', results_finalized_at = null;
 
 select lives_ok(
-  $$ select public.register_installation('test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa') $$,
+  $$ select public.register_installation(
+    'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    null::uuid
+  ) $$,
   'a valid opaque installation credential can be registered'
 );
 select is(
-  public.register_installation('test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
-  public.register_installation('test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
+  public.register_installation('test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', null::uuid),
+  public.register_installation('test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', null::uuid),
   'installation registration is idempotent'
 );
 select ok(
@@ -120,7 +123,8 @@ select is(
   (
     select count(*)::integer from public.votes
     where installation_id = public.register_installation(
-      'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      null::uuid
     )
   ),
   1,
@@ -154,13 +158,13 @@ select has_index(
 select has_function(
   'public',
   'register_installation',
-  array['text'],
+  array['text', 'uuid'],
   'installation registration RPC exists'
 );
 select has_function(
   'public',
   'submit_vote',
-  array['text', 'uuid', 'text', 'uuid'],
+  array['text', 'uuid', 'uuid', 'text', 'uuid'],
   'idempotent vote RPC exists'
 );
 select has_table('private', 'vote_idempotency', 'vote idempotency records are private');
