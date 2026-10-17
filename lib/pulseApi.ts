@@ -1,24 +1,12 @@
-<<<<<<< ours
-import * as Crypto from 'expo-crypto';
-import type { VerifyVote } from './captcha';
-
-import { getInstallationCredential } from './installation';
-import { collectClientDeviceEvidence, IneligibleDeviceError } from './deviceIntegrity';
-=======
 import { getInstallationCredential } from './installation';
 import { collectClientDeviceEvidence, IneligibleDeviceError } from './deviceIntegrity';
 import type { VoteAttempt } from './captcha';
->>>>>>> theirs
 import type {
   FinalizedResult,
   FinalResult,
   QuestionSummary,
   ResultPage,
   TodayQuestion,
-<<<<<<< ours
-  VoteChoice,
-=======
->>>>>>> theirs
   VoteReceipt
 } from './pulseTypes';
 import { supabase, supabaseConfigurationError } from './supabase';
