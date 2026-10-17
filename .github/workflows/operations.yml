@@ -1,0 +1,34 @@
+name: Production monitoring
+on:
+  schedule:
+    - cron: '3-58/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: pulse-production-monitor
+  cancel-in-progress: false
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    environment: production-monitoring
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run ops:monitor -- --publish
+        env:
+          OPS_DATABASE_URL: ${{ secrets.OPS_DATABASE_URL }}
+          OPS_DB_CA: ${{ secrets.OPS_DB_CA }}
+          SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_LOGS_READ_TOKEN }}
+          OPS_ALERT_ASSIGNEE: ${{ vars.OPS_ALERT_ASSIGNEE }}
+          OPS_HEARTBEAT_URL: ${{ secrets.OPS_HEARTBEAT_URL }}
+          GITHUB_TOKEN: ${{ github.token }}

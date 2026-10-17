@@ -61,12 +61,12 @@ export function useVoteReceipt(questionId: string | undefined) {
   });
 }
 
-export function useSubmitVote(questionId: string | undefined) {
+export function useSubmitVote(questionId: string | undefined, verify: import('./captcha').VerifyVote) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (choice: VoteChoice) => {
       if (!questionId) throw new Error('There is no open question.');
-      return submitVote(questionId, choice);
+      return submitVote(questionId, choice, verify);
     },
     onSuccess: (receipt) => {
       queryClient.setQueryData(pulseKeys.voteReceipt(receipt.questionId), receipt);

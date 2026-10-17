@@ -5,3 +5,4 @@ npm-debug.log*
 .DS_Store
 supabase/.branches
 supabase/.temp
+ops-drill-evidence.json

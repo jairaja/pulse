@@ -8,6 +8,9 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "ops:monitor": "node scripts/monitor-production.mjs",
+    "ops:drill": "node scripts/drill-operations.mjs",
+    "test:security": "node --test tests/*.test.mjs",
     "start": "npm run verify:step1 && expo start",
     "android": "npm run verify:step1 && expo start --android",
     "db:baseline:clean": "node scripts/clean-legacy-migrations.mjs",
@@ -26,7 +29,7 @@
   },
   "dependencies": {
     "@react-native-community/netinfo": "12.0.1",
-    "@supabase/supabase-js": "^2.117.1",
+    "@supabase/supabase-js": "2.118.0",
     "@tanstack/query-async-storage-persister": "^5.90.5",
     "@tanstack/react-query": "^5.90.5",
     "@tanstack/react-query-persist-client": "^5.90.5",
@@ -42,12 +45,14 @@
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
     "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-native": "0.86.3",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-reanimated": "4.5.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "react-native-url-polyfill": "^3.0.0",
+    "react-native-webview": "13.16.1",
     "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
@@ -55,6 +60,7 @@
     "babel-preset-expo": "~57.0.14",
     "eslint": "^9.39.1",
     "eslint-config-expo": "~57.0.2",
+    "pg": "8.23.1",
     "typescript": "~6.0.3"
   }
 }

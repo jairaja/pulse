@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src https://challenges.cloudflare.com; style-src 'self'; base-uri 'none'; form-action 'none'">
+  <title>PULSE vote verification</title>
+  <script src="./turnstile.js" defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&amp;onload=onTurnstileLoad" defer></script>
+</head>
+<body>
+  <p id="status" role="status" aria-live="polite">Loading accessible verification. If this fails, return to PULSE and retry later.</p>
+  <div id="verification"></div>
+  <p>Verification is provided by Cloudflare. No vote choice or account details are sent to this page.</p>
+</body>
+</html>

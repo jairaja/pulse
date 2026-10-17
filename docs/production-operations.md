@@ -1,5 +1,10 @@
 # Production operations boundary
 
+Implementation and activation guides: [mobile CAPTCHA](./captcha-deployment.md),
+[monitoring and alerts](./monitoring.md), and [incident response/drills](./incident-response.md).
+The repository supplies executable controls; production activation and completed operator exercises
+still require evidence in the linked GitHub issues.
+
 The repository now supplies enforceable application primitives: gateway-only privileged voting, a
 kill switch, immutable/idempotent database writes, atomic daily finalization, and transactional
 account-history claims. These are necessary but not sufficient for a global launch.
@@ -31,6 +36,11 @@ platform verdict is missing or invalid.
 - **R03:** global youth-safety and country-by-country legal review.
 - **T17:** physical-device attestation, reinstall resistance, and CAPTCHA step-up rollout.
 - **T18:** native Turnstile challenge UX, token binding, accessibility, and staged enforcement.
+- **T19 / #62:** activate monitoring, independent paging/heartbeat and hosted telemetry validation.
+- **T20 / #63:** complete operator exercises and retain committed gateway/recovery evidence.
+- **T21 / #64:** trusted network limits and risk-based CAPTCHA policy.
+- **R04 / #65:** revisit mandatory verified email plus phone with abuse/inclusion/privacy evidence;
+  dual contact verification does not prove one unique human.
 
 These issues are launch gates. Repository code cannot complete store enrollment, beta access,
 provider dashboards, independent review, or staging soak evidence.

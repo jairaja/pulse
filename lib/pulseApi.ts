@@ -1,4 +1,5 @@
 import * as Crypto from 'expo-crypto';
+import type { VerifyVote } from './captcha';
 
 import { getInstallationCredential } from './installation';
 import { collectClientDeviceEvidence, IneligibleDeviceError } from './deviceIntegrity';
@@ -133,7 +134,7 @@ export async function fetchFinalizedResults({
   };
 }
 
-export async function submitVote(questionId: string, choice: VoteChoice): Promise<VoteReceipt> {
+export async function submitVote(questionId: string, choice: VoteChoice, verify: VerifyVote): Promise<VoteReceipt> {
   const credential = await getInstallationCredential();
   let deviceEvidence;
   try {
@@ -144,10 +145,24 @@ export async function submitVote(questionId: string, choice: VoteChoice): Promis
     }
     throw error;
   }
-  const { data, error } = await client().functions.invoke('vote', {
-    body: { credential, deviceEvidence, questionId, choice, idempotencyKey: Crypto.randomUUID() }
-  });
-  if (error) throw new PulseApiError('Could not submit your vote.', 'VOTE_GATEWAY_ERROR', true);
+  // Keep the same payload and idempotency key throughout the challenge/submit pair.
+  const body = { credential, deviceEvidence, questionId, choice, idempotencyKey: Crypto.randomUUID() };
+  const challenge = await invokeVote({ ...body, operation: 'challenge' });
+  let proof = {};
+  if (challenge.required === true) {
+    const expiresAt = Number(challenge.expiresAt);
+    if (!Number.isFinite(expiresAt) || expiresAt <= Date.now() || expiresAt > Date.now() + 150_000) {
+      throw new PulseApiError('Verification expired. Please try again.', 'CAPTCHA_REQUIRED');
+    }
+    const captchaChallenge = requiredString(challenge.challenge, 'verification challenge');
+    const cdata = requiredString(challenge.cdata, 'verification binding');
+    const captchaToken = await verify({ challenge: captchaChallenge, cdata, expiresAt });
+    proof = { captchaChallenge, captchaToken };
+  } else if (challenge.required !== false) {
+    throw new PulseApiError('Verification is unavailable.', 'INVALID_RESPONSE');
+  }
+  // Token lives only in this call; never put it into mutation variables, cache or persistent storage.
+  const data = await invokeVote({ ...body, ...proof });
 
   const row = record(data);
   const status = requiredString(row.status, 'vote status');
@@ -177,6 +192,22 @@ export async function submitVote(questionId: string, choice: VoteChoice): Promis
   };
   await storeVoteReceipt(receipt);
   return receipt;
+}
+
+async function invokeVote(body: Record<string, unknown>): Promise<UnknownRecord> {
+  const { data, error } = await client().functions.invoke('vote', { body });
+  if (error) {
+    let failure: UnknownRecord = {};
+    try { if (error.context instanceof Response) failure = record(await error.context.json()); } catch { /* generic message */ }
+    const code = typeof failure.code === 'string' ? failure.code : 'VOTE_GATEWAY_ERROR';
+    const messages: Record<string, string> = {
+      CAPTCHA_REQUIRED: 'Verification expired or failed. Please submit again for a fresh verification.',
+      CAPTCHA_UNAVAILABLE: 'Verification is temporarily unavailable. Please try again later.',
+      DATABASE_UNAVAILABLE: 'Voting is temporarily unavailable. Please try again later.'
+    };
+    throw new PulseApiError(messages[code] ?? 'Could not submit your vote. Please try again.', code, true);
+  }
+  return record(data);
 }
 
 export async function claimAccountHistory() {

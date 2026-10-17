@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AccountPrompt } from '../components/AccountPrompt';
+import { useVoteVerification } from '../components/VoteVerification';
 import { PulseApiError } from '../lib/pulseApi';
 import { useSubmitVote, useTodayQuestion, useVoteReceipt } from '../lib/pulseQueries';
 import type { VoteChoice } from '../lib/pulseTypes';
@@ -16,22 +17,32 @@ export default function TodayScreen() {
   const today = useTodayQuestion();
   const question = today.data;
   const storedReceipt = useVoteReceipt(question?.id);
-  const vote = useSubmitVote(question?.id);
+  const { verify, verification, cancelVerification } = useVoteVerification();
+  const vote = useSubmitVote(question?.id, verify);
   const resetVote = vote.reset;
-  const [selection, setSelection] = useState<VoteChoice | null>(null);
+  const [selectedVote, setSelectedVote] = useState<{ questionId: string; choice: VoteChoice } | null>(null);
+  const selection = selectedVote?.questionId === question?.id ? selectedVote?.choice : null;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
   const estimatedServerNow = question
-    ? Date.parse(question.serverTime) + Math.max(0, Date.now() - today.dataUpdatedAt)
+    ? Date.parse(question.serverTime) + Math.max(0, now - today.dataUpdatedAt)
     : Number.POSITIVE_INFINITY;
   const isCurrentQuestion = Boolean(
     question && estimatedServerNow < Date.parse(question.votingClosesAt)
   );
 
   useEffect(() => {
-    setSelection(null);
     resetVote();
-  }, [question?.id, resetVote]);
+    cancelVerification();
+  }, [question?.id, resetVote, cancelVerification]);
+  useEffect(() => {
+    if (!isCurrentQuestion) cancelVerification();
+  }, [isCurrentQuestion, cancelVerification]);
 
-  const receipt = vote.data ?? storedReceipt.data;
+  const receipt = vote.data?.questionId === question?.id ? vote.data : storedReceipt.data;
   const voteDisabled =
     !isCurrentQuestion ||
     today.isFetching ||
@@ -41,6 +52,7 @@ export default function TodayScreen() {
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>
+      {verification}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.identity}>
           <Text style={styles.eyebrow}>THE WORLD TODAY</Text>
@@ -113,14 +125,14 @@ export default function TodayScreen() {
                     label="YES"
                     styles={styles}
                     selected={selection === 'YES'}
-                    onPress={() => setSelection('YES')}
+                    onPress={() => setSelectedVote({ questionId: question.id, choice: 'YES' })}
                   />
                   <VoteButton
                     disabled={voteDisabled}
                     label="NO"
                     styles={styles}
                     selected={selection === 'NO'}
-                    onPress={() => setSelection('NO')}
+                    onPress={() => setSelectedVote({ questionId: question.id, choice: 'NO' })}
                   />
                 </View>
                 {vote.error ? (
