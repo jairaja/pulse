@@ -40,7 +40,11 @@ Platform-supported reinstall signals can improve the rule:
 Neither service provides a general-purpose permanent device identifier or enough durable state to
 record an unlimited per-question voting history. Consequently, **strict cross-platform reinstall
 prevention cannot be guaranteed by public stable APIs today** without requiring a durable account or
-collecting an invasive/spoofable fingerprint. PULSE must not pretend otherwise.
+collecting an invasive fingerprint. PULSE must not pretend otherwise. The implemented intermediate
+control uses Android ID or iOS IDFV only: the gateway immediately HMACs the value with a server-only
+pepper, PostgreSQL stores only that HMAC, and a unique index maps a returning signal to the existing
+installation row. Hardware model/build values are risk telemetry, never unique keys, because shared
+models collide and OS updates change them.
 
 The launch decision is therefore explicit:
 
@@ -59,8 +63,9 @@ CAPTCHA is useful as a **step-up bot signal**, not proof of a physical device an
 A human can solve CAPTCHA repeatedly, solvers can outsource it, and automation can relay challenges.
 
 - Protect Supabase email OTP with its supported Cloudflare Turnstile or hCaptcha integration.
-- For voting, invoke a server-verified Turnstile challenge only after risk signals require it; bind the
-  single-use token to the pending vote challenge and verify it in the Edge Function.
+- The vote gateway now verifies Turnstile through Siteverify whenever `TURNSTILE_SECRET_KEY` is set.
+  The native WebView challenge and risk-based triggering remain T18 launch work; do not enable the
+  secret in production until the client can acquire a token.
 - Never ship the CAPTCHA secret in the app. The gateway performs site verification and enforces token
   expiry, hostname/action, replay prevention, and rate limits.
 - Do not make a WebView CAPTCHA the primary integrity control. Platform attestation remains mandatory.

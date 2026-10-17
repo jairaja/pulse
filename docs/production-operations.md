@@ -30,6 +30,7 @@ platform verdict is missing or invalid.
 - **T16:** account-history sync UX, conflict recovery, export, deletion, and retention.
 - **R03:** global youth-safety and country-by-country legal review.
 - **T17:** physical-device attestation, reinstall resistance, and CAPTCHA step-up rollout.
+- **T18:** native Turnstile challenge UX, token binding, accessibility, and staged enforcement.
 
 These issues are launch gates. Repository code cannot complete store enrollment, beta access,
 provider dashboards, independent review, or staging soak evidence.

@@ -32,3 +32,22 @@ npx expo start --clear
 ```
 
 Only when this flow works should a future step introduce deployment configuration.
+
+## Vote-gateway security secrets
+
+Generate and store the device-HMAC pepper server-side:
+
+```bash
+openssl rand -hex 32
+supabase secrets set DEVICE_FINGERPRINT_PEPPER=<generated-value>
+```
+
+Never put this value in an `EXPO_PUBLIC_*` variable. Rotating it requires a planned migration because existing fingerprint HMACs were derived with the previous value.
+
+Turnstile enforcement is opt-in only after T18's native challenge exists:
+
+```bash
+supabase secrets set TURNSTILE_SECRET_KEY=<cloudflare-secret>
+```
+
+When this secret is present, the vote gateway fails closed unless Siteverify accepts the supplied token.

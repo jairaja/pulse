@@ -1,6 +1,6 @@
 begin;
 
-select plan(37);
+select plan(40);
 
 select has_table('public', 'questions', 'questions table exists');
 select has_table('public', 'question_translations', 'translations table exists');
@@ -64,13 +64,14 @@ set status = 'live', results_finalized_at = null;
 select lives_ok(
   $$ select public.register_installation(
     'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-    null::uuid
+    null::uuid,
+    repeat('a', 64)
   ) $$,
   'a valid opaque installation credential can be registered'
 );
 select is(
-  public.register_installation('test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', null::uuid),
-  public.register_installation('test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', null::uuid),
+  public.register_installation('test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', null::uuid, repeat('a', 64)),
+  public.register_installation('test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', null::uuid, repeat('a', 64)),
   'installation registration is idempotent'
 );
 select ok(
@@ -124,7 +125,8 @@ select is(
     select count(*)::integer from public.votes
     where installation_id = public.register_installation(
       'test-credential-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      null::uuid
+      null::uuid,
+      repeat('a', 64)
     )
   ),
   1,
@@ -158,7 +160,7 @@ select has_index(
 select has_function(
   'public',
   'register_installation',
-  array['text', 'uuid'],
+  array['text', 'uuid', 'text'],
   'installation registration RPC exists'
 );
 select has_function(
@@ -169,6 +171,34 @@ select has_function(
 );
 select has_table('private', 'vote_idempotency', 'vote idempotency records are private');
 select has_table('private', 'vote_rate_limits', 'vote rate limits are private');
+select has_index(
+  'public',
+  'installations',
+  'installations_device_fingerprint_hash_key',
+  'a platform fingerprint can map reinstall registration to one installation'
+);
+select is(
+  public.register_installation(
+    'test-credential-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', null::uuid, repeat('a', 64)
+  ),
+  (select installation_id from public.votes
+   where question_id = (select id from public.questions
+     where asked_on = (now() at time zone 'utc')::date)),
+  'a replacement credential with the same fingerprint resolves to the existing installation'
+);
+select is(
+  (
+    select status from public.submit_vote(
+      'test-credential-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      null,
+      (select id from public.questions where asked_on = (now() at time zone 'utc')::date),
+      'NO',
+      '30000000-0000-4000-8000-000000000003'
+    )
+  ),
+  'ALREADY_VOTED',
+  'credential rotation after reinstall cannot create another vote for the same device fingerprint'
+);
 select ok(
   not has_table_privilege('anon', 'private.vote_idempotency', 'SELECT'),
   'anonymous clients cannot read idempotency records'

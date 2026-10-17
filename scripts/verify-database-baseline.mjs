@@ -6,6 +6,7 @@ const expectedMigrations = [
   '202610120001_baseline.sql',
   '202610160001_secure_voting.sql',
   '202610170001_operations_finalization_history.sql',
+  '202610180001_device_fingerprint.sql',
 ];
 const migrationFiles = (await readdir(migrationsDirectory))
   .filter((file) => file.endsWith('.sql'))
@@ -29,6 +30,7 @@ if (JSON.stringify(migrationFiles) !== JSON.stringify(expectedMigrations)) {
 const baseline = await readFile(path.join(migrationsDirectory, expectedMigrations[0]), 'utf8');
 const secureVoting = await readFile(path.join(migrationsDirectory, expectedMigrations[1]), 'utf8');
 const operations = await readFile(path.join(migrationsDirectory, expectedMigrations[2]), 'utf8');
+const deviceFingerprint = await readFile(path.join(migrationsDirectory, expectedMigrations[3]), 'utf8');
 const requiredStatements = [
   'alter table public.questions enable row level security',
   'alter table public.question_translations enable row level security',
@@ -56,8 +58,19 @@ for (const statement of requiredStatements) {
 }
 
 for (const object of forbiddenLegacyObjects) {
-  if (`${baseline}\n${secureVoting}\n${operations}`.toLowerCase().includes(object)) {
+  if (`${baseline}\n${secureVoting}\n${operations}\n${deviceFingerprint}`.toLowerCase().includes(object)) {
     throw new Error(`Baseline restored a retired object: ${object}`);
+  }
+}
+
+for (const statement of [
+  'add column device_fingerprint_hash text',
+  'create unique index installations_device_fingerprint_hash_key',
+  'create function public.register_installation',
+  'grant execute on function public.register_installation(text, uuid, text) to service_role'
+]) {
+  if (!deviceFingerprint.toLowerCase().includes(statement)) {
+    throw new Error(`Device fingerprint migration is missing required SQL: ${statement}`);
   }
 }
 
@@ -94,7 +107,13 @@ for (const statement of requiredOperations) {
 
 const voteFunction = await readFile(path.resolve('supabase/functions/vote/index.ts'), 'utf8');
 const supabaseConfig = await readFile(path.resolve('supabase/config.toml'), 'utf8');
-for (const statement of ["auth.getUser(bearer)", "admin.rpc('submit_vote'", "Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')"]) {
+for (const statement of [
+  "auth.getUser(bearer)",
+  "admin.rpc('submit_vote'",
+  "Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')",
+  "Deno.env.get('DEVICE_FINGERPRINT_PEPPER')",
+  'p_device_fingerprint_hash: deviceFingerprintHash'
+]) {
   if (!voteFunction.includes(statement)) throw new Error(`Vote gateway is missing: ${statement}`);
 }
 if (!supabaseConfig.includes('[functions.vote]') || !supabaseConfig.includes('verify_jwt = false')) {

@@ -1,6 +1,7 @@
 import * as Crypto from 'expo-crypto';
 
 import { getInstallationCredential } from './installation';
+import { collectClientDeviceEvidence, IneligibleDeviceError } from './deviceIntegrity';
 import type {
   FinalizedResult,
   FinalResult,
@@ -134,8 +135,17 @@ export async function fetchFinalizedResults({
 
 export async function submitVote(questionId: string, choice: VoteChoice): Promise<VoteReceipt> {
   const credential = await getInstallationCredential();
+  let deviceEvidence;
+  try {
+    deviceEvidence = await collectClientDeviceEvidence();
+  } catch (error) {
+    if (error instanceof IneligibleDeviceError) {
+      throw new PulseApiError(error.message, 'INELIGIBLE_DEVICE');
+    }
+    throw error;
+  }
   const { data, error } = await client().functions.invoke('vote', {
-    body: { credential, questionId, choice, idempotencyKey: Crypto.randomUUID() }
+    body: { credential, deviceEvidence, questionId, choice, idempotencyKey: Crypto.randomUUID() }
   });
   if (error) throw new PulseApiError('Could not submit your vote.', 'VOTE_GATEWAY_ERROR', true);
 
