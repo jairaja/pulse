@@ -3,6 +3,14 @@ import * as Crypto from 'expo-crypto';
 import { getInstallationCredential } from './installation';
 import type { VoteChoice } from './pulseTypes';
 
+export type VoteChallenge = {
+  challenge: string;
+  cdata: string;
+  expiresAt: number;
+};
+
+export type VerifyVote = (challenge: VoteChallenge) => Promise<string>;
+
 export type VoteAttempt = {
   captchaBinding: string;
   captchaToken: string;
