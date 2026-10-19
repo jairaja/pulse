@@ -7,8 +7,6 @@
     "app/**/*.tsx",
     "components/**/*.tsx",
     "lib/**/*.ts",
-    "lib/**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "lib/**/*.tsx"
   ]
 }
