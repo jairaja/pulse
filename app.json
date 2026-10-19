@@ -26,6 +26,13 @@
           "configureAndroidBackup": true
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "38fa6c09-895c-4261-868a-081e1ed980e4"
+      }
+    },
+    "owner": "rjain136"
   }
 }

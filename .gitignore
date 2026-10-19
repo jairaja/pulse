@@ -1,6 +1,7 @@
 node_modules
 .expo
 .env
+.env.functions.local
 npm-debug.log*
 .DS_Store
 supabase/.branches
