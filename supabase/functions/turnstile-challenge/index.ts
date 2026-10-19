@@ -15,7 +15,10 @@ Deno.serve((request) => {
   if (request.method !== 'GET') return new Response('Method not allowed', { status: 405, headers });
   const siteKey = Deno.env.get('TURNSTILE_SITE_KEY');
   const cdata = new URL(request.url).searchParams.get('cdata') ?? '';
-  if (!siteKey || !/^[a-f0-9]{64}$/.test(cdata)) return new Response('Invalid challenge', { status: 400, headers });
+  if (!siteKey || !/^[A-Za-z0-9_-]{10,100}$/.test(siteKey) || siteKey.startsWith('REPLACE_')) {
+    return new Response('Verification is not configured. Set TURNSTILE_SITE_KEY to the public widget Site Key.', { status: 503, headers });
+  }
+  if (!/^[a-f0-9]{64}$/.test(cdata)) return new Response('Invalid challenge', { status: 400, headers });
 
   return new Response(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>

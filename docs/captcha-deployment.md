@@ -1,64 +1,121 @@
 # Mobile vote verification deployment
 
-The mobile app requests a two-minute signed challenge, shows a managed Turnstile widget in a WebView,
-then submits one token with the same vote payload and idempotency key. Siteverify must return success,
-exact `pulse-vote` action, an allowed hostname, matching `cdata`, and a current challenge timestamp.
-The signing key is independent from the Turnstile key and device pepper. It binds a random nonce,
-expiry, question, choice, installation credential, fingerprint hash, verified account identity and
-bearer-token hash (a session refresh during verification requires a fresh challenge).
-Single-use enforcement relies on Cloudflare's atomic token redemption; this does not implement a
-durable consumed-nonce store or platform attestation. See #60 for that separate boundary.
+## Why hosted verification can show raw HTML
 
-## Required configuration
+The default hosted Supabase Edge Function URL can serve HTML as plain text instead of a browser page.
+Changing the function's Content-Type alone does not fix that gateway behavior. Serve the HTML widget
+from a static HTTPS site and keep the vote API in Supabase. Seeing literal HTML with
+`data-sitekey="&lt;development widget site key&gt;"` also means a placeholder was saved instead of a real
+Turnstile Site Key. Both the page hosting and widget configuration need correction.
 
-1. Create separate Cloudflare Turnstile widgets for staging and production. Use **Managed** mode,
-   restrict each widget to its exact verification hostname, and disable pre-clearance (no Cloudflare
-   zone clearance is needed). Do not use wildcard/any-hostname settings or production test keys.
-2. Replace the public sitekey in `captcha/turnstile.js`. Host the `captcha/` directory on your registered
-   HTTPS origin. Serve it without analytics, query logging of the fragment, redirects or a service
-   worker. Set response headers `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`,
-   `Cache-Control: no-store`, and HSTS. Add CSP `frame-ancestors 'none'` as a response header (meta
-   cannot enforce that directive). Keep the page's CSP and load Cloudflare's script directly.
-3. Configure `EXPO_PUBLIC_TURNSTILE_URL` as the exact hosted HTML URL with no query/fragment and rebuild
-   the mobile app. The sitekey is public; the secret must never enter Expo configuration.
-4. Set Supabase-managed `CAPTCHA_MODE=required`, `TURNSTILE_SECRET_KEY`, `TURNSTILE_HOSTNAMES` (comma
-   separated exact hostnames), and a randomly generated `CAPTCHA_CHALLENGE_SECRET` with at least 32
-   bytes of entropy. Keep existing Supabase and fingerprint secrets. Deploy the updated `vote` function.
-   Missing configuration fails closed with 503. `CAPTCHA_MODE=disabled` is only an explicit local/staging
-   setting; never use it as an outage bypass. Required mode is the default.
-5. Canary the paired app/gateway release on staging, then a controlled production cohort. Older app
-   versions cannot satisfy the new protocol: communicate a minimum-version/update requirement before
-   enabling the gateway in production. Monitor errors and abort rollout when false rejections rise.
+The supported static page is the complete `captcha/` directory. It reads `?cdata=...` and posts
+`turnstile-success` / `turnstile-error` messages, matching the active `TurnstileChallenge` component.
+The older `EXPO_PUBLIC_TURNSTILE_URL` / fragment-based page protocol is not used by that component.
 
-The initial policy verifies every vote. Risk-based exemption is deferred until trusted gateway signals
-and attestation exist; client-supplied flags cannot justify skipping verification. Reading stays public.
-CAPTCHA is abuse friction, not evidence of a unique human or authentic device.
+## 1. Configure the public page
 
-## Token lifecycle and accessibility
+1. In Cloudflare Dashboard, open **Turnstile**. Create or select a **Managed** widget for this
+   development environment. Keep production in a separate widget. No purchased domain is required.
+2. Copy its **Site Key**. It is public and different from its **Secret Key**.
+3. In a deployment copy of `captcha/config.js`, replace `REPLACE_WITH_ENVIRONMENT_SITEKEY` with
+   the actual Site Key. Do not include angle brackets or descriptive placeholder words. Never put
+   the Secret Key in this directory, an Expo public variable, or a Pages upload.
 
-Tokens are local to the pending function call and cleared after every attempt. They never enter query
-cache, storage, analytics or mutation variables. Cancellation, unmount, question change, backgrounding,
-expiry or failed verification requires a new attempt. Network loss after accepted submission can be
-recovered using the database's same-device/same-choice receipt behavior; tokens themselves are not
-retried. Session changes between challenge and vote invalidate the binding.
+## 2. Upload to Cloudflare Pages
 
-The modal offers explicit cancel/retry, visible status, scalable native text and the managed widget's
-keyboard/screen-reader support. Turnstile has no audio-puzzle mode; do not promise one. Before production,
-test VoiceOver, TalkBack, large text, low bandwidth, app backgrounding, expiry and provider outage on
-physical iOS/Android devices. A support/accessibility route must never bypass server verification.
-The browser preview does not support this native WebView flow and fails closed for voting.
+1. In Cloudflare Dashboard, open **Workers & Pages** and create a **Pages** project using
+   **Direct Upload / Upload assets**. Choose a stable project name, for example `pulse-verify-dev`
+   if available. UI labels can vary; use Pages static hosting, not a Worker script deployment.
+2. Upload the contents of `captcha/`, including index.html, config.js, turnstile.js, styles.css and
+   the extensionless `_headers` file. index.html must be at the site's root, not `/captcha/index.html`.
+   Upload only this directory, never the repository or an environment-secret file.
+3. Deploy and record the stable production URL, for example `https://pulse-verify-dev.pages.dev/`.
+   Use that URL, not a deployment-specific preview hostname. The site must be publicly reachable
+   without a login screen; do not put Cloudflare Access authentication in front of the widget.
+4. In the Turnstile widget's **Hostname Management**, add exactly `pulse-verify-dev.pages.dev`
+   (substitute your actual hostname, without scheme, slash, port, or path). Save.
+5. Open the site in Safari/Chrome. It should render a heading and a message asking you to open it
+   from PULSE. That is expected without a vote binding; it must not show raw HTML. A public page
+   showing a configuration error still has a missing/placeholder config.js key.
 
-## Verification and remaining gates
+Pages applies `_headers` to serve a no-store page with CSP, no-referrer, nosniff, HSTS and frame
+embedding restrictions. Its frame-ancestors policy does not block the top-level native WebView.
+Keep Cloudflare's official script URL; do not proxy or self-host the Turnstile SDK.
 
-`npm run test:security` covers payload/key substitution, expiry, malformed challenge values,
-strict provider response checks, provider failure, and concurrent single-use redemption against a
-simulated provider. It does not demonstrate Cloudflare production configuration or real-device UX.
-Cloudflare test keys may be used in an isolated test deployment with explicit test hostname settings;
-they do not prove real challenge solving or hostname enforcement. Keep #61 open until real-device,
-accessibility, hostname/action rejection, consumed-token and provider-outage evidence is attached.
+## 3. Configure the hosted vote function
 
-Current references checked on 2026-10-17:
+In the hosted **development** Supabase project, open **Edge Functions > Secrets** and set:
 
-- [Cloudflare mobile implementation](https://developers.cloudflare.com/turnstile/get-started/mobile-implementation/)
-- [Cloudflare server verification](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/)
-- [Expo WebView installation](https://docs.expo.dev/versions/latest/sdk/webview/)
+- `TURNSTILE_SECRET_KEY`: the actual Secret Key paired with the Site Key used in config.js.
+- `TURNSTILE_EXPECTED_HOSTNAME`: the static page's exact hostname, such as `pulse-verify-dev.pages.dev`.
+
+Keep the existing `DEVICE_FINGERPRINT_PEPPER` unchanged. Supabase supplies SUPABASE_URL,
+SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY. Never copy local Docker credentials into the hosted
+project. The static page does not need TURNSTILE_SITE_KEY in Supabase; that variable is used only by
+`turnstile-challenge` when serving the local-function HTML alternative.
+
+The equivalent CLI uses a private file outside the checkout containing the two Turnstile variables:
+
+```bash
+npx supabase secrets set --env-file <PRIVATE_FILE_PATH> --project-ref <DEV_PROJECT_REF>
+```
+
+Do not paste the placeholders literally. Confirm the vote function has been deployed from current
+main. If needed:
+
+```bash
+npx supabase functions deploy vote --project-ref <DEV_PROJECT_REF>
+```
+
+The app now loads static Pages HTML and submits to Supabase `vote`; it no longer uses the hosted
+`turnstile-challenge` endpoint for that environment. No database reset/migration is needed.
+
+## 4. Point the app at the page
+
+In the project-root `.env`, use the stable page URL:
+
+```dotenv
+EXPO_PUBLIC_TURNSTILE_CHALLENGE_URL=https://pulse-verify-dev.pages.dev/
+```
+
+Substitute your real Pages URL. Leave EXPO_PUBLIC_SUPABASE_URL and its matching publishable key
+pointing to the hosted development project. Do not add cdata yourself: the app adds the current
+vote's 64-character binding to the URL.
+
+For Expo Go, stop Metro and run:
+
+```bash
+npm start -- --clear
+```
+
+Fully reload PULSE. Cancel any earlier challenge and start a fresh attempt.
+
+For EAS preview/simulator builds, update the same public variable in the **preview** environment,
+then rebuild and install the app; restarting Metro does not update a standalone binary's embedded
+configuration. For development builds, use whichever EAS environment their build profile selects.
+
+## 5. Verify the complete route
+
+On physical iOS and Android devices:
+
+1. Submit a fresh eligible vote. The WebView must show the widget, not HTML source or a config error.
+2. Complete verification. Confirm the hosted `vote` function is called and the expected development
+   database accepts one vote. Repeating submission must not add another accepted vote.
+3. Close/cancel verification, disconnect the network and test an expired/failed challenge. No vote
+   should be accepted without successful server-side verification.
+4. Test VoiceOver/TalkBack and large text; the managed widget has no audio-puzzle mode.
+
+The static page alone cannot mark a vote accepted. The active gateway recomputes the client binding
+from the installation credential, question, choice and idempotency key, then checks Siteverify's
+success, `pulse-vote` action, exact hostname and matching cdata. Cloudflare enforces token redemption;
+CAPTCHA does not establish unique humans or provide platform attestation. No verification bypass is
+part of this setup. Test UI and server-side rejection independently.
+
+Automated page tests use a mocked Turnstile SDK; they validate query binding, configuration failure,
+callback messages, token bounds, expiry and timeouts, not real Cloudflare service configuration.
+
+References:
+
+- https://developers.cloudflare.com/pages/get-started/direct-upload/
+- https://developers.cloudflare.com/turnstile/get-started/mobile-implementation/
+- https://developers.cloudflare.com/turnstile/get-started/server-side-validation/
