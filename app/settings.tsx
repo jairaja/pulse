@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,7 +15,7 @@ type ConnectionState =
   | { status: 'connected'; message: string }
   | { status: 'error'; message: string };
 
-const themeOptions: Array<{ label: string; value: ThemePreference }> = [
+const themeOptions: { label: string; value: ThemePreference }[] = [
   { label: 'Light', value: 'light' },
   { label: 'Dark', value: 'dark' },
   { label: "System's theme", value: 'system' }
@@ -32,19 +32,23 @@ export default function SettingsScreen() {
       : { status: 'checking', message: 'Checking the read-only API…' }
   );
 
-  const verifyConnection = useCallback(async () => {
+  const [connectionAttempt, setConnectionAttempt] = useState(0);
+
+  function verifyConnection() {
     setConnection({ status: 'checking', message: 'Checking the read-only API…' });
-    const result = await checkSupabaseConnection();
-    setConnection(
-      result.ok
-        ? { status: 'connected', message: 'Connected to the PULSE database.' }
-        : { status: 'error', message: result.message }
-    );
-  }, []);
+    setConnectionAttempt((attempt) => attempt + 1);
+  }
 
   useEffect(() => {
-    if (!supabaseConfigurationError) void verifyConnection();
-  }, [verifyConnection]);
+    let active = true;
+    void checkSupabaseConnection().then((result) => {
+      if (!active) return;
+      setConnection(result.ok
+        ? { status: 'connected', message: 'Connected to the PULSE database.' }
+        : { status: 'error', message: result.message });
+    });
+    return () => { active = false; };
+  }, [connectionAttempt]);
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>

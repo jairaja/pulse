@@ -38,13 +38,17 @@ export default function AccountScreen() {
   const [stage, setStage] = useState<Stage>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
-  const [nicknameDraft, setNicknameDraft] = useState(nickname);
+  const [nicknameEdit, setNicknameEdit] = useState({ source: nickname, value: nickname });
+  if (nicknameEdit.source !== nickname) {
+    setNicknameEdit({ source: nickname, value: nickname });
+  }
+  const nicknameDraft = nicknameEdit.source === nickname ? nicknameEdit.value : nickname;
+  const setNicknameDraft = (value: string) => setNicknameEdit({ source: nickname, value });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [resendSeconds, setResendSeconds] = useState(0);
   const [includeNickname, setIncludeNickname] = useState(false);
 
-  useEffect(() => setNicknameDraft(nickname), [nickname]);
   useEffect(() => {
     if (resendSeconds <= 0) return;
     const timer = setTimeout(() => setResendSeconds((seconds) => Math.max(0, seconds - 1)), 1000);
