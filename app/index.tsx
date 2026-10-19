@@ -52,10 +52,11 @@ function TodayQuestionScreen({ today }: { today: ReturnType<typeof useTodayQuest
     today.isFetching ||
     !connectivity.determined ||
     !connectivity.online ||
+    storedReceipt.isPending || storedReceipt.isError || storedReceipt.isFetching ||
     vote.isPending;
 
   async function beginVote() {
-    if (!question || !selection) return;
+    if (!question || !selection || voteDisabled) return;
     try {
       const attempt = await prepareVoteAttempt(question.id, selection);
       getCaptchaChallengeUrl(attempt.captchaBinding);
@@ -112,7 +113,7 @@ function TodayQuestionScreen({ today }: { today: ReturnType<typeof useTodayQuest
             {receipt ? (
               <View accessibilityLiveRegion="polite" style={styles.receipt}>
                 <Text style={styles.receiptMark}>✓</Text>
-                <Text style={styles.receiptTitle}>Vote counted</Text>
+                <Text style={styles.receiptTitle}>{receipt.alreadyCounted ? 'Your vote was already counted' : 'Vote counted'}</Text>
                 <Text style={styles.receiptBody}>
                   You voted {receipt.choice}. Come back tomorrow to see how PULSE voters answered.
                 </Text>
@@ -127,6 +128,16 @@ function TodayQuestionScreen({ today }: { today: ReturnType<typeof useTodayQuest
             ) : (
               <View style={styles.actionArea}>
                 <Text style={styles.prompt}>WHAT DO YOU THINK?</Text>
+                {storedReceipt.isPending || storedReceipt.isFetching ? (
+                  <Text accessibilityLiveRegion="polite" style={styles.offline}>Checking whether this device already voted…</Text>
+                ) : storedReceipt.isError ? (
+                  <>
+                    <Text accessibilityLiveRegion="polite" style={styles.error}>
+                      We couldn’t verify your previous vote. Voting is paused until this check succeeds.
+                    </Text>
+                    <RetryButton label="Check vote status" onPress={() => void storedReceipt.refetch()} styles={styles} />
+                  </>
+                ) : null}
                 {!connectivity.determined ? (
                   <Text style={styles.offline}>Checking your connection…</Text>
                 ) : !connectivity.online ? (

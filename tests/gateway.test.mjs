@@ -12,6 +12,9 @@ test('actual gateway handler: fail closed, no writes before verification, strict
   }));
   let handler;
   const writes = [];
+  const receiptReads = [];
+  let receiptData = [];
+  let receiptError = null;
   let registrationError = null;
   let voteError = null;
   let sessionError = null;
@@ -23,6 +26,10 @@ test('actual gateway handler: fail closed, no writes before verification, strict
   globalThis.__pulseTestClient = { createClient: () => ({
     auth: { getUser: async () => ({ data: { user: { id: 'verified-account' } }, error: sessionError }) },
     rpc: async (name, args) => {
+      if (name === 'get_device_vote_receipt') {
+        receiptReads.push(args);
+        return { data: receiptData, error: receiptError };
+      }
       writes.push({ name, args });
       return name === 'register_installation'
         ? { data: 'installation', error: registrationError }
@@ -69,7 +76,9 @@ test('actual gateway handler: fail closed, no writes before verification, strict
       env.set(name, value);
     }
     assert.equal((await handler(new Request('https://test/vote', { method: 'POST', body: '{' }))).status, 400);
-    for (const payload of [[], {}, { ...proof, choice: 'MAYBE' }]) assert.equal((await call(payload)).status, 400);
+    for (const payload of [null, [], {}, { ...proof, operation: 'unknown' }, { ...proof, choice: 'MAYBE' }]) {
+      assert.equal((await call(payload)).status, 400);
+    }
     assert.equal((await call({ ...proof, deviceEvidence: { ...vote.deviceEvidence, isPhysicalDevice: false } })).status, 403);
     for (const field of ['credential', 'questionId', 'choice', 'idempotencyKey']) {
       assert.equal((await call({ ...proof, [field]: field === 'choice' ? 'NO' : 'substituted' })).status, 403);
@@ -93,6 +102,37 @@ test('actual gateway handler: fail closed, no writes before verification, strict
     globalThis.fetch = async () => { throw new Error('sensitive provider error'); };
     await assert.rejects(call(proof), /sensitive provider error/);
     assert.equal(writes.length, 0, 'No database calls before successful verification');
+
+    // Clearing storage creates a new credential, not a new stable device identity.
+    const statusRequest = { operation: 'status', credential: vote.credential,
+      deviceEvidence: vote.deviceEvidence, questionId: vote.questionId, accountId: 'untrusted-account' };
+    env.delete('TURNSTILE_SECRET_KEY');
+    assert.deepEqual(await (await call(statusRequest)).json(), { status: 'NOT_VOTED' });
+    receiptData = [{ receipt_id: 'original-receipt', accepted_choice: 'YES', accepted_at: '2026-10-20T12:00:00Z' }];
+    const recovered = await call({ ...statusRequest, credential: 'new-credential-after-clear'.repeat(2) });
+    assert.deepEqual(await recovered.json(), { ...receiptData[0], status: 'ALREADY_VOTED' });
+    assert.equal(receiptReads[0].p_account_id, null);
+    assert.equal(receiptReads[0].p_device_fingerprint_hash, receiptReads[1].p_device_fingerprint_hash);
+    assert.notEqual(receiptReads[0].p_credential, receiptReads[1].p_credential);
+    assert.equal(writes.length, 0, 'Receipt restoration must never register or submit a vote');
+    receiptError = { code: '42883', message: 'DO-NOT-LOG-database-details' };
+    assert.equal((await call(statusRequest)).status, 503, 'Missing migration must not look like NOT_VOTED');
+    receiptError = null;
+    for (const invalid of [null, {}, [null], [{}], [{ accepted_choice: 'YES' }], [{}, {}]]) {
+      receiptData = invalid;
+      assert.equal((await call(statusRequest)).status, 503, 'Malformed RPC response must not look like NOT_VOTED');
+    }
+    receiptData = [];
+    const readsBeforeInvalidDevice = receiptReads.length;
+    assert.equal((await call({ ...statusRequest, deviceEvidence: {} })).status, 403);
+    assert.equal(receiptReads.length, readsBeforeInvalidDevice);
+    sessionError = { message: 'invalid session' };
+    assert.equal((await call(statusRequest, { Authorization: 'Bearer fake.jwt.token' })).status, 401);
+    assert.equal(receiptReads.length, readsBeforeInvalidDevice);
+    sessionError = null;
+    assert.equal((await call(statusRequest, { Authorization: 'Bearer fake.jwt.token' })).status, 200);
+    assert.equal(receiptReads.at(-1).p_account_id, 'verified-account');
+    env.set('TURNSTILE_SECRET_KEY', 'provider-secret');
 
     globalThis.fetch = async () => Response.json(verified);
     const accepted = await call({ ...proof, accountId: 'untrusted-account' });

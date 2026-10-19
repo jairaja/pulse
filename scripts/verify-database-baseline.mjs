@@ -8,6 +8,7 @@ const expectedMigrations = [
   '202610170001_operations_finalization_history.sql',
   '202610180001_device_fingerprint.sql',
   '202610190001_operational_monitoring.sql',
+  '202610200001_vote_reset_resistance.sql',
 ];
 const migrationFiles = (await readdir(migrationsDirectory))
   .filter((file) => file.endsWith('.sql'))
@@ -33,6 +34,7 @@ const secureVoting = await readFile(path.join(migrationsDirectory, expectedMigra
 const operations = await readFile(path.join(migrationsDirectory, expectedMigrations[2]), 'utf8');
 const deviceFingerprint = await readFile(path.join(migrationsDirectory, expectedMigrations[3]), 'utf8');
 const monitoring = await readFile(path.join(migrationsDirectory, expectedMigrations[4]), 'utf8');
+const resetResistance = await readFile(path.join(migrationsDirectory, expectedMigrations[5]), 'utf8');
 const requiredStatements = [
   'alter table public.questions enable row level security',
   'alter table public.question_translations enable row level security',
@@ -60,8 +62,18 @@ for (const statement of requiredStatements) {
 }
 
 for (const object of forbiddenLegacyObjects) {
-  if (`${baseline}\n${secureVoting}\n${operations}\n${deviceFingerprint}\n${monitoring}`.toLowerCase().includes(object)) {
+  if (`${baseline}\n${secureVoting}\n${operations}\n${deviceFingerprint}\n${monitoring}\n${resetResistance}`.toLowerCase().includes(object)) {
     throw new Error(`Baseline restored a retired object: ${object}`);
+  }
+}
+
+for (const statement of [
+  'create or replace function public.submit_vote',
+  'create function public.get_device_vote_receipt',
+  'grant execute on function public.get_device_vote_receipt(text, uuid, text, uuid) to service_role'
+]) {
+  if (!resetResistance.toLowerCase().includes(statement)) {
+    throw new Error(`Vote reset migration is missing required SQL: ${statement}`);
   }
 }
 
