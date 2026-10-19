@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AccountPrompt } from '../components/AccountPrompt';
@@ -12,30 +12,39 @@ import { useConnectivity } from '../lib/query';
 import { useAppTheme, type ThemeColors } from '../lib/theme';
 
 export default function TodayScreen() {
+  const today = useTodayQuestion();
+  return <TodayQuestionScreen key={today.data?.id ?? 'none'} today={today} />;
+}
+
+function TodayQuestionScreen({ today }: { today: ReturnType<typeof useTodayQuestion> }) {
   const { colors } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const connectivity = useConnectivity();
-  const today = useTodayQuestion();
   const question = today.data;
   const storedReceipt = useVoteReceipt(question?.id);
   const vote = useSubmitVote(question?.id);
-  const resetVote = vote.reset;
   const [selection, setSelection] = useState<VoteChoice | null>(null);
   const [pendingAttempt, setPendingAttempt] = useState<PendingVoteAttempt | null>(null);
   const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
   const estimatedServerNow = question
-    ? Date.parse(question.serverTime) + Math.max(0, Date.now() - today.dataUpdatedAt)
+    ? Date.parse(question.serverTime) + Math.max(0, now - today.dataUpdatedAt)
     : Number.POSITIVE_INFINITY;
   const isCurrentQuestion = Boolean(
     question && estimatedServerNow < Date.parse(question.votingClosesAt)
   );
 
   useEffect(() => {
-    setSelection(null);
-    setPendingAttempt(null);
-    setVerificationError(null);
-    resetVote();
-  }, [question?.id, resetVote]);
+    const updateClock = () => setNow(Date.now());
+    const timer = setInterval(updateClock, 1000);
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') updateClock();
+    });
+    return () => {
+      clearInterval(timer);
+      subscription.remove();
+    };
+  }, []);
 
   const receipt = vote.data ?? storedReceipt.data;
   const voteDisabled =

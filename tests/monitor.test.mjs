@@ -7,7 +7,9 @@ test('missing monitor credentials produce explicit critical alerts and a nonzero
   const result = spawnSync(process.execPath, ['scripts/monitor-production.mjs'], { encoding: 'utf8', timeout: 10000,
     env: { ...process.env, OPS_DATABASE_URL: '', SUPABASE_PROJECT_REF: '', SUPABASE_ACCESS_TOKEN: '',
       OPS_HEARTBEAT_URL: '', GITHUB_STEP_SUMMARY: '' } });
-  assert.equal(result.status, 1);
+  assert.ifError(result.error);
+  assert.equal(result.status, 1, result.stderr);
+  assert.notEqual(result.stdout.trim(), '', `Monitor exited without a JSON report: ${result.stderr}`);
   assert.deepEqual(JSON.parse(result.stdout).alerts.map(a => a.code).sort(), ['DATABASE_MONITOR', 'GATEWAY_PROBE', 'TELEMETRY_MONITOR']);
 });
 test('alert delivery deduplicates across pages and duplicate signals, assigns owner, and propagates delivery failures', async () => {
