@@ -1,8 +1,8 @@
 begin;
 select no_plan();
 
-select is((select schedule from cron.job where jobname = 'pulse-daily-finalization'), '* * * * *',
-  'idempotent daily catch-up runs every minute rather than twelve hours after voting closes');
+select is((select schedule from cron.job where jobname = 'pulse-daily-finalization'), '0 0 * * *',
+  'daily finalization is scheduled for 00:00 UTC with no noon trigger');
 
 insert into public.questions(question_text, asked_on, status, preview_published)
 values

@@ -28,6 +28,7 @@ export default function PastResultsScreen() {
             <Text style={styles.eyebrow}>PAST RESULTS</Text>
             <Text style={styles.title}>What PULSE voters said.</Text>
             <Text style={styles.body}>Every finalized question is visible, whether you voted or not.</Text>
+            <Text style={styles.body}>New results are published at 00:00 UTC, when the next daily question opens.</Text>
             {!connectivity.online && connectivity.determined ? (
               <Text style={styles.offline}>Offline · showing downloaded results</Text>
             ) : null}

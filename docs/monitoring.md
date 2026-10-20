@@ -38,8 +38,8 @@ Keep security logs to the approved retention period (initial target: 14 days); r
 | Verification outage | At least 3 CAPTCHA_UNAVAILABLE events | Critical |
 | CAPTCHA rejections | >50% with at least 50 requests | Warning |
 | Abuse attempts | At least 20 RATE_LIMITED outcomes | Warning |
-| Current question | Count differs from 1 after 12:15 UTC | Critical |
-| Finalization lag | Prior question remains live after 12:15 UTC | Critical |
+| Current question | Count differs from 1 after 00:15 UTC | Critical |
+| Finalization lag | Prior question remains live after 00:15 UTC | Critical |
 | Scheduler | Missing/disabled/wrong schedule, failed latest run, or no success in 24h15m | Critical |
 | Tomorrow's queue | No scheduled question | Warning |
 | Kill switch | Disabled/missing | Critical |
@@ -47,9 +47,9 @@ Keep security logs to the approved retention period (initial target: 14 days); r
 | Monitor itself | Query/auth/telemetry failure | Critical |
 
 These are starting thresholds, not validated SLOs. Tune against staging/production baselines while
-retaining minimum sample sizes. The existing question day changes at midnight while finalization runs
-at noon; the monitor mirrors the implemented grace period. Resolve that product/scheduler mismatch
-before promising continuous daily voting. Monitoring does not repair it automatically.
+retaining minimum sample sizes. Voting closes at 00:00 UTC, when the finalizer is scheduled. The alert grace period does not extend
+voting. Public question/result reads catch up a missed boundary before returning data; monitor and
+investigate scheduler failures rather than relying on reads as the only operational trigger.
 
 ## Independent delivery and live evidence
 

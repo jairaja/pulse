@@ -33,6 +33,7 @@ export function useTodayQuestion(languageCode = 'en') {
   const query = useQuery({
     queryKey: pulseKeys.today(languageCode),
     queryFn: () => fetchTodayQuestion(languageCode),
+    refetchInterval: 30_000,
     meta: { persist: true }
   });
 
@@ -42,8 +43,8 @@ export function useTodayQuestion(languageCode = 'en') {
     const estimatedServerNow = Date.parse(query.data.serverTime) + Math.max(0, serverElapsed);
     const untilClose = Date.parse(query.data.votingClosesAt) - estimatedServerNow;
     const timeout = setTimeout(() => {
-      void queryClient.invalidateQueries({ queryKey: pulseKeys.today(languageCode) });
-    }, Math.max(1000, untilClose + 1000));
+      void queryClient.invalidateQueries({ queryKey: pulseKeys.all });
+    }, Math.max(1000, untilClose));
     return () => clearTimeout(timeout);
   }, [languageCode, query.data, query.dataUpdatedAt, queryClient]);
 

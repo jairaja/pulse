@@ -11,8 +11,8 @@ select has_table('public', 'question_results', 'immutable result snapshots exist
 select hasnt_table('public', 'users', 'legacy users table is absent');
 select hasnt_table('public', 'predictions', 'predictions table is absent');
 select hasnt_table('public', 'countries', 'country table is absent');
-select hasnt_table('public', 'question_submissions', 'future submissions are not premature');
-select hasnt_table('public', 'submission_votes', 'future submission votes are not premature');
+select has_table('public', 'question_submissions', 'community submissions are available');
+select has_table('public', 'submission_votes', 'community upvotes are available');
 
 select has_function(
   'public',
@@ -142,13 +142,13 @@ select ok(
 );
 select ok(
   (
-    select bool_and(not p.prosecdef)
+    select bool_and(p.prosecdef and coalesce(array_to_string(p.proconfig, ','), '') like '%search_path=%')
     from pg_catalog.pg_proc p
     join pg_catalog.pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and p.proname in ('get_today_question', 'list_finalized_results')
   ),
-  'public RPCs use invoker security'
+  'public daily RPCs use a fixed search path for narrowly scoped rollover and reads'
 );
 select has_index(
   'public',

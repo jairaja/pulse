@@ -9,7 +9,7 @@ account-history claims. These are necessary but not sufficient for a global laun
 1. Deploy the `vote` Edge Function and keep `SUPABASE_SERVICE_ROLE_KEY` only in Supabase-managed
    function secrets. Never place it in Expo environment variables.
 2. Apply migrations in timestamp order. Confirm `pulse-daily-finalization` exists in `cron.job`, uses
-   `0 12 * * *`, and has successful staging runs across UTC rollover.
+   `0 0 * * *`, and has successful staging runs across UTC rollover.
 3. Monitor Edge Function latency/error/status distribution, rejected vote status distribution,
    finalization lag, live-question cardinality, and scheduler failures. Do not log credentials,
    bearer tokens, email, auth UUIDs, or raw IP addresses.
@@ -52,7 +52,7 @@ platform verdict is missing or invalid.
 
 - **T14:** platform attestation, gateway/network controls, monitoring, alerts, incident response,
   rollback, load/penetration tests, independent review, and privacy sign-off.
-- **T15:** staging soak tests and operational validation of the 12:00 UTC finalizer.
+- **T15:** staging soak tests and operational validation of the 00:00 UTC finalizer.
 - **T16:** account-history sync UX, conflict recovery, export, deletion, and retention.
 - **R03:** global youth-safety and country-by-country legal review.
 - **T17:** physical-device attestation, reinstall resistance, and CAPTCHA step-up rollout.

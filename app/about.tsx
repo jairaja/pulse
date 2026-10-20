@@ -22,6 +22,11 @@ export default function AboutScreen() {
           a question is sponsored, we will say so plainly.
         </Text>
         <Text style={styles.body}>
+          Each daily question opens at 00:00 UTC and closes at the next 00:00 UTC. Results and the next
+          question become available at that boundary. A verified email account is required to submit
+          community questions or use the one daily community upvote.
+        </Text>
+        <Text style={styles.body}>
           Questions may repeat because people change. “Am I happy today?” can have a very different
           answer next month. Humans are inconveniently interesting like that.
         </Text>

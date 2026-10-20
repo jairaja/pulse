@@ -65,7 +65,7 @@ claim statistically representative world opinion.
 - A database kill switch can suspend voting without shipping a client update. This is an emergency
   control, not a substitute for monitoring or incident response.
 - `private.finalize_daily_pulse` atomically snapshots every expired live question, archives it, and
-  activates today's scheduled question. `pg_cron` invokes it at 12:00 UTC; the transaction lock and
+  activates today's scheduled question. `pg_cron` invokes it at 00:00 UTC; the transaction lock and
   conflict handling make retries safe.
 - Authenticated users can idempotently claim server-known votes from the current installation.
   Conflicts preserve the account's existing question link and are audit-counted; accepted votes and

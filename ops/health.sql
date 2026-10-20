@@ -10,7 +10,7 @@ select
   extract(minute from now() at time zone 'utc')::int as utc_minute,
   (select voting_enabled from private.runtime_controls where singleton) as voting_enabled,
   (select count(*)::int from cron.job where jobname = 'pulse-daily-finalization'
-    and active and schedule = '0 12 * * *') as finalizer_jobs,
+    and active and schedule = '0 0 * * *') as finalizer_jobs,
   (select status from cron.job_run_details d join cron.job j using (jobid)
     where j.jobname = 'pulse-daily-finalization' order by d.start_time desc limit 1) as finalizer_status,
   (select extract(epoch from now() - max(d.start_time))::int
