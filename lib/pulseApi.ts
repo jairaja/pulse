@@ -106,6 +106,13 @@ export async function fetchTodayQuestion(languageCode = 'en'): Promise<TodayQues
   };
 }
 
+export async function fetchBrewingQuestion(languageCode = 'en'): Promise<QuestionSummary | null> {
+  const { data, error } = await client().rpc('get_brewing_question', { p_language_code: languageCode });
+  if (error) throw new PulseApiError('Could not load tomorrow’s preview.', error.code, true);
+  if (!Array.isArray(data)) throw new PulseApiError('The server returned an invalid preview.', 'INVALID_RESPONSE');
+  return data.length === 0 ? null : parseQuestion(data[0]);
+}
+
 export async function fetchFinalizedResults({
   cursor,
   languageCode = 'en',

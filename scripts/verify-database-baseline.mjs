@@ -9,6 +9,7 @@ const expectedMigrations = [
   '202610180001_device_fingerprint.sql',
   '202610190001_operational_monitoring.sql',
   '202610200001_vote_reset_resistance.sql',
+  '202610200002_daily_cycle_and_brewing.sql',
 ];
 const migrationFiles = (await readdir(migrationsDirectory))
   .filter((file) => file.endsWith('.sql'))
@@ -35,6 +36,7 @@ const operations = await readFile(path.join(migrationsDirectory, expectedMigrati
 const deviceFingerprint = await readFile(path.join(migrationsDirectory, expectedMigrations[3]), 'utf8');
 const monitoring = await readFile(path.join(migrationsDirectory, expectedMigrations[4]), 'utf8');
 const resetResistance = await readFile(path.join(migrationsDirectory, expectedMigrations[5]), 'utf8');
+const dailyCycle = await readFile(path.join(migrationsDirectory, expectedMigrations[6]), 'utf8');
 const requiredStatements = [
   'alter table public.questions enable row level security',
   'alter table public.question_translations enable row level security',
@@ -62,9 +64,17 @@ for (const statement of requiredStatements) {
 }
 
 for (const object of forbiddenLegacyObjects) {
-  if (`${baseline}\n${secureVoting}\n${operations}\n${deviceFingerprint}\n${monitoring}\n${resetResistance}`.toLowerCase().includes(object)) {
+  if (`${baseline}\n${secureVoting}\n${operations}\n${deviceFingerprint}\n${monitoring}\n${resetResistance}\n${dailyCycle}`.toLowerCase().includes(object)) {
     throw new Error(`Baseline restored a retired object: ${object}`);
   }
+}
+
+for (const statement of [
+  'add column preview_published boolean not null default false',
+  'create function public.get_brewing_question',
+  "cron.schedule('pulse-daily-finalization', '* * * * *'"
+]) {
+  if (!dailyCycle.toLowerCase().includes(statement)) throw new Error(`Daily cycle migration is missing: ${statement}`);
 }
 
 for (const statement of [
