@@ -1,37 +1,36 @@
+import { useI18n, AppText as Text } from '../lib/i18n';
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AccountPrompt } from '../components/AccountPrompt';
 import { useAppTheme, type ThemeColors } from '../lib/theme';
 
 export default function MyPulseScreen() {
+  const { t } = useI18n();
   const { colors } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>
       <View style={styles.content}>
-        <Text style={styles.eyebrow}>MY PULSE</Text>
+        <Text style={styles.eyebrow}>{t("MY PULSE")}</Text>
 
         <View style={styles.message}>
-          <Text style={styles.title}>Your patterns, when there’s enough to say.</Text>
-          <Text style={styles.body}>
-            After you answer at least 10 questions, this is where you’ll see how often your answers
-            align with PULSE voters.
-          </Text>
+          <Text style={styles.title}>{t("Your patterns, when there’s enough to say.")}</Text>
+          <Text style={styles.body}>{t("After you answer at least 10 questions, this is where you’ll see how often your answers align with PULSE voters.")}</Text>
         </View>
 
         <View style={styles.placeholder}>
           <Text style={styles.placeholderValue}>—</Text>
-          <Text style={styles.placeholderLabel}>QUESTIONS ANSWERED</Text>
-          <Text style={styles.placeholderNote}>Insights are coming in a later phase.</Text>
+          <Text style={styles.placeholderLabel}>{t("QUESTIONS ANSWERED")}</Text>
+          <Text style={styles.placeholderNote}>{t("Insights are coming in a later phase.")}</Text>
         </View>
 
         <AccountPrompt
-          action="Keep my history"
-          body="Keep answered-question history and future insights available when you change devices."
+          action={t("Keep my history")}
+          body={t("Keep answered-question history and future insights available when you change devices.")}
           source="my-pulse"
-          title="Keep your Pulse"
+          title={t("Keep your Pulse")}
         />
       </View>
     </SafeAreaView>

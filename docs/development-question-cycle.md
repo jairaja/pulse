@@ -15,8 +15,10 @@ No new insert is valid after the boundary.
 
 The published preview is an explicit administrator announcement of tomorrow's scheduled question.
 It does not expose private drafts. Community suggestions are separate: each verified account may
-submit one question and upvote one other user's suggestion per UTC day. They are not automatically
-selected for tomorrow.
+submit one question and upvote one other user's suggestion per UTC day. All open submissions stay
+eligible across days. At midnight, when no question is already scheduled for the new day, the one
+with most accumulated pre-boundary upvotes goes live. Ties prefer the later submission, then UUID.
+This selection is not announced early as a published preview.
 
 ## Install and add fixtures
 

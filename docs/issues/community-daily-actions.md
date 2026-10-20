@@ -9,7 +9,7 @@ This updates the previous weekly-submission proposal: the approved limit is now 
 - Enforce unique account/day records in PostgreSQL under concurrent requests. Reject self-upvotes server-side; exact retries do not consume a second action.
 - Only dedicated RPCs may write. Do not accept author/voter IDs or quota dates from clients. Do not expose author IDs/emails in the public feed.
 - Provide input validation, paginated question list, counts, own/upvoted indicators, server allowance loading/error states, and explicit midnight reset copy.
-- Submissions are open suggestions, with administrative hidden/selected states. Selection, full moderation/admin tooling, notifications and automatic scheduling are separate work; upvotes must not silently publish a daily question.
+- All open submissions remain browsable and eligible across days. At 00:00 UTC, accumulated pre-boundary upvotes select the live question when no administrator question is scheduled. Equal totals prefer the later submission, then UUID. Hidden/selected questions are excluded. Moderation UI and notifications are separate work.
 
 ## Owner rollout
 
@@ -19,7 +19,7 @@ This updates the previous weekly-submission proposal: the approved limit is now 
 4. Rebuild/install Android preview and, when available, the signed iOS build. For Expo Go/development clients, restart Metro/reload JavaScript.
 5. Test with two verified accounts: first submission succeeds, second distinct submission is rejected, one upvote succeeds, another different upvote is rejected, self-upvote is rejected. Restart/clear app data and sign back in: allowances must remain used.
 6. Test 00:00 UTC reset, different device timezones, retries/concurrency, offline attempts, unverified accounts and anonymous browsing. Offline writes must not be queued.
-7. Review suggestions and select future daily questions administratively. Open suggestions are not automatically promoted by this change; moderate abusive content before wider rollout.
+7. Review open submissions and the automatic selection result. Existing scheduled dates take priority; otherwise the winner is promoted at midnight. Test ties and multi-day upvote totals. Full moderation UI remains a separate milestone.
 
 ## Done criteria
 

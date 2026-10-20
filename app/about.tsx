@@ -1,35 +1,23 @@
+import { useI18n, AppText as Text } from '../lib/i18n';
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAppTheme, type ThemeColors } from '../lib/theme';
 
 export default function AboutScreen() {
+  const { t } = useI18n();
   const { colors } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.eyebrow}>ABOUT PULSE</Text>
-        <Text style={styles.title}>One world. One question. One answer today. No awkward profile form.</Text>
-        <Text style={styles.body}>
-          PULSE is a small experiment in finding out what people think today—not what an algorithm
-          thinks they should think.
-        </Text>
-        <Text style={styles.body}>
-          You can use PULSE without an account. An optional email account may be offered to protect
-          your voting history across devices; a name is not required for that. There are no ads. If
-          a question is sponsored, we will say so plainly.
-        </Text>
-        <Text style={styles.body}>
-          Each daily question opens at 00:00 UTC and closes at the next 00:00 UTC. Results and the next
-          question become available at that boundary. A verified email account is required to submit
-          community questions or use the one daily community upvote.
-        </Text>
-        <Text style={styles.body}>
-          Questions may repeat because people change. “Am I happy today?” can have a very different
-          answer next month. Humans are inconveniently interesting like that.
-        </Text>
+        <Text style={styles.eyebrow}>{t("ABOUT PULSE")}</Text>
+        <Text style={styles.title}>{t("One world. One question. One answer today. No awkward profile form.")}</Text>
+        <Text style={styles.body}>{t("PULSE is a small experiment in finding out what people think today—not what an algorithm thinks they should think.")}</Text>
+        <Text style={styles.body}>{t("You can use PULSE without an account. An optional email account may be offered to protect your voting history across devices; a name is not required for that. There are no ads. If a question is sponsored, we will say so plainly.")}</Text>
+        <Text style={styles.body}>{t("Each daily question opens at 00:00 UTC and closes at the next 00:00 UTC. Results and the next question become available at that boundary. A verified email account is required to submit community questions or use the one daily community upvote.")}</Text>
+        <Text style={styles.body}>{t("Questions may repeat because people change. “Am I happy today?” can have a very different answer next month. Humans are inconveniently interesting like that.")}</Text>
       </ScrollView>
     </SafeAreaView>
   );

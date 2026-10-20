@@ -1,8 +1,11 @@
+import { useI18n, AppText as Text } from '../lib/i18n';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SUPPORTED_LANGUAGES } from '../lib/preferencesModel';
+import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
 import { useAppTheme, type ThemeColors, type ThemePreference } from '../lib/theme';
 import {
@@ -22,7 +25,9 @@ const themeOptions: { label: string; value: ThemePreference }[] = [
 ];
 
 export default function SettingsScreen() {
+  const { t } = useI18n();
   const router = useRouter();
+  const { preferences, status: preferenceStatus, set: setPreferences, retry: retryPreferences } = usePreferences();
   const { loading: authLoading, nickname, session } = useAuth();
   const { colors, preference, resolvedTheme, setPreference } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -54,8 +59,8 @@ export default function SettingsScreen() {
     <SafeAreaView edges={['bottom']} style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.eyebrow}>APPEARANCE</Text>
-          <Text style={styles.title}>Choose how PULSE looks.</Text>
+          <Text style={styles.eyebrow}>{t("APPEARANCE")}</Text>
+          <Text style={styles.title}>{t("Choose how PULSE looks.")}</Text>
           <View accessibilityRole="radiogroup" style={styles.options}>
             {themeOptions.map((option) => {
               const selected = preference === option.value;
@@ -64,6 +69,7 @@ export default function SettingsScreen() {
                   accessibilityRole="radio"
                   accessibilityState={{ checked: selected }}
                   key={option.value}
+                  disabled={preferenceStatus === 'loading'}
                   onPress={() => setPreference(option.value)}
                   style={({ pressed }) => [
                     styles.option,
@@ -75,30 +81,49 @@ export default function SettingsScreen() {
                     {selected ? <View style={styles.radioDot} /> : null}
                   </View>
                   <Text style={[styles.optionText, selected && styles.optionTextSelected]}>
-                    {option.label}
+                    {t(option.label)}
                   </Text>
                 </Pressable>
               );
             })}
           </View>
-          <Text style={styles.note}>
-            Active theme: {resolvedTheme}. System follows your device and changes automatically.
-          </Text>
+          <Text style={styles.note}>{t('Active theme: {theme}. System follows your device.', { theme: t(resolvedTheme === 'light' ? 'Light' : 'Dark') })}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.eyebrow}>{t('LANGUAGE')}</Text>
+          <Text style={styles.title}>{t('Choose your language')}</Text>
+          <View accessibilityRole="radiogroup" style={styles.options}>
+            {SUPPORTED_LANGUAGES.map(language => <Pressable key={language.code} accessibilityRole="radio"
+              accessibilityState={{ checked: preferences.language === language.code, disabled: preferenceStatus === 'loading' }}
+              disabled={preferenceStatus === 'loading'} onPress={() => setPreferences({ language: language.code })}
+              style={[styles.option, preferences.language === language.code && styles.optionSelected]}>
+              <Text style={styles.optionText}>{language.name}</Text>
+            </Pressable>)}
+          </View>
+          <Text style={styles.note}>{session
+            ? t('Theme and language are saved to your account and restored when you sign in on another device.')
+            : t('Theme and language are saved on this device. Choose them again on a new device.')}</Text>
+          <Text accessibilityLiveRegion="polite" style={styles.note}>{t(preferenceStatus === 'synced' ? 'Preferences synced'
+            : preferenceStatus === 'pending' ? 'Preferences could not be saved. Your changes will retry when connected.'
+            : preferenceStatus === 'loading' ? 'Loading preferences…' : 'Saved on this device')}</Text>
+          {preferenceStatus === 'pending' ? <Pressable accessibilityRole="button" onPress={retryPreferences} style={styles.retryButton}>
+            <Text style={styles.retryButtonText}>{t('Retry sync')}</Text></Pressable> : null}
         </View>
 
         <View style={styles.accountCard}>
-          <Text style={styles.eyebrow}>ACCOUNT</Text>
+          <Text style={styles.eyebrow}>{t("ACCOUNT")}</Text>
           <Text style={styles.connectionTitle}>
             {authLoading
-              ? 'Checking this device…'
+              ? t("Checking this device…")
               : session
-                ? nickname || 'Your Pulse is connected'
-                : 'Using PULSE without an account'}
+                ? nickname || t("Your Pulse is connected")
+                : t("Using PULSE without an account")}
           </Text>
           <Text style={styles.connectionMessage}>
             {session
               ? session.user.email
-              : 'Sign in with an email code to keep future server-confirmed history and questions across devices.'}
+              : t("Sign in with an email code to keep future server-confirmed history and questions across devices.")}
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -111,15 +136,15 @@ export default function SettingsScreen() {
             ]}
           >
             <Text style={styles.accountButtonText}>
-              {session ? 'Manage account' : 'Sign in or create account'}
+              {session ? t("Manage account") : t("Sign in or create account")}
             </Text>
           </Pressable>
-          {!session ? <Text style={styles.note}>Optional, always.</Text> : null}
+          {!session ? <Text style={styles.note}>{t("Optional, always.")}</Text> : null}
         </View>
 
         <View style={styles.connectionCard}>
           <View style={styles.connectionHeading}>
-            <Text style={styles.eyebrow}>DATABASE</Text>
+            <Text style={styles.eyebrow}>{t("DATABASE")}</Text>
             <View
               style={[
                 styles.statusDot,
@@ -130,13 +155,13 @@ export default function SettingsScreen() {
           </View>
           <Text style={styles.connectionTitle}>
             {connection.status === 'checking'
-              ? 'Checking connection'
+              ? t("Checking connection")
               : connection.status === 'connected'
-                ? 'Supabase connected'
-                : 'Supabase needs attention'}
+                ? t("Supabase connected")
+                : t("Supabase needs attention")}
           </Text>
           <Text accessibilityLiveRegion="polite" style={styles.connectionMessage}>
-            {connection.message}
+            {t(connection.message)}
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -148,7 +173,7 @@ export default function SettingsScreen() {
               pressed && styles.optionPressed
             ]}
           >
-            <Text style={styles.retryButtonText}>Check again</Text>
+            <Text style={styles.retryButtonText}>{t("Check again")}</Text>
           </Pressable>
         </View>
       </ScrollView>

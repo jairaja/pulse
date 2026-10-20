@@ -1,3 +1,4 @@
+import { useI18n, AppText as Text } from '../lib/i18n';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -8,19 +9,18 @@ import {
   ScrollView,
   StyleSheet,
   Switch,
-  Text,
   TextInput,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '../lib/auth';
-import { buildShareAttribution } from '../lib/shareAttribution';
 import { useAppTheme, type ThemeColors } from '../lib/theme';
 
 type Stage = 'email' | 'code' | 'profile';
 
 export default function AccountScreen() {
+  const { t, locale } = useI18n();
   const router = useRouter();
   const { source } = useLocalSearchParams<{ source?: string }>();
   const { colors } = useAppTheme();
@@ -95,12 +95,12 @@ export default function AccountScreen() {
 
   function confirmLogout() {
     Alert.alert(
-      'Log out on this device?',
-      'Your account history stays safe. Personal account data cached on this device will be removed. You can keep using PULSE without an account.',
+      t('Log out on this device?'),
+      t('Log out and continue using PULSE as a guest?'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('Cancel'), style: 'cancel' },
         {
-          text: 'Log out',
+          text: t('Log out'),
           style: 'destructive',
           onPress: () => {
             void signOut().then((result) => {
@@ -127,26 +127,26 @@ export default function AccountScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.intro}>
-            <Text style={styles.eyebrow}>OPTIONAL ACCOUNT</Text>
-            <Text style={styles.title}>{signedIn ? 'Your Pulse is connected.' : 'Keep your Pulse.'}</Text>
+            <Text style={styles.eyebrow}>{t("OPTIONAL ACCOUNT")}</Text>
+            <Text style={styles.title}>{signedIn ? t("Your Pulse is connected.") : t("Keep your Pulse.")}</Text>
             <Text style={styles.body}>
               {signedIn
-                ? 'Your email is verified. Secure history sync will be enabled only after server-confirmed voting is connected.'
-                : 'Verify your email now to prepare for cross-device history and question updates. PULSE still works without an account.'}
+                ? t("Your email is verified. Secure history sync will be enabled only after server-confirmed voting is connected.")
+                : t("Verify your email now to prepare for cross-device history and question updates. PULSE still works without an account.")}
             </Text>
           </View>
 
           {!available ? (
             <MessageCard
-              body="Add the Supabase URL and publishable key before using accounts."
+              body={t("Add the Supabase URL and publishable key before using accounts.")}
               styles={styles}
-              title="Accounts are not configured"
+              title={t("Accounts are not configured")}
             />
           ) : authLoading ? (
-            <MessageCard body="Checking this device…" styles={styles} title="Loading account" />
+            <MessageCard body={t("Checking this device…")} styles={styles} title={t("Loading account")} />
           ) : showProfile ? (
             <View style={styles.form}>
-              <Text style={styles.label}>VERIFIED EMAIL</Text>
+              <Text style={styles.label}>{t("VERIFIED EMAIL")}</Text>
               <Text style={styles.emailValue}>{session?.user.email}</Text>
               <NicknameEditor
                 busy={busy}
@@ -160,8 +160,8 @@ export default function AccountScreen() {
               <View style={styles.previewCard}>
                 <View style={styles.switchRow}>
                   <View style={styles.switchCopy}>
-                    <Text style={styles.cardTitle}>Share preview</Text>
-                    <Text style={styles.smallBody}>Nickname attribution is always opt-in per share.</Text>
+                    <Text style={styles.cardTitle}>{t("Share preview")}</Text>
+                    <Text style={styles.smallBody}>{t("Nickname attribution is always opt-in per share.")}</Text>
                   </View>
                   <Switch
                     disabled={!nickname}
@@ -170,64 +170,60 @@ export default function AccountScreen() {
                   />
                 </View>
                 <Text style={styles.previewText}>
-                  {buildShareAttribution({
-                    dateLabel: '15 Oct 2026',
-                    includeNickname,
-                    nickname
-                  })}
+                  {includeNickname && nickname ? `${nickname} · ` : ''}{t('My Pulse')} · {new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date('2026-10-15T00:00:00Z'))}
                 </Text>
               </View>
 
               <Pressable accessibilityRole="button" onPress={confirmLogout} style={styles.logoutButton}>
-                <Text style={styles.logoutText}>Log out</Text>
+                <Text style={styles.logoutText}>{t("Log out")}</Text>
               </Pressable>
             </View>
           ) : signedIn && stage === 'email' ? (
             <View style={styles.form}>
               <MessageCard
-                body="Your verified account is ready. Add an optional nickname or continue without one."
+                body={t("Your verified account is ready. Add an optional nickname or continue without one.")}
                 styles={styles}
-                title="Account connected"
+                title={t("Account connected")}
               />
               <Pressable
                 accessibilityRole="button"
                 onPress={() => setStage('profile')}
                 style={styles.primaryButton}
               >
-                <Text style={styles.primaryButtonText}>Continue</Text>
+                <Text style={styles.primaryButtonText}>{t("Continue")}</Text>
               </Pressable>
             </View>
           ) : stage === 'email' ? (
             <View style={styles.form}>
-              <Text style={styles.label}>EMAIL</Text>
+              <Text style={styles.label}>{t("EMAIL")}</Text>
               <TextInput
                 autoCapitalize="none"
                 autoComplete="email"
                 editable={!busy}
                 inputMode="email"
                 onChangeText={setEmail}
-                placeholder="you@example.com"
+                placeholder={t("you@example.com")}
                 placeholderTextColor={colors.disabledText}
-                style={styles.input}
+                style={[styles.input, { writingDirection: 'ltr', textAlign: 'left' }]}
                 value={email}
               />
-              {error ? <Text style={styles.error}>{error}</Text> : null}
+              {error ? <Text style={styles.error}>{t(error)}</Text> : null}
               <Pressable
                 accessibilityRole="button"
                 disabled={busy}
                 onPress={() => void requestCode()}
                 style={[styles.primaryButton, busy && styles.disabledButton]}
               >
-                <Text style={styles.primaryButtonText}>{busy ? 'Sending…' : 'Email me a code'}</Text>
+                <Text style={styles.primaryButtonText}>{busy ? t("Sending…") : t("Email me a code")}</Text>
               </Pressable>
               <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.textButton}>
-                <Text style={styles.textButtonLabel}>Not now</Text>
+                <Text style={styles.textButtonLabel}>{t("Not now")}</Text>
               </Pressable>
             </View>
           ) : stage === 'code' ? (
             <View style={styles.form}>
-              <Text style={styles.label}>6-DIGIT CODE</Text>
-              <Text style={styles.smallBody}>We sent a code to {email.trim().toLowerCase()}.</Text>
+              <Text style={styles.label}>{t("6-DIGIT CODE")}</Text>
+              <Text style={styles.smallBody}>{t('We sent a code to {email}.', { email: email.trim().toLowerCase() })}</Text>
               <TextInput
                 autoComplete="one-time-code"
                 editable={!busy}
@@ -240,14 +236,14 @@ export default function AccountScreen() {
                 textContentType="oneTimeCode"
                 value={code}
               />
-              {error ? <Text style={styles.error}>{error}</Text> : null}
+              {error ? <Text style={styles.error}>{t(error)}</Text> : null}
               <Pressable
                 accessibilityRole="button"
                 disabled={busy}
                 onPress={() => void verifyCode()}
                 style={[styles.primaryButton, busy && styles.disabledButton]}
               >
-                <Text style={styles.primaryButtonText}>{busy ? 'Verifying…' : 'Verify'}</Text>
+                <Text style={styles.primaryButtonText}>{busy ? t("Verifying…") : t("Verify")}</Text>
               </Pressable>
               <Pressable
                 accessibilityRole="button"
@@ -256,7 +252,7 @@ export default function AccountScreen() {
                 style={styles.textButton}
               >
                 <Text style={styles.textButtonLabel}>
-                  {resendSeconds > 0 ? `Resend in ${resendSeconds}s` : 'Send a new code'}
+                  {resendSeconds > 0 ? t('Resend in {seconds}s', { seconds: resendSeconds }) : t("Send a new code")}
                 </Text>
               </Pressable>
               <Pressable
@@ -268,7 +264,7 @@ export default function AccountScreen() {
                 }}
                 style={styles.textButton}
               >
-                <Text style={styles.textButtonLabel}>Use another email</Text>
+                <Text style={styles.textButtonLabel}>{t("Use another email")}</Text>
               </Pressable>
             </View>
           ) : (
@@ -304,30 +300,28 @@ function NicknameEditor({
   onSave: () => void;
   styles: AccountStyles;
 }) {
+  const { t, direction } = useI18n();
   return (
     <View style={styles.form}>
-      <Text style={styles.label}>WHAT SHOULD PULSE CALL YOU? · OPTIONAL</Text>
+      <Text style={styles.label}>{t("WHAT SHOULD PULSE CALL YOU? · OPTIONAL")}</Text>
       <TextInput
         autoCapitalize="words"
         editable={!busy}
         maxLength={30}
         onChangeText={onChange}
-        placeholder="Nickname"
-        style={styles.input}
+        placeholder={t("Nickname")}
+        style={[styles.input, { writingDirection: direction, textAlign: direction === 'rtl' ? 'right' : 'left' }]}
         value={nickname}
       />
-      <Text style={styles.privacyNote}>
-        Your nickname stays on this device. PULSE does not upload it. Change or remove it anytime;
-        on a new device, you’ll need to set it again.
-      </Text>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      <Text style={styles.privacyNote}>{t("Your nickname stays on this device. PULSE does not upload it. Change or remove it anytime; on a new device, you’ll need to set it again.")}</Text>
+      {error ? <Text style={styles.error}>{t(error)}</Text> : null}
       <Pressable
         accessibilityRole="button"
         disabled={busy}
         onPress={onSave}
         style={[styles.primaryButton, busy && styles.disabledButton]}
       >
-        <Text style={styles.primaryButtonText}>{nickname.trim() ? 'Save nickname' : 'Continue without one'}</Text>
+        <Text style={styles.primaryButtonText}>{nickname.trim() ? t("Save nickname") : t("Continue without one")}</Text>
       </Pressable>
     </View>
   );

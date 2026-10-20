@@ -1,5 +1,6 @@
+import { useI18n, AppText as Text } from '../lib/i18n';
 import { useMemo } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AccountPrompt } from '../components/AccountPrompt';
@@ -10,10 +11,11 @@ import { useConnectivity } from '../lib/query';
 import { useAppTheme, type ThemeColors } from '../lib/theme';
 
 export default function PastResultsScreen() {
+  const { t, language } = useI18n();
   const { colors } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const connectivity = useConnectivity();
-  const results = useFinalizedResults();
+  const results = useFinalizedResults(language);
   const items = results.data?.pages.flatMap((page) => page.items) ?? [];
 
   return (
@@ -25,24 +27,24 @@ export default function PastResultsScreen() {
         renderItem={({ item }) => <ResultCard item={item} styles={styles} />}
         ListHeaderComponent={
           <View style={styles.intro}>
-            <Text style={styles.eyebrow}>PAST RESULTS</Text>
-            <Text style={styles.title}>What PULSE voters said.</Text>
-            <Text style={styles.body}>Every finalized question is visible, whether you voted or not.</Text>
-            <Text style={styles.body}>New results are published at 00:00 UTC, when the next daily question opens.</Text>
+            <Text style={styles.eyebrow}>{t("PAST RESULTS")}</Text>
+            <Text style={styles.title}>{t("What PULSE voters said.")}</Text>
+            <Text style={styles.body}>{t("Every finalized question is visible, whether you voted or not.")}</Text>
+            <Text style={styles.body}>{t("New results are published at 00:00 UTC, when the next daily question opens.")}</Text>
             {!connectivity.online && connectivity.determined ? (
-              <Text style={styles.offline}>Offline · showing downloaded results</Text>
+              <Text style={styles.offline}>{t("Offline · showing downloaded results")}</Text>
             ) : null}
           </View>
         }
         ListEmptyComponent={
           connectivity.determined && !connectivity.online ? (
-            <Text style={styles.empty}>You’re offline and no downloaded results are available.</Text>
+            <Text style={styles.empty}>{t("You’re offline and no downloaded results are available.")}</Text>
           ) : results.isPending ? (
             <ActivityIndicator color={colors.accent} style={styles.loader} />
           ) : results.isError ? (
             <ErrorState error={results.error} onRetry={() => void results.refetch()} styles={styles} />
           ) : (
-            <Text style={styles.empty}>No finalized results have been published yet.</Text>
+            <Text style={styles.empty}>{t("No finalized results have been published yet.")}</Text>
           )
         }
         ListFooterComponent={
@@ -54,14 +56,14 @@ export default function PastResultsScreen() {
                 onPress={() => void results.fetchNextPage()}
                 style={[styles.moreButton, (results.isFetchingNextPage || !connectivity.online) && styles.disabled]}
               >
-                {results.isFetchingNextPage ? <ActivityIndicator color={colors.accent} /> : <Text style={styles.moreText}>Load more</Text>}
+                {results.isFetchingNextPage ? <ActivityIndicator color={colors.accent} /> : <Text style={styles.moreText}>{t("Load more")}</Text>}
               </Pressable>
             ) : null}
             <AccountPrompt
-              action="Protect my history"
-              body="Keep server-confirmed answers available when you change phones after secure history sync launches."
+              action={t("Protect my history")}
+              body={t("Keep server-confirmed answers available when you change phones after secure history sync launches.")}
               source="past-results"
-              title="Changing phones someday?"
+              title={t("Changing phones someday?")}
             />
           </View>
         }
@@ -73,30 +75,32 @@ export default function PastResultsScreen() {
 }
 
 function ResultCard({ item, styles }: { item: FinalizedResult; styles: ReturnType<typeof createStyles> }) {
+  const { t, locale } = useI18n();
   const receipt = useVoteReceipt(item.id);
   const yesPercent = item.totalVotes === 0 ? 0 : Math.round((item.yesCount / item.totalVotes) * 100);
   const noPercent = item.totalVotes === 0 ? 0 : 100 - yesPercent;
   return (
     <View style={styles.resultCard}>
-      <Text style={styles.date}>{formatDate(item.askedOn)}</Text>
+      <Text style={styles.date}>{formatDate(item.askedOn, locale)}</Text>
       <Text style={styles.question}>{item.questionText}</Text>
       <View style={styles.resultRow}>
-        <Text style={styles.result}>{item.finalResult}</Text>
-        <Text style={styles.percentage}>{yesPercent}% YES · {noPercent}% NO</Text>
+        <Text style={styles.result}>{t(item.finalResult)}</Text>
+        <Text style={styles.percentage}>{t('{yes}% YES · {no}% NO', { yes: yesPercent, no: noPercent })}</Text>
       </View>
-      <Text style={styles.voteCount}>{new Intl.NumberFormat().format(item.totalVotes)} votes</Text>
-      {receipt.data ? <Text style={styles.yourVote}>You voted {receipt.data.choice}</Text> : null}
+      <Text style={styles.voteCount}>{t('{count} votes', { count: new Intl.NumberFormat(locale).format(item.totalVotes) })}</Text>
+      {receipt.data ? <Text style={styles.yourVote}>{t('You voted {choice}', { choice: t(receipt.data.choice) })}</Text> : null}
     </View>
   );
 }
 
 function ErrorState({ error, onRetry, styles }: { error: unknown; onRetry: () => void; styles: ReturnType<typeof createStyles> }) {
+  const { t } = useI18n();
   const message = error instanceof PulseApiError || error instanceof Error ? error.message : 'Could not load results.';
-  return <View style={styles.errorCard}><Text style={styles.error}>{message}</Text><Pressable accessibilityRole="button" onPress={onRetry} style={styles.moreButton}><Text style={styles.moreText}>Try again</Text></Pressable></View>;
+  return <View style={styles.errorCard}><Text style={styles.error}>{t(message)}</Text><Pressable accessibilityRole="button" onPress={onRetry} style={styles.moreButton}><Text style={styles.moreText}>{t("Try again")}</Text></Pressable></View>;
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`)).toUpperCase();
+function formatDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`)).toUpperCase();
 }
 
 function createStyles(colors: ThemeColors) {

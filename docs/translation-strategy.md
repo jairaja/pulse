@@ -1,6 +1,6 @@
 # Translation strategy decision
 
-**Status:** Proposed — approve before building translation jobs or exposing additional locales.
+**Status:** Static UI localization and account preferences are implemented for the ten owner-selected locales. The dynamic question translation workflow below remains proposed; no AI translation jobs are enabled by this change. See `docs/issues/languages-and-preferences.md`.
 
 ## The actual product requirement
 
