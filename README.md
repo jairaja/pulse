@@ -17,7 +17,7 @@ Phase 1 deliberately exposes no in-progress voting data. It contains:
 - **Today:** one question and a direct YES/NO vote.
 - **Past Results:** every finalized question, with the user's vote shown when one exists locally.
 - **My Pulse:** a placeholder for personal agreement insights after at least 10 answered questions.
-- **Brewing Questions:** a placeholder for community questions, including a disabled “Ask a question” action.
+- **Brewing Questions:** an explicitly published preview of tomorrow’s scheduled question; community submission remains disabled.
 - **About:** the privacy and product explanation.
 - **Settings:** persisted Light, Dark, and System appearance choices plus a read-only Supabase
   connectivity check.
@@ -42,6 +42,9 @@ The only acceptance criteria for this step are:
 5. Light, Dark, and System theme choices apply to every screen and survive an app restart.
 
 ## Required local setup
+
+For repeatable hosted development questions, finalized results, and UTC rollover testing, see
+[`docs/development-question-cycle.md`](docs/development-question-cycle.md).
 
 > Do not use arbitrary `npm update` commands. Expo native dependencies must match the Expo SDK, not merely be the newest versions published to npm.
 
