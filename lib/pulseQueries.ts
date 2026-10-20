@@ -1,12 +1,13 @@
 import {
   useInfiniteQuery,
+  onlineManager,
   useMutation,
   useQuery,
   useQueryClient
 } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-import { fetchFinalizedResults, fetchTodayQuestion, submitVote } from './pulseApi';
+import { fetchFinalizedResults, fetchTodayQuestion, fetchVoteReceipt, PulseApiError, submitVote } from './pulseApi';
 import type { VoteAttempt } from './captcha';
 import { getStoredVoteReceipt } from './voteReceipts';
 
@@ -53,9 +54,17 @@ export function useFinalizedResults(languageCode = 'en') {
 export function useVoteReceipt(questionId: string | undefined) {
   return useQuery({
     queryKey: pulseKeys.voteReceipt(questionId ?? 'none'),
-    queryFn: () => getStoredVoteReceipt(questionId!),
+    queryFn: async () => {
+      const local = await getStoredVoteReceipt(questionId!);
+      if (local) return local;
+      if (!onlineManager.isOnline()) {
+        throw new PulseApiError('Connect to verify whether this device already voted.', 'VOTE_STATUS_UNAVAILABLE', true);
+      }
+      return fetchVoteReceipt(questionId!);
+    },
     enabled: Boolean(questionId),
-    staleTime: Number.POSITIVE_INFINITY,
+    staleTime: 60_000,
+    networkMode: 'always',
     gcTime: Number.POSITIVE_INFINITY,
     meta: { persist: false }
   });
