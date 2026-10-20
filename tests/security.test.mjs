@@ -59,7 +59,8 @@ test('operational policy catches outages and does not report low-volume ratios a
     ['finalizer_age_seconds', null, 'SCHEDULER_STALE']]) {
     assert.ok(evaluateHealth({ ...healthy, [field]: value }, null).some(a => a.code === code));
   }
-  assert.ok(!evaluateHealth({ ...healthy, utc_hour: 12, utc_minute: 14, current_live_questions: 0 }, null).some(a => a.code === 'LIVE_QUESTION'));
+  assert.ok(!evaluateHealth({ ...healthy, utc_hour: 0, utc_minute: 14, current_live_questions: 0 }, null).some(a => a.code === 'LIVE_QUESTION'));
+  assert.ok(evaluateHealth({ ...healthy, utc_hour: 0, utc_minute: 15, current_live_questions: 0 }, null).some(a => a.code === 'LIVE_QUESTION'));
   const alerts = evaluateHealth(healthy, { requests: 100, p95_ms: 4000, server_errors: 10,
     captcha_outages: 3, captcha_rejections: 70, rate_limited: 25 });
   for (const code of ['GATEWAY_ERRORS', 'GATEWAY_LATENCY', 'CAPTCHA_OUTAGE', 'CAPTCHA_REJECTIONS', 'ABUSE_BURST']) {

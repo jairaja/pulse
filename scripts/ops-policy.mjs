@@ -1,8 +1,8 @@
 export function evaluateHealth(health, gateway) {
   const alerts = [];
   const add = (code, severity, message) => alerts.push({ code, severity, message });
-  // The existing finalizer runs at noon UTC. Allow 15 minutes after its scheduled run.
-  const pastGrace = health.utc_hour > 12 || (health.utc_hour === 12 && health.utc_minute >= 15);
+  // Midnight UTC is the only daily boundary. This is an alert grace, not an extended voting window.
+  const pastGrace = health.utc_hour > 0 || health.utc_minute >= 15;
   if (pastGrace && health.current_live_questions !== 1) add('LIVE_QUESTION', 'critical', 'Expected exactly one current live question.');
   if (pastGrace && health.overdue_questions > 0) add('FINALIZATION_LAG', 'critical', 'Prior questions remain live after finalization grace.');
   if (health.tomorrow_questions !== 1) add('QUESTION_QUEUE', 'warning', 'Tomorrow has no scheduled question.');

@@ -1,17 +1,22 @@
 # Hosted development question cycle
 
-## Why a question disappears before Past Results shows it
+## Exact daily UTC boundary
 
-Today reads only a live question dated today in UTC. Past Results reads finalized immutable snapshots,
-not every old question. The original finalizer ran at 12:00 UTC even though voting closed at midnight.
-That could leave yesterday invisible for twelve hours. A failed/missing scheduler or unapplied
-migration can leave it unfinalized longer; only the hosted project's cron history establishes that.
+Today's voting window is [today 00:00 UTC, tomorrow 00:00 UTC). At the closing boundary, the prior
+question is finalized and today's scheduled question activates in the same locked transaction. The
+job is scheduled at `0 0 * * *`, never noon. Public Today/Past Results reads catch up a delayed or
+missed rollover before returning data, so results do not wait for a periodic minute/noon publication.
+App requests still need network time; an offline device cannot promise a live update.
 
-Migration `202610200002_daily_cycle_and_brewing.sql` runs the idempotent, transaction-locked finalizer
-every minute and catches up overdue live questions immediately when applied. At the UTC boundary it
-archives closed questions with actual vote totals and activates today's scheduled question. Visibility
-can take up to roughly one minute plus client refresh. No migration can invent tomorrow's question:
-an administrator must schedule one.
+The UI counts down using server timing and names the absolute UTC date. Countdown wording is display
+only; the server closes voting using its own clock. A shared/exclusive advisory lock prevents a
+finalization snapshot from overtaking a vote insert that was legitimately accepted before closure.
+No new insert is valid after the boundary.
+
+The published preview is an explicit administrator announcement of tomorrow's scheduled question.
+It does not expose private drafts. Community suggestions are separate: each verified account may
+submit one question and upvote one other user's suggestion per UTC day. They are not automatically
+selected for tomorrow.
 
 ## Install and add fixtures
 
@@ -47,8 +52,8 @@ or new secret values are needed by this feature.
 - Today: the current live UTC question; existing receipts remain valid.
 - Past Results: actual finalized past questions, including yesterday after catch-up. Pull to refresh.
 - Brewing Questions: tomorrow's scheduled question only if `preview_published = true`. The screen has
-  a refresh button and polls while active. Community submission remains disabled.
-- After 00:00 UTC tomorrow: within the next scheduler run, the preview becomes Today and today's
+  a refresh button and polls while active. Sign in with a verified email account for one daily submission and one daily upvote on another user’s question.
+- After 00:00 UTC tomorrow: the midnight job or first public read makes the preview Today and today's
   question gains a finalized result. No votes are accepted on a scheduled preview.
 
 Draft questions remain hidden by RLS. The public get_brewing_question RPC exposes only the opted-in

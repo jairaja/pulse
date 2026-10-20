@@ -10,6 +10,7 @@ import { useSubmitVote, useTodayQuestion, useVoteReceipt } from '../lib/pulseQue
 import type { VoteChoice } from '../lib/pulseTypes';
 import { useConnectivity } from '../lib/query';
 import { useAppTheme, type ThemeColors } from '../lib/theme';
+import { utcChangeoverText } from '../lib/utcCycle';
 
 export default function TodayScreen() {
   const today = useTodayQuestion();
@@ -108,6 +109,7 @@ function TodayQuestionScreen({ today }: { today: ReturnType<typeof useTodayQuest
               <Text style={styles.date}>{formatQuestionDate(question.askedOn, isCurrentQuestion)}</Text>
               <Text style={styles.question}>{question.questionText}</Text>
               {question.sponsored ? <Text style={styles.sponsored}>SPONSORED QUESTION</Text> : null}
+              <Text style={styles.stateBody}>Daily voting: 00:00 UTC to the next 00:00 UTC.</Text>
             </View>
 
             {receipt ? (
@@ -115,8 +117,9 @@ function TodayQuestionScreen({ today }: { today: ReturnType<typeof useTodayQuest
                 <Text style={styles.receiptMark}>✓</Text>
                 <Text style={styles.receiptTitle}>{receipt.alreadyCounted ? 'Your vote was already counted' : 'Vote counted'}</Text>
                 <Text style={styles.receiptBody}>
-                  You voted {receipt.choice}. Come back tomorrow to see how PULSE voters answered.
+                  Your {receipt.choice} vote is recorded.
                 </Text>
+                <Text style={styles.receiptBody}>{utcChangeoverText(question.votingClosesAt, estimatedServerNow)}</Text>
                 <Text style={styles.receiptId}>RECEIPT · {receipt.receiptId.slice(0, 8).toUpperCase()}</Text>
                 <AccountPrompt
                   action="Keep this vote"
@@ -188,7 +191,7 @@ function TodayQuestionScreen({ today }: { today: ReturnType<typeof useTodayQuest
                     <Text style={styles.disclosure}>Your vote can’t be changed after server acceptance.</Text>
                   </>
                 ) : (
-                  <Text style={styles.disclosure}>Results unlock with tomorrow’s question.</Text>
+                    <Text style={styles.disclosure}>{utcChangeoverText(question.votingClosesAt, estimatedServerNow)}</Text>
                 )}
               </View>
             )}

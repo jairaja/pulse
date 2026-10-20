@@ -10,6 +10,7 @@ const expectedMigrations = [
   '202610190001_operational_monitoring.sql',
   '202610200001_vote_reset_resistance.sql',
   '202610200002_daily_cycle_and_brewing.sql',
+  '202610200003_midnight_cycle_and_community.sql',
 ];
 const migrationFiles = (await readdir(migrationsDirectory))
   .filter((file) => file.endsWith('.sql'))
@@ -37,6 +38,7 @@ const deviceFingerprint = await readFile(path.join(migrationsDirectory, expected
 const monitoring = await readFile(path.join(migrationsDirectory, expectedMigrations[4]), 'utf8');
 const resetResistance = await readFile(path.join(migrationsDirectory, expectedMigrations[5]), 'utf8');
 const dailyCycle = await readFile(path.join(migrationsDirectory, expectedMigrations[6]), 'utf8');
+const community = await readFile(path.join(migrationsDirectory, expectedMigrations[7]), 'utf8');
 const requiredStatements = [
   'alter table public.questions enable row level security',
   'alter table public.question_translations enable row level security',
@@ -52,8 +54,6 @@ const forbiddenLegacyObjects = [
   'create table public.users',
   'create table public.predictions',
   'create table public.countries',
-  'create table public.question_submissions',
-  'create table public.submission_votes',
   'get_live_results',
 ];
 
@@ -64,9 +64,20 @@ for (const statement of requiredStatements) {
 }
 
 for (const object of forbiddenLegacyObjects) {
-  if (`${baseline}\n${secureVoting}\n${operations}\n${deviceFingerprint}\n${monitoring}\n${resetResistance}\n${dailyCycle}`.toLowerCase().includes(object)) {
+  if (`${baseline}\n${secureVoting}\n${operations}\n${deviceFingerprint}\n${monitoring}\n${resetResistance}\n${dailyCycle}\n${community}`.toLowerCase().includes(object)) {
     throw new Error(`Baseline restored a retired object: ${object}`);
   }
+}
+
+for (const statement of [
+  "cron.schedule('pulse-daily-finalization', '0 0 * * *'",
+  'pg_advisory_xact_lock_shared(70757365)',
+  'create table public.question_submissions',
+  'create table public.submission_votes',
+  'unique(author_id, submitted_on)',
+  'unique(voter_id, voted_on)'
+]) {
+  if (!community.toLowerCase().includes(statement.toLowerCase())) throw new Error(`Community/UTC migration is missing: ${statement}`);
 }
 
 for (const statement of [
