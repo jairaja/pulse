@@ -134,15 +134,7 @@ export async function fetchFinalizedResults({
 export async function submitVote(attempt: VoteAttempt): Promise<VoteReceipt> {
   const { captchaBinding, captchaToken, choice, idempotencyKey, questionId } = attempt;
   const credential = await getInstallationCredential();
-  let deviceEvidence;
-  try {
-    deviceEvidence = await collectClientDeviceEvidence();
-  } catch (error) {
-    if (error instanceof IneligibleDeviceError) {
-      throw new PulseApiError(error.message, 'INELIGIBLE_DEVICE');
-    }
-    throw error;
-  }
+  const deviceEvidence = await voteDeviceEvidence();
   const { data, error } = await client().functions.invoke('vote', {
     body: { credential, deviceEvidence, questionId, choice, idempotencyKey, captchaBinding, captchaToken }
   });
@@ -150,7 +142,7 @@ export async function submitVote(attempt: VoteAttempt): Promise<VoteReceipt> {
 
   const row = record(data);
   const status = requiredString(row.status, 'vote status');
-  if (status !== 'ACCEPTED') {
+  if (status !== 'ACCEPTED' && status !== 'ALREADY_VOTED') {
     const messages: Record<string, string> = {
       ALREADY_VOTED: 'This account or device already voted on this question.',
       IDEMPOTENCY_CONFLICT: 'This vote request conflicts with an earlier request.',
@@ -164,16 +156,45 @@ export async function submitVote(attempt: VoteAttempt): Promise<VoteReceipt> {
     throw new PulseApiError(messages[status] ?? 'The vote was not accepted.', status);
   }
 
+  const receipt = parseVoteReceipt(row, questionId, status === 'ALREADY_VOTED');
+  await storeVoteReceipt(receipt);
+  return receipt;
+}
+
+function parseVoteReceipt(row: UnknownRecord, questionId: string, alreadyCounted: boolean): VoteReceipt {
   const acceptedChoice = requiredString(row.accepted_choice, 'accepted choice');
   if (acceptedChoice !== 'YES' && acceptedChoice !== 'NO') {
     throw new PulseApiError('The server returned an invalid vote choice.', 'INVALID_RESPONSE');
   }
-  const receipt: VoteReceipt = {
+  return {
+    alreadyCounted,
     receiptId: requiredString(row.receipt_id, 'receipt id'),
     questionId,
     choice: acceptedChoice,
     acceptedAt: requiredString(row.accepted_at, 'acceptance time')
   };
+}
+
+async function voteDeviceEvidence() {
+  try {
+    return await collectClientDeviceEvidence();
+  } catch (error) {
+    if (error instanceof IneligibleDeviceError) throw new PulseApiError(error.message, 'INELIGIBLE_DEVICE');
+    throw error;
+  }
+}
+
+export async function fetchVoteReceipt(questionId: string): Promise<VoteReceipt | null> {
+  const credential = await getInstallationCredential();
+  const deviceEvidence = await voteDeviceEvidence();
+  const { data, error } = await client().functions.invoke('vote', {
+    body: { operation: 'status', credential, deviceEvidence, questionId }
+  });
+  if (error) throw new PulseApiError('Could not verify whether this device already voted.', 'VOTE_STATUS_UNAVAILABLE', true);
+  const row = record(data);
+  if (row.status === 'NOT_VOTED') return null;
+  if (row.status !== 'ALREADY_VOTED') throw new PulseApiError('The server returned an invalid vote status.', 'INVALID_RESPONSE');
+  const receipt = parseVoteReceipt(row, questionId, true);
   await storeVoteReceipt(receipt);
   return receipt;
 }

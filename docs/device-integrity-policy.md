@@ -46,6 +46,12 @@ pepper, PostgreSQL stores only that HMAC, and a unique index maps a returning si
 installation row. Hardware model/build values are risk telemetry, never unique keys, because shared
 models collide and OS updates change them.
 
+Ordinary app-data clearing now triggers server-side receipt recovery before vote controls are enabled.
+A fresh duplicate submission returns `ALREADY_VOTED` with the original receipt; only an exact
+idempotent retry returns `ACCEPTED`. See [storage-reset behavior and rollout](vote-storage-reset.md).
+This keeps device-signal lookup and database uniqueness authoritative when local storage is empty;
+it does not turn client-supplied Android ID/IDFV into attestation.
+
 The launch decision is therefore explicit:
 
 1. Require platform integrity for every vote.
@@ -63,11 +69,11 @@ CAPTCHA is useful as a **step-up bot signal**, not proof of a physical device an
 A human can solve CAPTCHA repeatedly, solvers can outsource it, and automation can relay challenges.
 
 - Protect Supabase email OTP with its supported Cloudflare Turnstile or hCaptcha integration.
-- The vote gateway now verifies Turnstile through Siteverify whenever `TURNSTILE_SECRET_KEY` is set.
-  The native WebView challenge and risk-based triggering remain T18 launch work; do not enable the
-  secret in production until the client can acquire a token.
-- Never ship the CAPTCHA secret in the app. The gateway performs site verification and enforces token
-  expiry, hostname/action, replay prevention, and rate limits.
+- The native WebView obtains a Turnstile token for every vote submission. The gateway requires
+  Siteverify success with the exact hostname, action and vote binding; missing configuration rejects
+  submission. Read-only receipt recovery cannot create a vote and does not require another CAPTCHA.
+- Never ship the CAPTCHA secret in the app. Cloudflare enforces token expiry and redemption; the
+  gateway checks hostname/action/binding and PostgreSQL enforces vote uniqueness and submission limits.
 - Do not make a WebView CAPTCHA the primary integrity control. Platform attestation remains mandatory.
 
 ## Rollout and acceptance gates
