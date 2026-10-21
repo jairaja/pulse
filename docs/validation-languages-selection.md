@@ -1,0 +1,11 @@
+# Validation evidence for language/preferences and selection
+
+- Node 22.23.1 / npm 10.9.8; Expo SDK 57 dependency set unchanged.
+- TypeScript, full Router include-scope guard, Expo lint (no rule suppression), database/client-config/operations guards and diff whitespace check pass.
+- 26 Node test cases pass: account preference restoration/offline retry/concurrent edits/stale response cancellation, catalog key/placeholder coverage, CAPTCHA navigation/certificate handling, route-independent server midnight refresh, plus prior gateway/security/receipt/community regressions.
+- All ten forward migrations applied in order to a fresh isolated PostgreSQL 17.11 test database, with pg_cron/pgcrypto/pgTAP and minimal Supabase auth-role shims. 148 pgTAP assertions pass: 14 account preference, 14 selection, 42 baseline, 24 community, 14 daily cycle, 8 midnight reads, 32 reset resistance. This does not substitute for hosted Supabase acceptance/physical devices.
+- Separate real concurrent PostgreSQL sessions verify one accepted same-day submission, one accepted daily upvote across competing targets, inclusion of an accepted vote before finalization's immutable snapshot, and exactly one selected candidate/question under two simultaneous finalizers. The disposable container was stopped afterward. No hosted DB was modified.
+- Android and iOS Metro/Hermes JavaScript exports succeed. These are bundle checks, not signed APK/IPA builds or physical-device tests. The additional web-export check is blocked by the repository's existing Metro configuration lacking WebAssembly asset support for expo-sqlite's web worker; native exports are unaffected.
+- Announcement design simulation: 100,001 committed changes, 100-event pages, duplicate and delayed delivery, changes during pagination, timestamp ties, commit-order gaps, cursor reset/locale/account isolation and expiry. Model converges; this is not a hosted load test.
+
+Still needed: apply reviewed migrations to hosted development, install rebuilt Android preview and verify settings/accounts/midnight and provider security flow on devices. Retest old Moto G4 after the documented platform/network checks. Validate Arabic/Urdu layouts and all translated copy with speakers. Signed physical iOS tests await Apple signing. GitHub API issue/PR writes were unavailable; review the branch/drafts before publishing.

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="940" viewBox="0 0 1320 940"><rect width="1320" height="940" fill="#edf0ed"/><style>text{font-family:Arial,sans-serif;fill:#18231f}.title{font-size:22px;font-weight:700}.body{font-size:15px}.small{font-size:12px;fill:#63746b}.muted{fill:#78847e}</style><text x="42" y="42" class="title">PULSE · Announcement center proposal</text><text x="42" y="68" class="body">Full-screen list; detail closes back to the same list position. Design only.</text>
+<rect x="42" y="100" width="380" height="730" rx="28" fill="#ffffff" stroke="#c9d3cc"/>
+<text x="66" y="132" class="small">11:00</text>
+<text x="317" y="132" class="small">Wi-Fi · 78%</text>
+<rect x="172" y="809" width="120" height="5" rx="2" fill="#18231f"/>
+<rect x="470" y="100" width="380" height="730" rx="28" fill="#ffffff" stroke="#c9d3cc"/>
+<text x="494" y="132" class="small">11:00</text>
+<text x="745" y="132" class="small">Wi-Fi · 78%</text>
+<rect x="600" y="809" width="120" height="5" rx="2" fill="#18231f"/>
+<rect x="898" y="100" width="380" height="730" rx="28" fill="#ffffff" stroke="#c9d3cc"/>
+<text x="922" y="132" class="small">11:00</text>
+<text x="1173" y="132" class="small">Wi-Fi · 78%</text>
+<rect x="1028" y="809" width="120" height="5" rx="2" fill="#18231f"/>
+<text x="66" y="181" class="title">☰</text>
+<text x="110" y="181" class="title">PULSE</text>
+<g transform="translate(364 155)" stroke="#254e3d" stroke-width="2" fill="none"><path d="M3 18h22l-3-5V8a8 8 0 0 0-16 0v5z"/><path d="M11 22a3 3 0 0 0 6 0"/></g><circle cx="389" cy="157" r="5" fill="#22aa68" stroke="white" stroke-width="2"/>
+<text x="66" y="249" class="small">THE WORLD TODAY</text>
+<text x="66" y="289" class="title">One question.</text>
+<text x="66" y="319" class="title">One shared day.</text>
+<text x="66" y="372" class="body">Would you like more parks</text>
+<text x="66" y="396" class="body">in your neighborhood?</text>
+<rect x="66" y="440" width="150" height="56" rx="14" fill="#e8f3ec"/>
+<rect x="230" y="440" width="150" height="56" rx="14" fill="#e8f3ec"/>
+<text x="118" y="475" class="body">YES</text>
+<text x="287" y="475" class="body">NO</text>
+<text x="66" y="550" class="small">Voting changes at 00:00 UTC.</text>
+<text x="66" y="582" class="body">Green dot: new announcements.</text>
+<text x="66" y="605" class="small">Also announced to screen readers.</text>
+<text x="494" y="181" class="title">←</text>
+<text x="529" y="181" class="title">Announcements</text>
+<text x="808" y="181" class="title">↻</text>
+<text x="494" y="219" class="small">Updated just now · 2 unread</text>
+<rect x="488" y="246" width="344" height="120" rx="14" fill="#e8f5ec"/>
+<text x="506" y="274" class="body">More languages, same Pulse</text>
+<text x="506" y="302" class="small">Choose your language in Settings.</text>
+<text x="506" y="336" class="small">20 OCT · UNREAD</text>
+<rect x="488" y="384" width="344" height="120" rx="14" fill="#e8f5ec"/>
+<text x="506" y="412" class="body">Daily voting at midnight UTC</text>
+<text x="506" y="440" class="small">Results and the next question at 00:00.</text>
+<text x="506" y="474" class="small">19 OCT · UNREAD</text>
+<rect x="488" y="522" width="344" height="120" rx="14" fill="#f2f3f2"/>
+<text x="506" y="550" class="body">Welcome to Pulse</text>
+<text x="506" y="578" class="small">One world. One question each day.</text>
+<text x="506" y="612" class="small">18 OCT · READ</text>
+<text x="494" y="686" class="small">Guest list uses neutral rows.</text>
+<text x="494" y="709" class="small">Scrollable · read items remain tappable.</text>
+<text x="494" y="756" class="small">Refresh keeps the existing list visible.</text>
+<text x="922" y="181" class="title">←</text>
+<text x="957" y="181" class="title">Announcement</text>
+<text x="922" y="229" class="small">20 OCT 2026 · 00:00 UTC</text>
+<text x="922" y="277" class="title">More languages,</text>
+<text x="922" y="309" class="title">same Pulse</text>
+<text x="922" y="361" class="body">You can now choose the app language</text>
+<text x="922" y="388" class="body">in Settings. Your questions and results</text>
+<text x="922" y="415" class="body">use stored translations when available.</text>
+<text x="922" y="442" class="body"></text>
+<text x="922" y="469" class="body">With an account, your theme and</text>
+<text x="922" y="496" class="body">language follow you to another device.</text>
+<text x="922" y="523" class="body"></text>
+<text x="922" y="550" class="body">You decide whether to mark this</text>
+<text x="922" y="577" class="body">announcement as read.</text>
+<rect x="922" y="663" width="332" height="52" rx="14" fill="#254e3d"/>
+<text x="1031" y="696" class="body" style="fill:#ffffff">Mark as read</text>
+<rect x="922" y="727" width="332" height="48" rx="14" fill="#ffffff" stroke="#254e3d"/>
+<text x="1020" y="757" class="body" style="fill:#254e3d">Mark as unread</text>
+<text x="42" y="876" class="body">Guests see “Okay” instead of read controls. Arabic and Urdu mirror the layout; timestamps remain explicit UTC.</text>
+<text x="42" y="906" class="small">Details appear above the list and restore focus on close. Offline refresh keeps valid cached announcements.</text>
+</svg>

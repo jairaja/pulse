@@ -1,9 +1,10 @@
-import Storage from 'expo-sqlite/kv-store';
 import * as SystemUI from 'expo-system-ui';
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 
-export type ThemePreference = 'light' | 'dark' | 'system';
+import { usePreferences } from './preferences';
+import type { ThemePreference } from './preferencesModel';
+export type { ThemePreference } from './preferencesModel';
 export type ResolvedTheme = 'light' | 'dark';
 
 export type ThemeColors = {
@@ -22,8 +23,6 @@ export type ThemeColors = {
   primary: string;
   surface: string;
 };
-
-const THEME_STORAGE_KEY = 'pulse.theme-preference';
 
 const palettes: Record<ResolvedTheme, ThemeColors> = {
   light: {
@@ -70,23 +69,10 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-function isThemePreference(value: string | null): value is ThemePreference {
-  return value === 'light' || value === 'dark' || value === 'system';
-}
-
 export function AppThemeProvider({ children }: { children: ReactNode }) {
   const systemTheme = useColorScheme();
-  const [preference, setPreferenceState] = useState<ThemePreference>('system');
-
-  useEffect(() => {
-    let mounted = true;
-    void Storage.getItem(THEME_STORAGE_KEY).then((storedPreference) => {
-      if (mounted && isThemePreference(storedPreference)) setPreferenceState(storedPreference);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const { preferences, set } = usePreferences();
+  const preference = preferences.theme;
 
   const resolvedTheme: ResolvedTheme =
     preference === 'system' ? (systemTheme === 'dark' ? 'dark' : 'light') : preference;
@@ -103,11 +89,10 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
       preference,
       resolvedTheme,
       setPreference: (nextPreference) => {
-        setPreferenceState(nextPreference);
-        void Storage.setItem(THEME_STORAGE_KEY, nextPreference);
+        set({ theme: nextPreference });
       }
     }),
-    [colors, preference, resolvedTheme]
+    [colors, preference, resolvedTheme, set]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

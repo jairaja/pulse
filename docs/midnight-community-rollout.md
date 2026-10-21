@@ -9,8 +9,9 @@
 - If the job was delayed while the database was down, the first Today/Past Results RPC catches up
   before returning data. This repairs past due work; it never moves a future deadline forward.
 - A published preview is a deliberate admin announcement of tomorrow's question. It does not open
-  voting early. Other scheduled drafts remain private. Community suggestions are not automatically
-  selected by their upvote rank; moderation/selection remains a separate workflow.
+  voting early. Other scheduled drafts remain private. All open community submissions remain eligible
+  across days; when the new day has no existing question, accumulated pre-midnight upvotes select
+  the winner. Equal totals prefer the later submission, then UUID. Hidden/selected rows are excluded.
 
 Countdowns use server timing, show the absolute UTC date and name 00:00 UTC. A network request still
 has latency; an offline phone displays cached data and cannot promise an immediate live result.
@@ -21,7 +22,8 @@ accepted-before-deadline inserts from being omitted from the immutable snapshot.
 
 1. Merge/pull the feature branch. Confirm the checkout targets the intended development project.
 2. Run `npx supabase db push --dry-run`. Inspect all pending migrations before `npx supabase db push`.
-   The new migration is 202610200003_midnight_cycle_and_community.sql. Do not reset existing data.
+   The latest migrations are 202610200004_account_preferences.sql and
+   202610200005_community_selection.sql, following 202610200003_midnight_cycle_and_community.sql. Do not reset existing data.
 3. In Supabase SQL Editor check `cron.job`: pulse-daily-finalization should be active with schedule
    `0 0 * * *`. Confirm `show cron.timezone;` returns a UTC/GMT timezone. Review job_run_details after
    the next boundary; do not create a separate noon job.
@@ -46,7 +48,7 @@ accepted-before-deadline inserts from being omitted from the immutable snapshot.
   them; write RPCs do not accept author/voter/date parameters and direct table writes are revoked.
 - Verify a scheduled tomorrow question and today's result at midnight, countdown singular/plural and
   absolute date, background/resume, offline rendering, and missed-job read catch-up. Make sure a next
-  question was scheduled; the finalizer cannot invent one when the queue is empty.
+  question is scheduled or an eligible open community submission exists; an empty queue stays empty.
 - Sign out/switch accounts: feed ownership flags and allowance caches must not leak across accounts.
 
 ## Tracked follow-up
@@ -54,5 +56,5 @@ accepted-before-deadline inserts from being omitted from the immutable snapshot.
 T10 has the approved daily community rule and owner rollout in docs/issues/community-daily-actions.md.
 T17 separates agent implementation and Android/iOS owner prerequisites in docs/issues/platform-attestation.md.
 The API may block automatic issue updates; these files are ready for copying into existing issues.
-Moderation states exist (open/hidden/selected), but full reporting/admin tooling, automatic selection,
+Moderation states exist (open/hidden/selected), but full reporting/admin tooling,
 notification delivery, and server platform attestation are not represented as completed here.

@@ -11,6 +11,8 @@ const expectedMigrations = [
   '202610200001_vote_reset_resistance.sql',
   '202610200002_daily_cycle_and_brewing.sql',
   '202610200003_midnight_cycle_and_community.sql',
+  '202610200004_account_preferences.sql',
+  '202610200005_community_selection.sql',
 ];
 const migrationFiles = (await readdir(migrationsDirectory))
   .filter((file) => file.endsWith('.sql'))
@@ -39,6 +41,16 @@ const monitoring = await readFile(path.join(migrationsDirectory, expectedMigrati
 const resetResistance = await readFile(path.join(migrationsDirectory, expectedMigrations[5]), 'utf8');
 const dailyCycle = await readFile(path.join(migrationsDirectory, expectedMigrations[6]), 'utf8');
 const community = await readFile(path.join(migrationsDirectory, expectedMigrations[7]), 'utf8');
+const preferences = await readFile(path.join(migrationsDirectory, expectedMigrations[8]), 'utf8');
+const selection = await readFile(path.join(migrationsDirectory, expectedMigrations[9]), 'utf8');
+for (const statement of ['alter table public.user_preferences enable row level security',
+  'p_expected_user', 'auth.uid() <> p_expected_user', 'on conflict(user_id) do nothing']) {
+  if (!preferences.toLowerCase().includes(statement.toLowerCase())) throw new Error(`Preferences migration is missing: ${statement}`);
+}
+for (const statement of ["s.status = 'open'", 'v.created_at < v_boundary', 's.created_at desc, s.id desc',
+  'pg_advisory_xact_lock_shared(70757365)', 'selected_question_id']) {
+  if (!selection.toLowerCase().includes(statement.toLowerCase())) throw new Error(`Selection migration is missing: ${statement}`);
+}
 const requiredStatements = [
   'alter table public.questions enable row level security',
   'alter table public.question_translations enable row level security',

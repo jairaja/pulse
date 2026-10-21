@@ -1,6 +1,7 @@
+import { useI18n, AppText as Text } from '../lib/i18n';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useAuth } from '../lib/auth';
 import { useAppTheme, type ThemeColors } from '../lib/theme';
@@ -16,6 +17,7 @@ export function AccountPrompt({
   source: string;
   title: string;
 }) {
+  const { t } = useI18n();
   const router = useRouter();
   const { loading, session } = useAuth();
   const { colors } = useAppTheme();
@@ -34,7 +36,7 @@ export function AccountPrompt({
       >
         <Text style={styles.buttonText}>{action}</Text>
       </Pressable>
-      <Text style={styles.optional}>Optional, always.</Text>
+      <Text style={styles.optional}>{t("Optional, always.")}</Text>
     </View>
   );
 }
