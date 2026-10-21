@@ -5,7 +5,7 @@ export function evaluateHealth(health, gateway) {
   const pastGrace = health.utc_hour > 0 || health.utc_minute >= 15;
   if (pastGrace && health.current_live_questions !== 1) add('LIVE_QUESTION', 'critical', 'Expected exactly one current live question.');
   if (pastGrace && health.overdue_questions > 0) add('FINALIZATION_LAG', 'critical', 'Prior questions remain live after finalization grace.');
-  if (health.tomorrow_questions !== 1) add('QUESTION_QUEUE', 'warning', 'Tomorrow has no scheduled question.');
+  if (!Number.isFinite(health.open_community_questions) || health.open_community_questions < 1) add('QUESTION_QUEUE', 'warning', 'No open community question is available for the next midnight selection.');
   if (health.voting_enabled !== true) add('VOTING_DISABLED', 'critical', 'Voting kill switch is disabled or missing.');
   if (health.finalizer_jobs !== 1) add('SCHEDULER_CONFIG', 'critical', 'Finalization schedule is missing, disabled or incorrect.');
   if (health.finalizer_status === 'failed') add('SCHEDULER_FAILED', 'critical', 'The latest finalization run failed.');

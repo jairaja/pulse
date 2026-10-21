@@ -1,4 +1,6 @@
-# Validation evidence for language/preferences and selection
+# Historical validation evidence for language/preferences and selection
+
+These results describe PR #85. Current community-only/moderation validation is recorded in `docs/validation-community-only.md`; the administrator scheduling/preview rules from #85 are superseded.
 
 - Node 22.23.1 / npm 10.9.8; Expo SDK 57 dependency set unchanged.
 - TypeScript, full Router include-scope guard, Expo lint (no rule suppression), database/client-config/operations guards and diff whitespace check pass.

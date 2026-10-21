@@ -31,10 +31,10 @@ select ok(exists(select 1 from public.list_brewing_submissions() where id='63000
 select is((select count(*)::integer from public.list_brewing_submissions(20,'63000000-0000-4000-8000-000000000002')),1,'selected cursor remains usable for pagination');
 insert into public.questions(question_text,asked_on,status) values('Administrator scheduled question?',current_date+1,'scheduled');
 select * from private.finalize_daily_pulse((current_date+1)::timestamp at time zone 'utc');
-select is((select question_text from public.questions where asked_on=current_date+1),'Administrator scheduled question?','administrator schedule takes priority');
-select is((select status from public.question_submissions where id='63000000-0000-4000-8000-000000000001'),'open','manual schedule consumes no community candidate');
+select is((select question_text from public.questions where asked_on=current_date+1 and status='live'),'Older highly supported question?','administrator schedule cannot override the community winner');
+select is((select status from public.question_submissions where id='63000000-0000-4000-8000-000000000001'),'selected','community winner is consumed despite legacy administrator schedule');
 select * from private.finalize_daily_pulse((current_date+2)::timestamp at time zone 'utc');
-select is((select question_text from public.questions where asked_on=current_date+2),'Older highly supported question?','older accumulated votes survive day changes and outrank zero votes');
+select is((select question_text from public.questions where asked_on=current_date+2),'Just submitted today is not eligible?','next candidate follows only after the earlier winner leaves the queue');
 select is((select count(*)::integer from public.question_results),2,'both closed days receive final immutable results');
 select * from private.finalize_daily_pulse((current_date+2)::timestamp at time zone 'utc');
 select is((select count(*)::integer from public.questions where asked_on=current_date+2),1,'repeated cron is idempotent');

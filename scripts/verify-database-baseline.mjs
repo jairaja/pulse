@@ -13,6 +13,7 @@ const expectedMigrations = [
   '202610200003_midnight_cycle_and_community.sql',
   '202610200004_account_preferences.sql',
   '202610200005_community_selection.sql',
+  '202610210001_community_only_brewing.sql',
 ];
 const migrationFiles = (await readdir(migrationsDirectory))
   .filter((file) => file.endsWith('.sql'))
@@ -50,6 +51,12 @@ for (const statement of ['alter table public.user_preferences enable row level s
 for (const statement of ["s.status = 'open'", 'v.created_at < v_boundary', 's.created_at desc, s.id desc',
   'pg_advisory_xact_lock_shared(70757365)', 'selected_question_id']) {
   if (!selection.toLowerCase().includes(statement.toLowerCase())) throw new Error(`Selection migration is missing: ${statement}`);
+}
+const communityOnly = await readFile(path.join(migrationsDirectory, expectedMigrations[10]), 'utf8');
+for (const statement of ['create unique index questions_one_active_date', 'create table private.community_roles',
+  'create table private.community_removals', 'create function public.remove_brewing_question',
+  'create function public.browse_brewing_questions', "status in ('live','archived')", 'for share of r']) {
+  if (!communityOnly.includes(statement)) throw new Error(`Community-only migration is missing: ${statement}`);
 }
 const requiredStatements = [
   'alter table public.questions enable row level security',

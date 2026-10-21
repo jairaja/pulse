@@ -58,7 +58,7 @@ values (
   (now() at time zone 'utc')::date,
   'live'
 )
-on conflict (asked_on) do update
+on conflict (asked_on) where status in ('live','archived') do update
 set status = 'live', results_finalized_at = null;
 
 select lives_ok(

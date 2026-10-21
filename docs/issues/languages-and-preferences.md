@@ -10,7 +10,7 @@ Implemented in this change:
 - Guest theme/language stored in SQLite on the current app installation. Clearing app storage removes guest settings; a different device starts with defaults. Current appearance remains after logout.
 - Account language/theme saved in `user_preferences` through owner-checked, authenticated RPCs; restored at sign-in on another device. New-device defaults never replace existing account settings. Pending offline edits retry on reconnect/foreground and update only edited fields. The same-field last successful write wins; multi-device session exclusion is a separate issue.
 - Existing device theme migrates forward. Whitelisted values, strict owner validation, no public preference-table access, per-project/account pending cache, explicit sync status/retry.
-- Today/scheduled preview/final results request the selected content language. Missing stored question translations fall back to original text, without disguising fallback as translated content.
+- Today/final results request the selected content language. Missing stored question translations fall back to original text, without disguising fallback as translated content.
 
 Remaining content translation requirement (link T11 / existing AI-question issue):
 

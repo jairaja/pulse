@@ -10,12 +10,12 @@ values
   ('Daily cycle today?', (now() at time zone 'utc')::date, 'live', false),
   ('Daily cycle tomorrow?', (now() at time zone 'utc')::date + 1, 'scheduled', false),
   ('Private later draft?', (now() at time zone 'utc')::date + 2, 'scheduled', true)
-on conflict (asked_on) do nothing;
+on conflict do nothing;
 update public.questions set preview_published = false
 where asked_on = (now() at time zone 'utc')::date + 1;
 
 select ok(has_function_privilege('anon', 'public.get_brewing_question(text)', 'EXECUTE'),
-  'anonymous clients can read the limited published preview');
+  'older clients retain an empty compatibility RPC');
 set local role anon;
 select is((select count(*)::integer from public.get_brewing_question('en')), 0,
   'unpublished tomorrow draft and later published draft are both hidden');
@@ -24,10 +24,8 @@ reset role;
 update public.questions set preview_published = true
 where asked_on = (now() at time zone 'utc')::date + 1;
 set local role anon;
-select is((select count(*)::integer from public.get_brewing_question('en')), 1,
-  'exactly one explicitly published tomorrow preview is visible');
-select is((select asked_on from public.get_brewing_question('en')), (now() at time zone 'utc')::date + 1,
-  'preview is restricted to tomorrow in UTC');
+select is((select count(*)::integer from public.get_brewing_question('en')), 0,
+  'even explicitly published legacy previews are never served');
 select is((select count(*)::integer from public.questions where status = 'scheduled'), 0,
   'direct table access still hides scheduled drafts');
 reset role;
@@ -46,10 +44,13 @@ select is((select total_votes from public.question_results r join public.questio
 select is((select finalized_count from private.finalize_daily_pulse(now())), 0,
   'repeating catch-up does not finalize an already archived question again');
 
+insert into auth.users(id,email_confirmed_at) values('71000000-0000-4000-8000-000000000001',now());
+insert into public.question_submissions(author_id,question_text,submitted_on,created_at)
+values('71000000-0000-4000-8000-000000000001','Community-selected daily question?',(now() at time zone 'utc')::date,clock_timestamp());
 create temporary table daily_rollover as
 select * from private.finalize_daily_pulse(((now() at time zone 'utc')::date + 1)::timestamp at time zone 'utc');
-select is((select status from public.questions where asked_on = (now() at time zone 'utc')::date + 1), 'live',
-  'tomorrow becomes live when its UTC day starts');
+select is((select status from public.questions where asked_on = (now() at time zone 'utc')::date + 1 and question_text='Community-selected daily question?'), 'live',
+  'community winner becomes live only when its UTC day starts');
 select is((select status from public.questions where asked_on = (now() at time zone 'utc')::date), 'archived',
   'the previous daily question is archived at rollover');
 select is((select count(*)::integer from public.get_brewing_question('en')), 0,
@@ -57,5 +58,7 @@ select is((select count(*)::integer from public.get_brewing_question('en')), 0,
 select is((select status from public.questions where asked_on = (now() at time zone 'utc')::date + 2), 'scheduled',
   'later drafts are not activated early');
 
+select * from private.finalize_daily_pulse(((now() at time zone 'utc')::date + 2)::timestamp at time zone 'utc');
+select is((select count(*)::integer from public.questions where asked_on=(now() at time zone 'utc')::date+2 and status='live'),0,'empty community queue never falls back to a scheduled administrator draft');
 select * from finish();
 rollback;

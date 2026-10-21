@@ -50,11 +50,12 @@ test('concurrent reuse is rejected by Siteverify; gateway does not cache a succe
   assert.equal(results.filter(Boolean).length, 1);
 });
 const healthy = { utc_hour: 14, utc_minute: 0, current_live_questions: 1, overdue_questions: 0,
-  tomorrow_questions: 1, voting_enabled: true, finalizer_jobs: 1, finalizer_status: 'succeeded', finalizer_age_seconds: 7200 };
+  open_community_questions: 1, voting_enabled: true, finalizer_jobs: 1, finalizer_status: 'succeeded', finalizer_age_seconds: 7200 };
 test('operational policy catches outages and does not report low-volume ratios as abuse', () => {
+  assert.deepEqual(evaluateHealth({ ...healthy, open_community_questions: 12 }, null), []);
   assert.deepEqual(evaluateHealth(healthy, { requests: 1, p95_ms: 4000, server_errors: 1 }), []);
   for (const [field, value, code] of [['current_live_questions', 0, 'LIVE_QUESTION'], ['overdue_questions', 1, 'FINALIZATION_LAG'],
-    ['tomorrow_questions', 0, 'QUESTION_QUEUE'], ['voting_enabled', false, 'VOTING_DISABLED'],
+    ['open_community_questions', 0, 'QUESTION_QUEUE'], ['voting_enabled', false, 'VOTING_DISABLED'],
     ['finalizer_jobs', 0, 'SCHEDULER_CONFIG'], ['finalizer_status', 'failed', 'SCHEDULER_FAILED'],
     ['finalizer_age_seconds', null, 'SCHEDULER_STALE']]) {
     assert.ok(evaluateHealth({ ...healthy, [field]: value }, null).some(a => a.code === code));
