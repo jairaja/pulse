@@ -28,6 +28,8 @@ The moderator transaction takes a shared daily-cycle lock and the target row loc
 
 ## Rollout and role bootstrap (owner only)
 
+If the migration is missing from the dry-run output, see `docs/migration-dry-run-troubleshooting.md`: GitHub main includes it after PR #89, but the CLI uses the local checkout and omits migrations already recorded remotely.
+
 1. Merge/pull the review branch. In the checkout linked to hosted development, inspect `npx supabase db push --dry-run`, then apply `npx supabase db push`. The new forward migration is `202610210001_community_only_brewing.sql`. Do not edit or replay applied migrations and do not reset hosted data. It can immediately fill today's empty live slot from eligible community questions, ignoring old scheduled drafts.
 2. In Supabase Authentication identify a real, verified development account's UUID. Through the trusted SQL Editor only, assign the intended role:
    ```sql

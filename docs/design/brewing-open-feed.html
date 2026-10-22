@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PULSE · Brewing layout exploration</title>
+<style>
+:root{color-scheme:light;--page:#f0f1ed;--surface:#fcfcf8;--ink:#232a25;--muted:#657067;--line:#dce1d9;--accent:#315fc7;--soft:#eaf0ff;--green:#317451;--danger:#9c3733}
+*{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}button,select{font:inherit}button{cursor:pointer}button:disabled{cursor:default}button:focus-visible,select:focus-visible{outline:3px solid #315fc7;outline-offset:3px}main{max-width:1100px;margin:0 auto;padding:32px 24px 48px}.intro{max-width:750px}h1{font-size:30px;letter-spacing:-.7px;line-height:1.2;margin:0 0 14px}.intro p{color:var(--muted);margin:0 0 18px}.tag{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:700}.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:24px 0}.controls label{font-size:13px;display:flex;align-items:center;gap:8px}select,.control{border:1px solid #cbd3c8;background:#fff;border-radius:9px;padding:9px 12px;min-height:44px}.note{font-size:13px;color:var(--muted)}.stage{display:flex;align-items:flex-start;gap:40px}.phone{width:390px;flex:none;border:1px solid #c9d1c6;border-radius:30px;background:var(--surface);overflow:hidden;box-shadow:0 16px 45px #20312212}.statusbar{padding:15px 24px 8px;display:flex;justify-content:space-between;font-size:12px;font-weight:700}.appbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 12px}.appbar .brand{font-size:16px;font-weight:700;letter-spacing:2px}.icon{border:0;background:none;color:var(--ink);padding:10px;min-width:44px;min-height:44px;font-size:20px}.welcome{padding:6px 24px 18px}.welcome h2{font-size:29px;line-height:1.2;letter-spacing:-.7px;margin:6px 0 8px}.welcome p{font-size:14px;margin:0;color:var(--muted)}.compose{width:100%;min-height:48px;border:0;border-radius:13px;background:#263c31;color:#fff;font-size:15px;font-weight:600;margin-top:17px;padding:12px 16px}.utility{display:flex;align-items:center;gap:8px;padding:12px 20px;border-block:1px solid var(--line);background:var(--surface);flex-wrap:wrap}.chip{border:1px solid var(--line);border-radius:24px;padding:9px 12px;background:transparent;color:var(--ink);min-height:44px;font-size:12px;font-weight:600;max-width:100%;white-space:normal;text-align:start}.utility .refresh{margin-inline-start:auto;font-size:22px;flex:none;min-width:44px;min-height:44px;border:0;background:transparent;color:var(--muted)}.list{padding-inline:24px;min-height:390px}.item{padding:21px 0;display:flex;align-items:flex-start;gap:18px;border-bottom:1px solid var(--line)}.copy{flex:1;min-width:0}.question{font-size:17px;line-height:1.42;letter-spacing:-.1px;font-weight:550;margin:0;overflow-wrap:anywhere}.meta{font-size:12px;line-height:1.5;color:var(--muted);margin:9px 0 0}.vote{flex:none;min-width:58px;min-height:66px;padding:8px 10px;border:1px solid #ccd8ed;border-radius:13px;background:#f5f8ff;color:var(--accent);display:flex;align-items:center;flex-direction:column;gap:0;line-height:1.25}.arrow{font-size:20px}.count{font-size:15px;font-weight:700}.vote[aria-pressed=true]{background:var(--soft);border-color:var(--accent)}.vote:disabled{background:#f6f7f3;color:#5b665d;border-color:var(--line)}.own{color:var(--green);font-weight:600;font-size:11px;margin-inline-start:6px}.read{font-size:13px;border:0;background:none;padding:8px 0 0;min-height:44px;color:var(--accent)}.delete{color:var(--danger);border:0;background:transparent;font-size:12px;padding:10px 0;min-height:44px}.footer{font-size:11px;color:var(--muted);padding:20px 24px 30px}.homebar{height:5px;background:#29382e;width:110px;border-radius:8px;margin:0 auto 12px}.explanation{max-width:460px;padding-top:12px}.explanation h3{font-size:18px;margin:0 0 12px}.explanation p,.explanation li{font-size:14px;color:var(--muted)}.explanation ul{padding-left:20px}.explanation li{margin-bottom:12px}.grid .list{padding:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-content:start}.grid .item{border:1px solid var(--line);border-radius:15px;padding:15px;display:flex;flex-direction:column;gap:12px;background:#f9faf6;justify-content:space-between}.grid .question{font-size:15px}.grid .vote{min-height:44px;flex-direction:row;gap:8px;min-width:66px}.grid .meta{font-size:11px}.grid .own{display:block;margin:5px 0 0}.large .question{font-size:23px}.large .meta{font-size:15px}.large .chip{font-size:16px}.large .welcome p{font-size:18px}.large .item{flex-wrap:wrap}.large .vote{min-width:66px}.grid.large .question{font-size:21px}.empty{padding:28px 0;color:var(--muted);font-size:14px}.notice{font-size:12px;color:var(--green);margin-top:10px;min-height:20px}dialog{border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--ink);max-width:min(430px,90vw);padding:24px}dialog::backdrop{background:#18251d77}dialog p{font-size:14px}dialog h2{font-size:21px}dialog .control{width:100%;background:#263c31;color:#fff;border:0}a{color:#315fc7}@media(max-width:850px){.stage{flex-direction:column;align-items:center}.phone{max-width:100%}.explanation{max-width:540px}.controls{justify-content:center}main{padding:24px 16px}.intro{margin:auto}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<main>
+<header class="intro"><p class="tag">PULSE · Design proposal</p><h1>A little more space for everyone’s question.</h1><p>A lighter feed for short questions. Compare the open list with a grid, then try a narrow screen or larger text. This is sample content; it does not connect to Supabase or change app data.</p></header>
+<div class="controls" aria-label="Prototype controls">
+<label>Layout <select id="layout"><option value="feed">Open feed — recommended</option><option value="grid">Two-column grid — comparison</option></select></label>
+<label>Width <select id="width"><option value="390">390 px</option><option value="360">360 px</option><option value="430">430 px</option></select></label>
+<label>Viewer <select id="viewer"><option value="member">Signed in</option><option value="guest">Guest</option><option value="admin">Moderator</option></select></label>
+<label><input id="large" type="checkbox"> Larger text</label>
+<button class="control" id="reset">Reset sample vote</button>
+</div>
+<div class="stage">
+<section class="phone" id="phone" aria-label="Brewing screen prototype">
+<div class="statusbar"><span>09:41</span><span>Wi-Fi · 86%</span></div>
+<div class="appbar"><button class="icon" id="navigation" aria-label="Navigation menu">☰</button><span class="brand">PULSE</span><span style="width:44px" aria-hidden="true"></span></div>
+<header class="welcome"><h2>Brewing questions</h2><p>What should we ask tomorrow?<br>The most upvoted opens at 00:00 UTC.</p><button class="compose" id="compose">＋ Ask a question</button><div class="notice" id="notice" role="status" aria-live="polite"></div></header>
+<div class="utility"><select class="chip" id="sort" aria-label="Sort questions"><option value="popular">Most upvoted</option><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select><select class="chip" id="filter" aria-label="Filter questions"><option value="all">All questions</option><option value="today">Submitted today</option><option value="mine">My questions</option><option value="others">Other people’s questions</option></select><button class="refresh" id="refresh" aria-label="Refresh questions">↻</button></div>
+<div class="list" id="list"></div>
+<footer class="footer">One question and one upvote per UTC day.<br>Ties favor the later submission.</footer><div class="homebar" aria-hidden="true"></div>
+</section>
+<aside class="explanation"><h3 id="rationale-title">Recommended: an open feed</h3><p id="rationale">Questions sit on one shared surface with subtle separators. There’s less framing around each item, while the question stays the first thing you read.</p><ul><li>A short, welcoming introduction and one clear “Ask a question” action.</li><li>Compact sorting and filtering, with pull-to-refresh retained in the actual app.</li><li>A full question with a quiet UTC timestamp. The count/upvote control sits alongside it. Touch targets remain at least 44 px.</li><li>Counts stay readable when voting is unavailable. Your own question is marked; the upvote control is disabled with an accessible explanation.</li><li>After an upvote, a brief confirmation explains when the allowance resets. Moderator-only removal keeps its reason/confirm/cancel flow.</li><li>Translations and accessibility text sizes can require more lines even with a short character limit. Show the complete question rather than an ellipsis or a smaller font.</li></ul><p class="note">Proposed copy and visual treatment, not a production screen. The current app/database limit remains 280 characters. No new limit is selected by this prototype. All dates and counts here are illustrative.</p></aside>
+</div>
+</main>
+<dialog id="dialog"><h2 id="dialog-title"></h2><p id="dialog-body"></p><button class="control" id="dialog-close">Okay</button></dialog>
+<script>
+const questions=[
+{id:1,text:'Should every neighbourhood have a public park?',time:'2026-10-22T07:45:00Z',votes:128,own:false},
+{id:2,text:'Should schools start later in the morning?',time:'2026-10-22T08:20:00Z',votes:96,own:false},
+{id:3,text:'Would a four-day working week improve your life?',time:'2026-10-22T08:32:00Z',votes:84,own:true},
+{id:4,text:'Should public libraries stay open on Sundays?',time:'2026-10-21T18:10:00Z',votes:57,own:false},
+{id:5,text:'Should cities create a car-free day each month?',time:'2026-10-21T20:30:00Z',votes:42,own:false}
+];
+const $=id=>document.getElementById(id);
+let voted=null;
+const timestamp=new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23',timeZone:'UTC'});
+function show(title,body){$('dialog-title').textContent=title;$('dialog-body').textContent=body;$('dialog').showModal();}
+function render(){
+const guest=$('viewer').value==='guest';
+$('phone').classList.toggle('grid',$('layout').value==='grid');$('phone').classList.toggle('large',$('large').checked);$('phone').style.width=$('width').value+'px';
+for(const option of $('filter').options)option.hidden=guest&&['mine','others'].includes(option.value);
+if(guest&&['mine','others'].includes($('filter').value))$('filter').value='all';
+$('compose').textContent=guest?'Sign in to ask or upvote':'＋ Ask a question';
+$('notice').textContent=voted&&!guest?'Upvote added. Your next upvote is available at 00:00 UTC.':'';
+$('rationale-title').textContent=$('layout').value==='grid'?'Comparison: a two-column grid':'Recommended: an open feed';
+$('rationale').textContent=$('layout').value==='grid'?'A grid fits more entry points into a screen, but each question gets less reading width. Compare what happens to wrapping and row height at 360 px or with larger text.':'Questions sit on one shared surface with subtle separators. There’s less framing around each item, while the question stays the first thing you read.';
+const filter=$('filter').value;
+const items=questions.filter(q=>filter==='all'||filter==='mine'&&q.own||filter==='others'&&!q.own||filter==='today'&&q.time.startsWith('2026-10-22'));
+const score=q=>q.votes+(q.id===voted?1:0);
+items.sort((a,b)=>$('sort').value==='popular'?score(b)-score(a)||b.time.localeCompare(a.time):$('sort').value==='newest'?b.time.localeCompare(a.time):a.time.localeCompare(b.time));
+$('list').replaceChildren();
+if(!items.length){const empty=document.createElement('p');empty.className='empty';empty.textContent='No questions match this filter.';$('list').append(empty);}
+for(const q of items){
+const row=document.createElement('article');row.className='item';
+const copy=document.createElement('div');copy.className='copy';
+const text=document.createElement('h3');text.className='question';text.textContent=q.text;
+const meta=document.createElement('p');meta.className='meta';meta.textContent=timestamp.format(new Date(q.time))+' UTC';
+if(q.own&&!guest){const own=document.createElement('span');own.className='own';own.textContent='Your question';meta.append(own);}
+copy.append(text,meta);
+if($('viewer').value==='admin'){const remove=document.createElement('button');remove.className='delete';remove.textContent='Remove';remove.onclick=()=>show('Moderator removal','The app keeps the required reason, Confirm delete and Cancel flow. This design prototype does not remove real questions.');copy.append(remove);}
+const vote=document.createElement('button');vote.className='vote';vote.setAttribute('aria-pressed',String(voted===q.id&&!guest));
+vote.disabled=guest||q.own||voted!==null;
+vote.setAttribute('aria-label',guest?`${score(q)} upvotes. Sign in to upvote.`:q.own?`${score(q)} upvotes. You cannot upvote your own question.`:voted===q.id?`Your upvote is recorded. ${score(q)} upvotes.`:voted!==null?`${score(q)} upvotes. Your daily upvote is already used.`:`Upvote: ${q.text}. ${score(q)} upvotes.`);
+vote.title=vote.getAttribute('aria-label');
+const arrow=document.createElement('span');arrow.className='arrow';arrow.setAttribute('aria-hidden','true');arrow.textContent=voted===q.id&&!guest?'✓':'↑';
+const count=document.createElement('span');count.className='count';count.textContent=String(score(q));
+vote.append(arrow,count);vote.onclick=()=>{voted=q.id;render();};
+row.append(copy,vote);$('list').append(row);
+}
+}
+for(const id of ['layout','width','viewer','large','sort','filter'])$(id).addEventListener('change',render);
+$('reset').onclick=()=>{voted=null;render();};
+$('compose').onclick=()=>show($('viewer').value==='guest'?'Sign in to ask or upvote':'Ask a question','In the app, this opens the sign-in journey or the one-question-per-UTC-day form. No account or database request is made by this prototype.');
+$('navigation').onclick=()=>show('Navigation','The app drawer remains available. This is a standalone Brewing layout exploration.');
+$('refresh').onclick=()=>{render();$('notice').textContent='Sample questions refreshed. This prototype uses no network requests.';};
+$('dialog-close').onclick=()=>$('dialog').close();
+render();
+</script>
+</body>
+</html>
