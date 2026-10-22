@@ -3,7 +3,7 @@
 ## Exact daily UTC boundary
 
 Today's voting window is [today 00:00 UTC, tomorrow 00:00 UTC). At the closing boundary, the prior
-question is finalized and today's scheduled question activates in the same locked transaction. The
+question is finalized and the most-upvoted eligible community question becomes live in the same locked transaction. The
 job is scheduled at `0 0 * * *`, never noon. Public Today/Past Results reads catch up a delayed or
 missed rollover before returning data, so results do not wait for a periodic minute/noon publication.
 App requests still need network time; an offline device cannot promise a live update.
@@ -13,12 +13,10 @@ only; the server closes voting using its own clock. A shared/exclusive advisory 
 finalization snapshot from overtaking a vote insert that was legitimately accepted before closure.
 No new insert is valid after the boundary.
 
-The published preview is an explicit administrator announcement of tomorrow's scheduled question.
-It does not expose private drafts. Community suggestions are separate: each verified account may
-submit one question and upvote one other user's suggestion per UTC day. All open submissions stay
-eligible across days. At midnight, when no question is already scheduled for the new day, the one
-with most accumulated pre-boundary upvotes goes live. Ties prefer the later submission, then UUID.
-This selection is not announced early as a published preview.
+There is no scheduled-question override or published preview. Every open community submission remains
+eligible across days. At midnight, accumulated pre-boundary upvotes decide the next daily question;
+equal totals prefer the later submission, then UUID. The winner leaves Brewing. See
+`docs/brewing-community-rules.md` for filters, moderation and exact rollout rules.
 
 ## Install and add fixtures
 
@@ -30,12 +28,12 @@ npx supabase db push --dry-run
 npx supabase db push
 ```
 
-Inspect all pending migrations before pushing. Do not reset the database. Then open the DEVELOPMENT
-project's Dashboard > SQL Editor, paste the entire `supabase/seed/development-cycle.sql`, and run it.
-It creates missing questions for two past UTC dates, today and tomorrow, and finalizes actual past
-totals. New historical examples have zero votes; no artificial vote rows or totals are inserted.
-Existing questions/text/accepted votes/results are retained. Tomorrow's existing scheduled question,
-if any, is explicitly marked as a public preview; otherwise a new one is generated.
+Inspect all pending migrations before pushing. Do not reset the database. In the DEVELOPMENT SQL
+Editor first set `pulse.seed_author` to an existing verified auth user UUID, as the comments in
+`supabase/seed/development-cycle.sql` explain, then run that script in the same editor session. It
+adds two historical samples, an eligible community candidate for today and a new open submission;
+actual past totals are finalized. No artificial votes or future administrator schedule are inserted.
+Existing live questions, accepted votes and finalized results remain intact.
 
 Unlike the original fixed-UUID seed, this script is repeatable across days. Run it twice to verify
 identities/counts remain stable. It is DEVELOPMENT ONLY; never apply sample questions to production.
@@ -53,14 +51,14 @@ or new secret values are needed by this feature.
 
 - Today: the current live UTC question; existing receipts remain valid.
 - Past Results: actual finalized past questions, including yesterday after catch-up. Pull to refresh.
-- Brewing Questions: tomorrow's scheduled question only if `preview_published = true`. The screen has
-  a refresh button and polls while active. Sign in with a verified email account for one daily submission and one daily upvote on another user’s question.
-- After 00:00 UTC tomorrow: the midnight job or first public read makes the preview Today and today's
-  question gains a finalized result. No votes are accepted on a scheduled preview.
+- Brewing Questions: all open community cards, with timestamps, upvote controls, server-side sorting
+  and filters. Guests browse; verified accounts submit/upvote once per UTC day. Admin/superuser
+  removal requires a reason and creates a private audit entry.
+- At 00:00 UTC: the prior daily result is finalized and the highest-ranked candidate becomes live.
+  It leaves Brewing; no administrator can preselect/reserve a future daily question through the app.
 
-Draft questions remain hidden by RLS. The public get_brewing_question RPC exposes only the opted-in
-scheduled question dated tomorrow and its selected translation; it never exposes vote counts or
-later/unpublished drafts. Its definer permission is intentionally limited to that explicit read.
+The legacy get_brewing_question RPC now returns no rows for older app compatibility. Scheduled draft
+rows remain private and cannot block the community winner. See `docs/brewing-community-rules.md`.
 
 ## Diagnose the hosted scheduler (SQL Editor)
 

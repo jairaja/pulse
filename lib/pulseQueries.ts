@@ -6,7 +6,7 @@ import {
   useQueryClient
 } from '@tanstack/react-query';
 
-import { fetchBrewingQuestion, fetchFinalizedResults, fetchTodayQuestion, fetchVoteReceipt, PulseApiError, submitVote } from './pulseApi';
+import { fetchFinalizedResults, fetchTodayQuestion, fetchVoteReceipt, PulseApiError, submitVote } from './pulseApi';
 import type { VoteAttempt } from './captcha';
 import { getStoredVoteReceipt } from './voteReceipts';
 
@@ -14,18 +14,8 @@ export const pulseKeys = {
   all: ['pulse'] as const,
   results: (languageCode: string) => ['pulse', 'results', languageCode] as const,
   today: (languageCode: string) => ['pulse', 'today', languageCode] as const,
-  brewing: (languageCode: string) => ['pulse', 'brewing', languageCode] as const,
   voteReceipt: (questionId: string) => ['pulse', 'vote-receipt', questionId] as const
 };
-
-export function useBrewingQuestion(languageCode = 'en') {
-  return useQuery({
-    queryKey: pulseKeys.brewing(languageCode),
-    queryFn: () => fetchBrewingQuestion(languageCode),
-    refetchInterval: 60_000,
-    meta: { persist: false }
-  });
-}
 
 export function useTodayQuestion(languageCode = 'en') {
   return useQuery({
