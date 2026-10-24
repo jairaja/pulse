@@ -1,5 +1,8 @@
 # PULSE delivery plan
 
+> Product review update (24 October 2026): use **Moderator** (formerly product Admin), **Admin** (formerly Superuser), and **Announcements** in user-facing requirements. The owner confirmed guest daily YES/NO voting; Brewing writes require sign-in. See [the current review](requirements/product-review-2026-10-24.md). Runtime roles/APIs and existing SQL examples below remain current implementation details until an approved migration; this documentation change does not implement the proposal.
+
+
 ## Delivery rule
 
 Each step must start, be manually tested, and be understood before the next step changes the dependency graph or adds a remote service.
@@ -51,7 +54,7 @@ approved, the database and result contract remain global-only.
   local post-vote receipt.
 - Supabase email-code authentication, persisted sessions, foreground refresh, confirmed local
   logout, and a device-only nickname are implemented.
-- Cross-device history, vote ownership, submission ownership, notifications, account deletion, and
+- Cross-device history, vote ownership, submission ownership, Announcements, account deletion, and
   public attribution are **not** implemented and must not be implied by the client.
 
 See [`account-implementation-boundary.md`](./account-implementation-boundary.md).

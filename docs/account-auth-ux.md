@@ -1,5 +1,8 @@
 # Optional account and authentication UX
 
+> Product review update (24 October 2026): use **Moderator** (formerly product Admin), **Admin** (formerly Superuser), and **Announcements** in user-facing requirements. The owner confirmed guest daily YES/NO voting; Brewing writes require sign-in. See [the current review](requirements/product-review-2026-10-24.md). Runtime roles/APIs and existing SQL examples below remain current implementation details until an approved migration; this documentation change does not implement the proposal.
+
+
 **Status:** The email-code session, device-only nickname, contextual prompts, and local logout UX
 are implemented as an authentication foundation. Cross-device history, vote ownership, question
 ownership, notifications, and account deletion remain blocked on the secure server-side voting and
@@ -12,12 +15,12 @@ results. It exists to provide continuity and optional creator benefits:
 
 - restore answered-question history on another device;
 - preserve submitted questions across reinstalls/devices;
-- receive an email or push notification when a submitted question is selected;
+- receive an email or push message when a submitted question is selected;
 - show personal My Pulse insights from canonical history;
 - optionally add an approved public nickname to a shared result.
 
 Do not ask for a legal/full name. It adds sensitive personal data without helping authentication,
-history merge, recovery, or notifications—especially risky for a youth audience. A nickname is a
+history merge, recovery, or Announcements—especially risky for a youth audience. A nickname is a
 separate optional profile field and is not a login identifier.
 
 ## Reject the proposed account-existence flow
@@ -99,7 +102,7 @@ Use contextual prompts, not repeated login banners.
 ### Primary, persistent entry
 
 Add an **Account** section in Settings. Signed out: **Sign in or create account**. Signed in: email,
-optional nickname, notification preference, **Log out**, and **Delete account**. This is the one
+optional nickname, Announcements preference, **Log out**, and **Delete account**. This is the one
 predictable place where account controls always exist.
 
 ### Contextual entry points
@@ -209,7 +212,7 @@ ready, use non-unique display names without `@` and do not imply identity unique
 9. Add nickname/profile moderation and opt-in share attribution last.
 
 Authentication is not the next coding step merely because the Supabase client now connects. The
-server-side identity, merge, notification ownership, privacy, and abuse contracts must be approved
+server-side identity, merge, Announcements ownership, privacy, and abuse contracts must be approved
 first.
 
 ## Dashboard setup for the implemented email-code foundation
