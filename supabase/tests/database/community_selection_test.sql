@@ -12,6 +12,7 @@ insert into public.question_submissions(id,author_id,question_text,submitted_on,
  ('63000000-0000-4000-8000-000000000002','62000000-0000-4000-8000-000000000002','Newer equally supported question?',current_date-2,(current_date-2)::timestamp at time zone 'utc','open'),
  ('63000000-0000-4000-8000-000000000003','62000000-0000-4000-8000-000000000003','Hidden question with more votes?',current_date-1,(current_date-1)::timestamp at time zone 'utc','hidden'),
  ('63000000-0000-4000-8000-000000000004','62000000-0000-4000-8000-000000000004','Just submitted today is not eligible?',current_date,current_date::timestamp at time zone 'utc','open');
+update public.question_submissions set published_at=created_at where status='open' and published_at is null;
 insert into public.submission_votes(voter_id,submission_id,voted_on,created_at) values
  ('62000000-0000-4000-8000-000000000003','63000000-0000-4000-8000-000000000001',current_date-3,(current_date-3)::timestamp at time zone 'utc'),
  ('62000000-0000-4000-8000-000000000004','63000000-0000-4000-8000-000000000002',current_date-1,(current_date-1)::timestamp at time zone 'utc'),

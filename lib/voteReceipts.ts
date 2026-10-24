@@ -1,6 +1,7 @@
 import Storage from 'expo-sqlite/kv-store';
 
 import type { VoteReceipt } from './pulseTypes';
+import { writeLocal } from './localReset';
 
 // A receipt from a local/test project must never hide voting in another project.
 const projectScope = encodeURIComponent((process.env.EXPO_PUBLIC_SUPABASE_URL ?? 'unconfigured').replace(/\/+$/, ''));
@@ -16,7 +17,7 @@ export async function getStoredVoteReceipt(questionId: string): Promise<VoteRece
       typeof value.receiptId === 'string' &&
       typeof value.questionId === 'string' &&
       typeof value.acceptedAt === 'string' &&
-      (value.choice === 'YES' || value.choice === 'NO')
+      (value.choice === 'YES' || value.choice === 'NO' || (value.choice === null && value.alreadyCounted === true))
     ) {
       return value as VoteReceipt;
     }
@@ -29,5 +30,5 @@ export async function getStoredVoteReceipt(questionId: string): Promise<VoteRece
 }
 
 export async function storeVoteReceipt(receipt: VoteReceipt) {
-  await Storage.setItem(receiptKey(receipt.questionId), JSON.stringify(receipt));
+  await writeLocal(receiptKey(receipt.questionId), JSON.stringify(receipt));
 }

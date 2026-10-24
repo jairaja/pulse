@@ -27,12 +27,18 @@ function configurationError(): string | null {
 }
 
 export const supabaseConfigurationError = configurationError();
+export const AUTH_STORAGE_KEY = (() => { try { return `sb-${new URL(supabaseUrl!).hostname.split('.')[0]}-auth-token`; } catch { return 'sb-unconfigured-auth-token'; } })();
+export async function clearAuthStorage() {
+  await Promise.all([AUTH_STORAGE_KEY, `${AUTH_STORAGE_KEY}-code-verifier`, `${AUTH_STORAGE_KEY}-user`].map(key => Storage.removeItem(key)));
+}
+
 
 export const supabase: SupabaseClient | null = supabaseConfigurationError
   ? null
   : createClient(supabaseUrl!, supabasePublishableKey!, {
       auth: {
         storage: Storage,
+        storageKey: AUTH_STORAGE_KEY,
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: false

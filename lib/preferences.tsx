@@ -3,6 +3,7 @@ import { onlineManager } from '@tanstack/react-query';
 import { AppState } from 'react-native';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 
+import { localGeneration, writeLocal } from './localReset';
 import { useAuth } from './auth';
 import { createPreferenceController, type PreferenceSnapshot } from './preferenceController';
 import { preferenceRemote } from './preferenceApi';
@@ -19,8 +20,9 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   const controller = useRef<ReturnType<typeof createPreferenceController> | null>(null);
   useEffect(() => {
     if (loading) return;
+    const generation = localGeneration();
     const next = createPreferenceController({ owner, scope: process.env.EXPO_PUBLIC_SUPABASE_URL ?? 'unconfigured',
-      storage: Storage, remote: preferenceRemote, changed: snapshot => setState({ ...snapshot, owner }) });
+      storage: { getItem: key => Storage.getItem(key), setItem: (key, value) => writeLocal(key, value, generation) }, remote: preferenceRemote, changed: snapshot => setState({ ...snapshot, owner }) });
     controller.current = next;
     void next.start();
     const unsubscribe = onlineManager.subscribe(online => { if (online) void next.refresh(); });

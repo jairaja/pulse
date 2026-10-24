@@ -1,3 +1,5 @@
+import { rememberGuestAnswer } from './localHistory';
+import { localGeneration } from './localReset';
 import { getInstallationCredential } from './installation';
 import { collectClientDeviceEvidence, IneligibleDeviceError } from './deviceIntegrity';
 import type { VoteAttempt } from './captcha';
@@ -132,6 +134,7 @@ export async function fetchFinalizedResults({
 }
 
 export async function submitVote(attempt: VoteAttempt): Promise<VoteReceipt> {
+  const generation = localGeneration();
   const { captchaBinding, captchaToken, choice, idempotencyKey, questionId } = attempt;
   const credential = await getInstallationCredential();
   const deviceEvidence = await voteDeviceEvidence();
@@ -157,13 +160,16 @@ export async function submitVote(attempt: VoteAttempt): Promise<VoteReceipt> {
   }
 
   const receipt = parseVoteReceipt(row, questionId, status === 'ALREADY_VOTED');
-  await storeVoteReceipt(receipt);
+  if (generation === localGeneration()) {
+    await storeVoteReceipt(receipt);
+    if (!(await client().auth.getSession()).data.session && generation === localGeneration()) await rememberGuestAnswer(receipt);
+  }
   return receipt;
 }
 
 function parseVoteReceipt(row: UnknownRecord, questionId: string, alreadyCounted: boolean): VoteReceipt {
-  const acceptedChoice = requiredString(row.accepted_choice, 'accepted choice');
-  if (acceptedChoice !== 'YES' && acceptedChoice !== 'NO') {
+  const acceptedChoice = row.accepted_choice === null && alreadyCounted ? null : requiredString(row.accepted_choice, 'accepted choice');
+  if (acceptedChoice !== null && acceptedChoice !== 'YES' && acceptedChoice !== 'NO') {
     throw new PulseApiError('The server returned an invalid vote choice.', 'INVALID_RESPONSE');
   }
   return {
@@ -185,6 +191,7 @@ async function voteDeviceEvidence() {
 }
 
 export async function fetchVoteReceipt(questionId: string): Promise<VoteReceipt | null> {
+  const generation = localGeneration();
   const credential = await getInstallationCredential();
   const deviceEvidence = await voteDeviceEvidence();
   const { data, error } = await client().functions.invoke('vote', {
@@ -195,14 +202,9 @@ export async function fetchVoteReceipt(questionId: string): Promise<VoteReceipt 
   if (row.status === 'NOT_VOTED') return null;
   if (row.status !== 'ALREADY_VOTED') throw new PulseApiError('The server returned an invalid vote status.', 'INVALID_RESPONSE');
   const receipt = parseVoteReceipt(row, questionId, true);
-  await storeVoteReceipt(receipt);
+  if (generation === localGeneration()) {
+    await storeVoteReceipt(receipt);
+    if (receipt.choice && !(await client().auth.getSession()).data.session && generation === localGeneration()) await rememberGuestAnswer(receipt);
+  }
   return receipt;
-}
-
-export async function claimAccountHistory() {
-  const credential = await getInstallationCredential();
-  const { data, error } = await client().rpc('claim_installation_history', { p_credential: credential });
-  if (error) throw new PulseApiError('Could not synchronize vote history.', error.code, true);
-  const row = record(Array.isArray(data) ? data[0] : data);
-  return { claimedCount: safeCount(row.claimed_count, 'claimed count'), conflictCount: safeCount(row.conflict_count, 'conflict count') };
 }

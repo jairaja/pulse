@@ -47,6 +47,7 @@ select is((select finalized_count from private.finalize_daily_pulse(now())), 0,
 insert into auth.users(id,email_confirmed_at) values('71000000-0000-4000-8000-000000000001',now());
 insert into public.question_submissions(author_id,question_text,submitted_on,created_at)
 values('71000000-0000-4000-8000-000000000001','Community-selected daily question?',(now() at time zone 'utc')::date,clock_timestamp());
+update public.question_submissions set published_at=created_at where status='open' and published_at is null;
 create temporary table daily_rollover as
 select * from private.finalize_daily_pulse(((now() at time zone 'utc')::date + 1)::timestamp at time zone 'utc');
 select is((select status from public.questions where asked_on = (now() at time zone 'utc')::date + 1 and question_text='Community-selected daily question?'), 'live',

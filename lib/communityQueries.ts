@@ -25,7 +25,9 @@ export function useCommunityBrewing(userId?: string, sort: BrewingSort = 'most_u
     }, Math.max(1000, remaining));
     return () => clearTimeout(timer);
   }, [allowance.data, allowance.dataUpdatedAt, queryClient, userId]);
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ['pulse', 'community'] });
+  const refresh = async () => {
+    await Promise.all([queryClient.invalidateQueries({ queryKey: ['pulse', 'community'] }), queryClient.invalidateQueries({ queryKey: ['pulse', 'my-activity'] })]);
+  };
   const submit = useMutation({ mutationFn: submitCommunityQuestion, onSuccess: refresh, retry: false, networkMode: 'always' });
   const upvote = useMutation({ mutationFn: upvoteCommunityQuestion, onSuccess: refresh, onError: refresh, retry: false, networkMode: 'always' });
   const remove = useMutation({ mutationFn: removeCommunityQuestion, retry: false, networkMode: 'always',

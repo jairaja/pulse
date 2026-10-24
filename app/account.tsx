@@ -1,3 +1,4 @@
+import { AppTextInput as TextInput } from '../components/AppTextInput';
 import { useI18n, AppText as Text } from '../lib/i18n';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
@@ -9,11 +10,11 @@ import {
   ScrollView,
   StyleSheet,
   Switch,
-  TextInput,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useHumanCheck } from '../components/HumanCheck';
 import { useAuth } from '../lib/auth';
 import { useAppTheme, type ThemeColors } from '../lib/theme';
 
@@ -35,6 +36,8 @@ export default function AccountScreen() {
     signOut,
     verifyEmailCode
   } = useAuth();
+  const human = useHumanCheck();
+  const [importHistory, setImportHistory] = useState(true);
   const [stage, setStage] = useState<Stage>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -71,7 +74,7 @@ export default function AccountScreen() {
   async function verifyCode() {
     setBusy(true);
     setError('');
-    const result = await verifyEmailCode(email, code);
+    const result = await verifyEmailCode(email, code, importHistory, human.verify);
     setBusy(false);
     if (!result.ok) {
       setError(result.message);
@@ -95,8 +98,8 @@ export default function AccountScreen() {
 
   function confirmLogout() {
     Alert.alert(
-      t('Log out on this device?'),
-      t('Log out and continue using PULSE as a guest?'),
+      t('Log out of Pulse?'),
+      t('Your account history stays saved. Pulse will reset on this device.'),
       [
         { text: t('Cancel'), style: 'cancel' },
         {
@@ -131,8 +134,8 @@ export default function AccountScreen() {
             <Text style={styles.title}>{signedIn ? t("Your Pulse is connected.") : t("Keep your Pulse.")}</Text>
             <Text style={styles.body}>
               {signedIn
-                ? t("Your email is verified. Secure history sync will be enabled only after server-confirmed voting is connected.")
-                : t("Verify your email now to prepare for cross-device history and question updates. PULSE still works without an account.")}
+                ? t("Your history and preferences are saved to your account. Only one device can use this account at a time.")
+                : t("Keep your history across devices. You can still cast the daily YES/NO vote as a guest.")}
             </Text>
           </View>
 
@@ -223,7 +226,13 @@ export default function AccountScreen() {
           ) : stage === 'code' ? (
             <View style={styles.form}>
               <Text style={styles.label}>{t("6-DIGIT CODE")}</Text>
-              <Text style={styles.smallBody}>{t('We sent a code to {email}.', { email: email.trim().toLowerCase() })}</Text>
+              <Text style={styles.smallBody}>{t('Enter the code sent to {email}. Signing in here will sign your account out on any other device.', { email: email.trim().toLowerCase() })}</Text>
+              <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: importHistory, disabled: busy }}
+                disabled={busy} onPress={() => setImportHistory(value => !value)} style={[styles.switchRow, { minHeight: 48 }]}>
+                <Text style={[styles.smallBody, { flex: 1 }]}>{t('Add earlier votes from this device to my new account.')}</Text>
+                <Text style={{ color: colors.accent, fontSize: 28 }}>{importHistory ? '☑' : '☐'}</Text>
+              </Pressable>
+              <Text style={styles.privacyNote}>{t('Only when creating an account here. Existing-account sign-ins restore account history instead. Turn this off on a shared device.')}</Text>
               <TextInput
                 autoComplete="one-time-code"
                 editable={!busy}
@@ -279,6 +288,7 @@ export default function AccountScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+      {human.element}
     </SafeAreaView>
   );
 }
@@ -370,7 +380,7 @@ function createStyles(colors: ThemeColors) {
     disabledButton: { opacity: 0.48 },
     textButton: { alignItems: 'center', justifyContent: 'center', minHeight: 44 },
     textButtonLabel: { color: colors.accent, fontSize: 14, fontWeight: '700' },
-    error: { color: '#C95B55', fontSize: 14, lineHeight: 20 },
+    error: { color: colors.error, fontSize: 14, lineHeight: 20 },
     smallBody: { color: colors.body, fontSize: 14, lineHeight: 21 },
     emailValue: { color: colors.ink, fontSize: 17, fontWeight: '700' },
     privacyNote: { color: colors.muted, fontSize: 13, lineHeight: 19 },
@@ -389,12 +399,12 @@ function createStyles(colors: ThemeColors) {
     previewText: { color: colors.accent, fontSize: 15, fontWeight: '800', textAlign: 'center' },
     logoutButton: {
       alignItems: 'center',
-      borderColor: '#C95B55',
+      borderColor: colors.error,
       borderRadius: 16,
       borderWidth: 1,
       justifyContent: 'center',
       minHeight: 54
     },
-    logoutText: { color: '#C95B55', fontSize: 15, fontWeight: '800' }
+    logoutText: { color: colors.error, fontSize: 15, fontWeight: '800' }
   });
 }

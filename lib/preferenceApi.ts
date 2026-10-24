@@ -11,7 +11,9 @@ async function call(name: string, owner: string, values: Record<string, unknown>
 }
 export const preferenceRemote = {
   ensure: (owner: string, initial: Preferences) => call('ensure_user_preferences', owner,
-    { p_language: initial.language, p_theme: initial.theme }),
+    { p_language: initial.language, p_theme: initial.theme, p_options: options(initial) }),
   patch: (owner: string, patch: PreferencePatch) => call('update_user_preferences', owner,
-    { p_language: patch.language ?? null, p_theme: patch.theme ?? null })
+    { p_language: patch.language ?? null, p_theme: patch.theme ?? null, p_options: options(patch) })
 };
+
+function options(patch: PreferencePatch) { const { language: _language, theme: _theme, ...extra } = patch; return extra; }

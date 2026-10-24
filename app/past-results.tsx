@@ -1,3 +1,8 @@
+import { useLocalSearchParams } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { resolvePublicQuestion } from '../lib/publicQuestions';
+import { ShareQuestion } from '../components/ShareQuestion';
+import { ViewToggle, useCardView } from '../components/ViewToggle';
 import { useI18n, AppText as Text } from '../lib/i18n';
 import { useMemo } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
@@ -5,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AccountPrompt } from '../components/AccountPrompt';
 import { PulseApiError } from '../lib/pulseApi';
-import { useFinalizedResults, useVoteReceipt } from '../lib/pulseQueries';
+import { useFinalizedResults } from '../lib/pulseQueries';
 import type { FinalizedResult } from '../lib/pulseTypes';
 import { useConnectivity } from '../lib/query';
 import { useAppTheme, type ThemeColors } from '../lib/theme';
@@ -16,18 +21,28 @@ export default function PastResultsScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const connectivity = useConnectivity();
   const results = useFinalizedResults(language);
-  const items = results.data?.pages.flatMap((page) => page.items) ?? [];
+  const view = useCardView('results');
+  const { highlight } = useLocalSearchParams<{ highlight?: string }>();
+  const highlighted = useQuery({ queryKey: ['pulse', 'highlighted-result', highlight], enabled: Boolean(highlight),
+    queryFn: () => resolvePublicQuestion('question', highlight!), meta: { persist: false } });
+  const pages = results.data?.pages.flatMap((page) => page.items) ?? [];
+  const h = highlighted.data;
+  const pinned: FinalizedResult | null = h?.destination === 'past-results' && h.result ? { id: h.id, questionText: h.text,
+    askedOn: h.asked_on!, sponsored: false, sourceLanguage: 'und', finalResult: h.result,
+    totalVotes: Number(h.total_votes), yesCount: Number(h.yes_count), noCount: Number(h.no_count), finalizedAt: h.finalized_at! } : null;
+  const items = pinned ? [pinned, ...pages.filter(item => item.id !== pinned.id)] : pages;
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>
-      <FlatList
+      <FlatList key={view.mode} numColumns={view.mode === 'grid' ? 2 : 1} columnWrapperStyle={view.mode === 'grid' ? { gap: 12 } : undefined}
         contentContainerStyle={styles.content}
         data={items}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ResultCard item={item} styles={styles} />}
+        renderItem={({ item }) => <ResultCard item={item} styles={styles} highlighted={item.id === highlight} />}
         ListHeaderComponent={
           <View style={styles.intro}>
             <Text style={styles.eyebrow}>{t("PAST RESULTS")}</Text>
+            <ViewToggle view={view} />
             <Text style={styles.title}>{t("What PULSE voters said.")}</Text>
             <Text style={styles.body}>{t("Every finalized question is visible, whether you voted or not.")}</Text>
             <Text style={styles.body}>{t("New results are published at 00:00 UTC, when the next daily question opens.")}</Text>
@@ -61,7 +76,7 @@ export default function PastResultsScreen() {
             ) : null}
             <AccountPrompt
               action={t("Protect my history")}
-              body={t("Keep server-confirmed answers available when you change phones after secure history sync launches.")}
+              body={t("Keep server-confirmed answers available when you change phones.")}
               source="past-results"
               title={t("Changing phones someday?")}
             />
@@ -74,13 +89,13 @@ export default function PastResultsScreen() {
   );
 }
 
-function ResultCard({ item, styles }: { item: FinalizedResult; styles: ReturnType<typeof createStyles> }) {
+function ResultCard({ item, styles, highlighted }: { item: FinalizedResult; styles: ReturnType<typeof createStyles>; highlighted: boolean }) {
   const { t, locale } = useI18n();
-  const receipt = useVoteReceipt(item.id);
+  const { colors } = useAppTheme();
   const yesPercent = item.totalVotes === 0 ? 0 : Math.round((item.yesCount / item.totalVotes) * 100);
   const noPercent = item.totalVotes === 0 ? 0 : 100 - yesPercent;
   return (
-    <View style={styles.resultCard}>
+    <View style={[styles.resultCard, { flex: 1 }, highlighted && { borderColor: colors.accent }]}>
       <Text style={styles.date}>{formatDate(item.askedOn, locale)}</Text>
       <Text style={styles.question}>{item.questionText}</Text>
       <View style={styles.resultRow}>
@@ -88,7 +103,7 @@ function ResultCard({ item, styles }: { item: FinalizedResult; styles: ReturnTyp
         <Text style={styles.percentage}>{t('{yes}% YES · {no}% NO', { yes: yesPercent, no: noPercent })}</Text>
       </View>
       <Text style={styles.voteCount}>{t('{count} votes', { count: new Intl.NumberFormat(locale).format(item.totalVotes) })}</Text>
-      {receipt.data ? <Text style={styles.yourVote}>{t('You voted {choice}', { choice: t(receipt.data.choice) })}</Text> : null}
+      <ShareQuestion kind="question" id={item.id} text={item.questionText} />
     </View>
   );
 }
@@ -127,6 +142,6 @@ function createStyles(colors: ThemeColors) {
     loader: { marginVertical: 40 },
     empty: { color: colors.muted, fontSize: 15, lineHeight: 22, paddingVertical: 32, textAlign: 'center' },
     errorCard: { gap: 14, paddingVertical: 24 },
-    error: { color: '#C95B55', fontSize: 14, lineHeight: 20, textAlign: 'center' }
+    error: { color: colors.error, fontSize: 14, lineHeight: 20, textAlign: 'center' }
   });
 }

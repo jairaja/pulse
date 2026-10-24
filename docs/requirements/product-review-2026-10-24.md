@@ -1,5 +1,8 @@
 # PULSE product review — 24 October 2026
 
+Current approved implementation and deployment: [product journeys rollout](../product-journeys-rollout.md). The owner chose a checked signup-import checkbox, no blanket waiting period, and one upvote per account/device/UTC day. Earlier comparison proposals below are superseded for that scope.
+
+
 **Status: review proposal, not implementation approval.** This document addresses the owner's 27-point request. No app, API, migration, permissions or runtime terminology is changed by this review. Prototype screens use sample data only. Recommendations below are explicitly proposals; they do not silently replace currently deployed guest voting or security behavior.
 
 ## Decisions and current gaps

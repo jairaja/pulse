@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Text as NativeText, type TextProps } from 'react-native';
+import { Text as NativeText, StyleSheet, type TextProps } from 'react-native';
 
 import { usePreferences } from './preferences';
 import { SUPPORTED_LANGUAGES, type Language } from './preferencesModel';
@@ -20,5 +20,8 @@ export function useI18n() {
 }
 export function AppText({ style, ...props }: TextProps) {
   const { direction } = useI18n();
-  return <NativeText {...props} style={[{ writingDirection: direction, textAlign: direction === 'rtl' ? 'right' : 'auto' }, style]} />;
+  const { preferences } = usePreferences();
+  const flat = StyleSheet.flatten(style);
+  const size = preferences.largerText ? { fontSize: (flat?.fontSize ?? 14) * 1.25, ...(flat?.lineHeight ? { lineHeight: flat.lineHeight * 1.25 } : {}) } : {};
+  return <NativeText {...props} allowFontScaling style={[{ writingDirection: direction, textAlign: direction === 'rtl' ? 'right' : 'auto' }, style, size]} />;
 }

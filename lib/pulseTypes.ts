@@ -25,7 +25,7 @@ export type FinalizedResult = QuestionSummary & {
 export type VoteReceipt = {
   alreadyCounted?: boolean;
   acceptedAt: string;
-  choice: VoteChoice;
+  choice: VoteChoice | null;
   questionId: string;
   receiptId: string;
 };

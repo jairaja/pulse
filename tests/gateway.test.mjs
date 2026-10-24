@@ -58,7 +58,8 @@ test('actual gateway handler: fail closed, no writes before verification, strict
     const call = (payload, headers = {}) => handler(new Request('https://test/vote', {
       method: 'POST', headers, body: JSON.stringify(payload)
     }));
-    const verified = { success: true, action: 'pulse-vote', hostname: 'verify.example.com', cdata: binding };
+    const signedToken = `header.${Buffer.from(JSON.stringify({session_id:'40000000-0000-4000-8000-000000000001'})).toString('base64url')}.signature`;
+    const verified = { challenge_ts: new Date().toISOString(), success: true, action: 'pulse-vote', hostname: 'verify.example.com', cdata: binding };
     let providerCalls = 0;
     globalThis.fetch = async (url, options) => {
       providerCalls++;
@@ -90,7 +91,7 @@ test('actual gateway handler: fail closed, no writes before verification, strict
       assert.equal((await call(proof)).status, 403);
       env.set(name, value);
     }
-    for (const change of [{ success: false }, { action: 'other' }, { hostname: 'other.example.com' }, { cdata: 'other' }]) {
+    for (const change of [{ challenge_ts: 'invalid' }, { challenge_ts: new Date(Date.now() - 301000).toISOString() }, { challenge_ts: new Date(Date.now() + 31000).toISOString() }, { success: false }, { action: 'other' }, { hostname: 'other.example.com' }, { cdata: 'other' }]) {
       globalThis.fetch = async () => Response.json({ ...verified, ...change });
       const response = await call(proof);
       assert.equal(response.status, 403);
@@ -127,10 +128,10 @@ test('actual gateway handler: fail closed, no writes before verification, strict
     assert.equal((await call({ ...statusRequest, deviceEvidence: {} })).status, 403);
     assert.equal(receiptReads.length, readsBeforeInvalidDevice);
     sessionError = { message: 'invalid session' };
-    assert.equal((await call(statusRequest, { Authorization: 'Bearer fake.jwt.token' })).status, 401);
+    assert.equal((await call(statusRequest, { Authorization: `Bearer ${signedToken}` })).status, 401);
     assert.equal(receiptReads.length, readsBeforeInvalidDevice);
     sessionError = null;
-    assert.equal((await call(statusRequest, { Authorization: 'Bearer fake.jwt.token' })).status, 200);
+    assert.equal((await call(statusRequest, { Authorization: `Bearer ${signedToken}` })).status, 200);
     assert.equal(receiptReads.at(-1).p_account_id, 'verified-account');
     env.set('TURNSTILE_SECRET_KEY', 'provider-secret');
 
@@ -143,14 +144,14 @@ test('actual gateway handler: fail closed, no writes before verification, strict
     assert.match(writes[0].args.p_device_fingerprint_hash, /^[a-f0-9]{64}$/);
     assert.notEqual(writes[0].args.p_device_fingerprint_hash, vote.deviceEvidence.deviceIdentifier);
     assert.deepEqual(writes[1].args, { p_credential: vote.credential, p_account_id: null,
-      p_question_id: vote.questionId, p_choice: vote.choice, p_idempotency_key: vote.idempotencyKey });
+      p_session_id: null, p_question_id: vote.questionId, p_choice: vote.choice, p_idempotency_key: vote.idempotencyKey });
 
     writes.length = 0;
     sessionError = { message: 'invalid session' };
-    assert.equal((await call(proof, { Authorization: 'Bearer fake.jwt.token' })).status, 401);
+    assert.equal((await call(proof, { Authorization: `Bearer ${signedToken}` })).status, 401);
     assert.equal(writes.length, 0);
     sessionError = null;
-    assert.equal((await call(proof, { Authorization: 'Bearer fake.jwt.token' })).status, 200);
+    assert.equal((await call(proof, { Authorization: `Bearer ${signedToken}` })).status, 200);
     assert.equal(writes[0].args.p_account_id, 'verified-account');
 
     writes.length = 0;

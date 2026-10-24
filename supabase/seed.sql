@@ -16,7 +16,7 @@ values (
   'archived',
   now() - interval '1 minute'
 )
-on conflict (asked_on) do nothing;
+on conflict (asked_on) where status in ('live','archived') do nothing;
 
 insert into public.question_results (
   question_id,
@@ -49,4 +49,4 @@ values (
   (now() at time zone 'utc')::date,
   'live'
 )
-on conflict (asked_on) do nothing;
+on conflict (asked_on) where status in ('live','archived') do nothing;

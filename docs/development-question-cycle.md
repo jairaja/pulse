@@ -52,7 +52,7 @@ or new secret values are needed by this feature.
 - Today: the current live UTC question; existing receipts remain valid.
 - Past Results: actual finalized past questions, including yesterday after catch-up. Pull to refresh.
 - Brewing Questions: all open community cards, with timestamps, upvote controls, server-side sorting
-  and filters. Guests browse; verified accounts submit/upvote once per UTC day. Admin/superuser
+  and filters. Guests browse; verified accounts submit/upvote once per UTC day. Moderator/Admin
   removal requires a reason and creates a private audit entry.
 - At 00:00 UTC: the prior daily result is finalized and the highest-ranked candidate becomes live.
   It leaves Brewing; no administrator can preselect/reserve a future daily question through the app.

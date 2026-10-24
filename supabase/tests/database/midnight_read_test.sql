@@ -7,6 +7,7 @@ on conflict do nothing;
 insert into auth.users(id,email_confirmed_at) values('72000000-0000-4000-8000-000000000001',now());
 insert into public.question_submissions(author_id,question_text,submitted_on,created_at)
 values('72000000-0000-4000-8000-000000000001','Community today begins at midnight?',current_date-1,(current_date-1)::timestamp at time zone 'utc');
+update public.question_submissions set published_at=created_at where status='open' and published_at is null;
 select is((select schedule from cron.job where jobname='pulse-daily-finalization'), '0 0 * * *', 'daily job is at midnight, not noon');
 set local role anon;
 select is((select count(*)::integer from public.get_today_question('en')), 1, 'first public read catches up a missed rollover and returns today');
