@@ -1,0 +1,71 @@
+{
+  "method": "Offline sequential predicate/state models and arithmetic; no hosted load, SQL, attestation, real email, browser/store handoff or AI search tested.",
+  "voteAttempts": 100000,
+  "loginWaitOnlyAcceptances": 100000,
+  "independentGuardAcceptances": 1,
+  "sharedDeviceSameDay": {
+    "accountsAttempting": 100,
+    "accountDayOnlyAcceptances": 100,
+    "proposedAccountAndDeviceDayAcceptances": 1
+  },
+  "repeatQuestionUpvotesAcrossDifferentDays": 100000,
+  "modeledAccountCount": 100,
+  "modeledDistinctDevices": 100,
+  "modeledDays": 1000,
+  "importChecks": [
+    "new-account only",
+    "bound originating device",
+    "explicit consent",
+    "decline sealed",
+    "same-operation retry",
+    "server-accepted unowned pre-cutoff votes only"
+  ],
+  "leaseClaimsModeled": 1000,
+  "remainingValidLease": 1,
+  "staleTypeaheadResponseIgnored": true,
+  "lexicalOverlapOfOppositeTimingQuestions": 0.6,
+  "cooldownWaitMinutes": {
+    "loginAt0001UTC": 1439,
+    "loginAt2359UTC": 1
+  },
+  "hypotheticalReadRequestsPerSecond_100MillionConcurrentAppsPolling30Seconds": 3333333.3333333335,
+  "assumptions": "100% of stated DAU cast one daily vote; 365 days; 250–500 bytes per vote including planning allowance for base indexes; no WAL/replicas/backups/history/upvote/audit/bloat allowance. Not a measured row size or price quote.",
+  "capacity": [
+    {
+      "dailyActiveUsers": 1000,
+      "dailyVotes": 1000,
+      "yearlyRows": 365000,
+      "averageWritesPerSecond": 0.011574074074074073,
+      "burstWritesPerSecond_10PercentIn5Minutes": 0.3333333333333333,
+      "yearlyPrimaryGB_250BytesPerRow": 0.09125,
+      "yearlyPrimaryGB_500BytesPerRow": 0.1825
+    },
+    {
+      "dailyActiveUsers": 100000,
+      "dailyVotes": 100000,
+      "yearlyRows": 36500000,
+      "averageWritesPerSecond": 1.1574074074074074,
+      "burstWritesPerSecond_10PercentIn5Minutes": 33.333333333333336,
+      "yearlyPrimaryGB_250BytesPerRow": 9.125,
+      "yearlyPrimaryGB_500BytesPerRow": 18.25
+    },
+    {
+      "dailyActiveUsers": 1000000,
+      "dailyVotes": 1000000,
+      "yearlyRows": 365000000,
+      "averageWritesPerSecond": 11.574074074074074,
+      "burstWritesPerSecond_10PercentIn5Minutes": 333.3333333333333,
+      "yearlyPrimaryGB_250BytesPerRow": 91.25,
+      "yearlyPrimaryGB_500BytesPerRow": 182.5
+    },
+    {
+      "dailyActiveUsers": 100000000,
+      "dailyVotes": 100000000,
+      "yearlyRows": 36500000000,
+      "averageWritesPerSecond": 1157.4074074074074,
+      "burstWritesPerSecond_10PercentIn5Minutes": 33333.333333333336,
+      "yearlyPrimaryGB_250BytesPerRow": 9125,
+      "yearlyPrimaryGB_500BytesPerRow": 18250
+    }
+  ]
+}

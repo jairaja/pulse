@@ -1,5 +1,8 @@
 # Account implementation boundary
 
+> Product review update (24 October 2026): use **Moderator** (formerly product Admin), **Admin** (formerly Superuser), and **Announcements** in user-facing requirements. The owner confirmed guest daily YES/NO voting; Brewing writes require sign-in. See [the current review](requirements/product-review-2026-10-24.md). Runtime roles/APIs and existing SQL examples below remain current implementation details until an approved migration; this documentation change does not implement the proposal.
+
+
 The current account surface proves email-code authentication and session lifecycle only.
 
 ## Implemented
@@ -17,7 +20,7 @@ The current account surface proves email-code authentication and session lifecyc
 - account-history or question-history merge;
 - cross-device restoration;
 - cross-device restoration of account-linked vote receipts;
-- question submission ownership or selected-question notifications;
+- question submission ownership or selected-question Announcements;
 - public nickname attribution on real share images;
 - account deletion/export;
 - single-device enforcement or anonymous-device transfer.

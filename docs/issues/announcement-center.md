@@ -1,6 +1,6 @@
 # Multilingual in-app announcements for guests and accounts
 
-Design/specification only. Do not implement the app, announcement database, publisher or jobs in the language/preferences change. This is separate from FCM/APNs push notification delivery (T12): checking on open/foreground and manual refresh is sufficient.
+Design/specification only. Do not implement the app, announcement database, publisher or jobs in the language/preferences change. This is separate from FCM/APNs push delivery (T12): checking on open/foreground and manual refresh is sufficient.
 
 Recommended UX:
 
@@ -13,7 +13,7 @@ Recommended UX:
 
 Delivery and storage:
 
-- Superuser-only draft/publish/withdraw. Original text + source language + immutable source version; server-side AI translations stored per locale/version. No translation API call or secret in a client read. Review/completeness gate before publication. A newer source version invalidates old translation readiness; users must not see mismatched translation versions. An explicitly missing locale shows a labelled original-language fallback.
+- Admin-only draft/publish/withdraw. Original text + source language + immutable source version; server-side AI translations stored per locale/version. No translation API call or secret in a client read. Review/completeness gate before publication. A newer source version invalidates old translation readiness; users must not see mismatched translation versions. An explicitly missing locale shows a labelled original-language fallback.
 - Published/scheduled/expired/withdrawn lifecycle, starts_at/ends_at in UTC. Serve only authorized live content. Expired/withdrawn/deleted content must disappear from caches. A scheduled future announcement must not leak through a public feed before release.
 - Do **not** send every cached timestamp. Use a bounded delta endpoint with opaque cursor encoding feed epoch, committed revision and locale. Return changes (versioned upserts/tombstones), next cursor, pinned committed high-water revision, server_time, nearest transition, and whether a full snapshot is required. Limit pages (for example 100) and payload size; deduplicate by announcement ID and apply only increasing per-item revisions.
 - Critical: a plain sequence/nextval is allocation-ordered, not commit-ordered. Transaction A can allocate 100, B commit 101, client checkpoint 101, then A commits 100 and is lost. Use a transactional counter locked through commit for this small broadcast feed, or an equivalent change stream with a proven committed checkpoint. A cursor must never jump an uncommitted gap. Add an index on committed revision and retain tombstones/change records for the offline window.
@@ -26,4 +26,7 @@ Design-model stress validation:
 
 Run `node docs/design/announcement-sync-model.mjs`. The deterministic local simulation processed 100,001 committed changes with page size 100, duplicate delivery, stale replay, concurrent arrivals while paging, equal timestamps, allocation-vs-commit ordering, cursor retention/epoch reset, locale scope, account read isolation and scheduled visibility/expiry. Final cached content matched the server model. For 10,000 known notices, a JSON timestamp list was 558,891 bytes versus 60 bytes of cursor metadata (responses excluded). Local run was about 0.1 seconds; this is neither a hosted load test nor a production latency target.
 
-Future acceptance/load tests: real PostgreSQL transactional counter and aborted transactions, simultaneous publishers/readers, large payloads and translated text, rollout fan-out and CDN hit rate, snapshot consistency, log compaction, 30+ day offline devices, clock drift, missing translations, screen-reader/RTL/large-font behavior, read-state races between devices, logout/revocation during save, account switches, airplane mode and repeated refresh. Define latency/error/retention/payload budgets before implementation. Preserve immutable audit history and server-owned role checks. Link language, admin/superuser and single-device-session issues.
+Future acceptance/load tests: real PostgreSQL transactional counter and aborted transactions, simultaneous publishers/readers, large payloads and translated text, rollout fan-out and CDN hit rate, snapshot consistency, log compaction, 30+ day offline devices, clock drift, missing translations, screen-reader/RTL/large-font behavior, read-state races between devices, logout/revocation during save, account switches, airplane mode and repeated refresh. Define latency/error/retention/payload budgets before implementation. Preserve immutable audit history and server-owned role checks. Link language, Moderator/Admin and single-device-session issues.
+
+
+October 24 review: product terminology is Announcements; publishing belongs to Admin (formerly Superuser). The server code and stored role migration remain deferred. The confirmed guest policy permits daily votes but still requires sign-in for Brewing writes. See docs/requirements/product-review-2026-10-24.md.

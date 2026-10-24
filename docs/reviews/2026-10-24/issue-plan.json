@@ -1,0 +1,26 @@
+{
+  "updated_existing_local_ids": [
+    "T08",
+    "T13",
+    "T17",
+    "T18",
+    "T10",
+    "T09",
+    "F08",
+    "L01",
+    "A01",
+    "N01",
+    "F03",
+    "F01",
+    "F06",
+    "T01",
+    "T16",
+    "T12"
+  ],
+  "new_draft_ids": [
+    "T20",
+    "T21"
+  ],
+  "remote_state": "Not created or edited: GitHub API returned Forbidden and api.github.com is absent from the observed allowed-host list; live remote deduplication unavailable. Search/update existing manually created issues, particularly sharing, instead of blindly creating duplicates.",
+  "implementation": "Review/specification only; no app/API/migration/runtime renames."
+}

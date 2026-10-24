@@ -1,5 +1,8 @@
 # Brewing: community-only selection and audited moderation
 
+> Product review update (24 October 2026): use **Moderator** (formerly product Admin), **Admin** (formerly Superuser), and **Announcements** in user-facing requirements. The owner confirmed guest daily YES/NO voting; Brewing writes require sign-in. See [the current review](requirements/product-review-2026-10-24.md). Runtime roles/APIs and existing SQL examples below remain current implementation details until an approved migration; this documentation change does not implement the proposal.
+
+
 This supersedes the previous administrator schedule/preview policy. There is no administrator nomination, reserved date or published preview in the new app.
 
 - Guests browse all open questions. Verified signed-in accounts (including admins/superusers) may submit one question and upvote one other person's question per UTC day. Clearing app storage/logout does not reset server quotas. Removal does not refund a submission or an upvote. Self-upvotes are rejected by both UI and server.
