@@ -45,15 +45,15 @@ async function verifyTurnstile(request: Request, token: unknown, expectedCdata: 
   const form = new FormData();
   form.set('secret', secret);
   form.set('response', token);
-  const remoteIp = request.headers.get('cf-connecting-ip');
-  if (remoteIp) form.set('remoteip', remoteIp);
 
   const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
     method: 'POST', body: form, signal: AbortSignal.timeout(5000)
   });
   if (!response.ok) return false;
-  const result = await response.json() as { success?: boolean; action?: string; cdata?: string; hostname?: string };
-  return result.success === true && result.action === 'pulse-vote' &&
+  const result = await response.json() as { success?: boolean; action?: string; cdata?: string; hostname?: string; challenge_ts?: string };
+  const timestamp = Date.parse(result.challenge_ts ?? '');
+  return Number.isFinite(timestamp) && timestamp <= Date.now() + 30_000 && Date.now() - timestamp <= 300_000 &&
+    result.success === true && result.action === 'pulse-vote' &&
     result.hostname === expectedHostname && result.cdata === expectedCdata;
 }
 
@@ -100,6 +100,7 @@ Deno.serve(async (request) => {
 
   // Receipt recovery is read-only. Authenticate account identity on the server for both operations.
   let accountId: string | null = null;
+  let sessionId: string | null = null;
   const authorization = request.headers.get('Authorization');
   const bearer = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;
   if (bearer?.split('.').length === 3) {
@@ -109,6 +110,9 @@ Deno.serve(async (request) => {
     const { data, error } = await authClient.auth.getUser(bearer);
     if (error || !data.user) return respond({ error: 'Invalid session.' }, 401);
     accountId = data.user.id;
+    try { sessionId = JSON.parse(atob(bearer.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).session_id; }
+    catch { return respond({ error: 'Invalid session.' }, 401); }
+    if (typeof sessionId !== 'string' || !/^[a-f0-9-]{36}$/.test(sessionId)) return respond({ error: 'Invalid session.' }, 401);
   }
 
   const admin = createClient(url, secretKey, {
@@ -118,6 +122,7 @@ Deno.serve(async (request) => {
     const { data, error } = await admin.rpc('get_device_vote_receipt', {
       p_credential: payload.credential,
       p_account_id: accountId,
+      p_session_id: sessionId,
       p_device_fingerprint_hash: deviceFingerprintHash,
       p_question_id: payload.questionId
     });
@@ -132,7 +137,7 @@ Deno.serve(async (request) => {
     if (data.length === 0) return respond({ status: 'NOT_VOTED' });
     const receipt = data[0];
     if (!receipt || typeof receipt.receipt_id !== 'string' || !receipt.receipt_id ||
-      (receipt.accepted_choice !== 'YES' && receipt.accepted_choice !== 'NO') ||
+      (receipt.accepted_choice !== null && receipt.accepted_choice !== 'YES' && receipt.accepted_choice !== 'NO') ||
       typeof receipt.accepted_at !== 'string' || !Number.isFinite(Date.parse(receipt.accepted_at))) {
       audit('vote_receipt_unavailable', requestId, { reason: 'invalid_response' });
       return respond({ error: 'Vote status could not be verified.' }, 503);
@@ -163,6 +168,7 @@ Deno.serve(async (request) => {
   const { data, error } = await admin.rpc('submit_vote', {
     p_credential: payload.credential,
     p_account_id: accountId,
+      p_session_id: sessionId,
     p_question_id: payload.questionId,
     p_choice: payload.choice,
     p_idempotency_key: payload.idempotencyKey

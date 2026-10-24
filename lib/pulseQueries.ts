@@ -6,6 +6,7 @@ import {
   useQueryClient
 } from '@tanstack/react-query';
 
+import { localGeneration } from './localReset';
 import { fetchFinalizedResults, fetchTodayQuestion, fetchVoteReceipt, PulseApiError, submitVote } from './pulseApi';
 import type { VoteAttempt } from './captcha';
 import { getStoredVoteReceipt } from './voteReceipts';
@@ -63,8 +64,12 @@ export function useSubmitVote(questionId: string | undefined) {
       if (!questionId) throw new Error('There is no open question.');
       return submitVote(attempt);
     },
-    onSuccess: (receipt) => {
+    onMutate: () => localGeneration(),
+    onSuccess: (receipt, _attempt, generation) => {
+      if (generation !== localGeneration()) return;
       queryClient.setQueryData(pulseKeys.voteReceipt(receipt.questionId), receipt);
+      void queryClient.invalidateQueries({ queryKey: ['pulse', 'guest-history'] });
+      void queryClient.invalidateQueries({ queryKey: ['pulse', 'my-activity'] });
     },
     networkMode: 'always',
     retry: false

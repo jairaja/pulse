@@ -13,10 +13,11 @@ begin
     ('Should public libraries stay open later?','en',(now() at time zone 'utc')::date-2,'live'),
     ('Should schools teach practical financial skills?','en',(now() at time zone 'utc')::date-1,'live')
   on conflict(asked_on) where status in ('live','archived') do nothing;
-  insert into public.question_submissions(author_id,question_text,submitted_on,created_at) values
+  insert into public.question_submissions(author_id,question_text,submitted_on,created_at,published_at) values
     (v_author,'Should cities provide more shaded public spaces?',(now() at time zone 'utc')::date-1,
+      (((now() at time zone 'utc')::date-1)::timestamp at time zone 'utc')+interval '1 hour',
       (((now() at time zone 'utc')::date-1)::timestamp at time zone 'utc')+interval '1 hour'),
-    (v_author,'Should employers offer a four-day working week?',(now() at time zone 'utc')::date,clock_timestamp())
+    (v_author,'Should employers offer a four-day working week?',(now() at time zone 'utc')::date,clock_timestamp(),clock_timestamp())
   on conflict(author_id,submitted_on) do nothing;
   perform private.finalize_daily_pulse(clock_timestamp());
 end;

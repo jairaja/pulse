@@ -9,3 +9,12 @@ verify_jwt = false
 
 [functions.operational-health]
 verify_jwt = false
+
+[functions.account]
+verify_jwt = false
+
+[functions.community-action]
+verify_jwt = false
+
+[functions.moderate-submissions]
+verify_jwt = false

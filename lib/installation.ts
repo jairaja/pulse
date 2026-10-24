@@ -3,7 +3,12 @@ import * as SecureStore from 'expo-secure-store';
 
 const INSTALLATION_CREDENTIAL_KEY = 'pulse.installation-credential.v1';
 
-export async function getInstallationCredential() {
+let pending: Promise<string> | null = null;
+export function getInstallationCredential(): Promise<string> {
+  if (!pending) pending = readOrCreateCredential().finally(() => { pending = null; });
+  return pending;
+}
+async function readOrCreateCredential() {
   if (!(await SecureStore.isAvailableAsync())) {
     throw new Error('Secure device storage is unavailable. Voting is disabled on this device.');
   }

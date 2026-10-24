@@ -9,6 +9,8 @@ function client() {
   const calls = [];
   class PulseApiError extends Error { constructor(message, code) { super(message); this.code = code; } }
   const dependencies = { PulseApiError, supabaseConfigurationError: null,
+    getInstallationCredential: async () => 'credential', collectClientDeviceEvidence: async () => ({ platform: 'ios' }),
+    invokeAction: async (name, args) => { calls.push({ name, args }); if(response.error) throw new Error(response.error.message); return response.data; },
     supabase: { rpc: async (name, args) => { calls.push({ name, args }); return response; } } };
   const exports = {};
   const source = readFileSync(new URL('../lib/communityApi.ts', import.meta.url), 'utf8');
@@ -17,20 +19,20 @@ function client() {
   return { api: exports, calls, set: value => { response = value; } };
 }
 
-test('community writes send no author, voter or quota-date fields and preserve safe server errors', async () => {
-  const c = client();
-  c.set({ data: 'new-question', error: null });
-  assert.equal(await c.api.submitCommunityQuestion('A daily question?'), 'new-question');
-  assert.equal(c.calls[0].name, 'submit_brewing_question');
-  assert.deepEqual(JSON.parse(JSON.stringify(c.calls[0].args)), { p_question_text: 'A daily question?' });
-  c.set({ data: null, error: null });
-  await c.api.upvoteCommunityQuestion('other-question');
-  assert.equal(c.calls[1].name, 'upvote_brewing_question');
-  assert.deepEqual(JSON.parse(JSON.stringify(c.calls[1].args)), { p_submission_id: 'other-question' });
-  c.set({ data: null, error: { code: '42501', message: 'You cannot upvote your own question.' } });
-  await assert.rejects(c.api.upvoteCommunityQuestion('own-question'), /cannot upvote your own/);
-  c.set({ data: null, error: { code: 'internal', message: 'private database details' } });
-  await assert.rejects(c.api.submitCommunityQuestion('A question?'), error => error.message === 'Could not submit your question.');
+test('community writes use verified action gateway with no client account/date identity', async () => {
+  const c = client(); const proof = { credential: 'credential', requestId: 'request', captchaToken: 'token', captchaBinding: 'binding', deviceEvidence: {} };
+  c.set({ data: { id: 'new-question', status: 'PENDING' }, error: null });
+  assert.equal(await c.api.submitCommunityQuestion({ text: 'A daily question?', proof }), 'new-question');
+  assert.equal(c.calls[0].name, 'community-action');
+  assert.deepEqual(JSON.parse(JSON.stringify(c.calls[0].args)), { operation: 'submit', text: 'A daily question?', editId: null, ...proof });
+  c.set({ data: {id:'other-question',status:'ACCEPTED'}, error: null });
+  await c.api.upvoteCommunityQuestion({ id: 'other-question', proof });
+  assert.equal(c.calls[1].name, 'community-action');
+  assert.deepEqual(JSON.parse(JSON.stringify(c.calls[1].args)), { operation: 'upvote', id: 'other-question', ...proof });
+  c.set({ data: null, error: { message: 'You cannot upvote your own question.' } });
+  await assert.rejects(c.api.upvoteCommunityQuestion({id:'own-question',proof}), /cannot upvote your own/);
+  c.set({ data: { id:'wrong',status:'ACCEPTED'},error:null });
+  await assert.rejects(c.api.upvoteCommunityQuestion({id:'other-question',proof}), /Could not verify this upvote/);
 });
 
 test('community feed and quota parsing rejects malformed responses and handles empty public feeds', async () => {
@@ -56,7 +58,7 @@ test('community feed and quota parsing rejects malformed responses and handles e
 
 test('moderation identity and idempotency fields are sent; server role and removal responses are validated', async () => {
   const c = client();
-  for (const role of ['member', 'admin', 'superuser']) {
+  for (const role of ['member', 'moderator', 'admin']) {
     c.set({ data: role, error: null }); assert.equal(await c.api.fetchCommunityRole(), role);
   }
   c.set({ data: 'owner', error: null }); await assert.rejects(c.api.fetchCommunityRole(), /moderator access/);

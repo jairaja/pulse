@@ -12,7 +12,8 @@ export const SUPPORTED_LANGUAGES = [
 ] as const;
 export type Language = typeof SUPPORTED_LANGUAGES[number]['code'];
 export type ThemePreference = 'light' | 'dark' | 'system';
-export type Preferences = { language: Language; theme: ThemePreference };
+export type ViewMode = 'list' | 'grid';
+export type Preferences = { language: Language; theme: ThemePreference; brewingView?: ViewMode; resultsView?: ViewMode; largerText?: boolean; highContrast?: boolean; reduceMotion?: boolean };
 export type PreferencePatch = Partial<Preferences>;
 export const DEFAULT_PREFERENCES: Preferences = { language: 'en', theme: 'system' };
 export function isLanguage(value: unknown): value is Language {
@@ -24,10 +25,13 @@ export function isTheme(value: unknown): value is ThemePreference {
 export function parsePreferences(value: unknown): Preferences | null {
   if (!value || typeof value !== 'object') return null;
   const prefs = value as Partial<Preferences>;
-  return isLanguage(prefs.language) && isTheme(prefs.theme) ? { language: prefs.language, theme: prefs.theme } : null;
+  return isLanguage(prefs.language) && isTheme(prefs.theme) ? { ...parsePatch(prefs), language: prefs.language, theme: prefs.theme } : null;
 }
 export function parsePatch(value: unknown): PreferencePatch {
   if (!value || typeof value !== 'object') return {};
   const patch = value as PreferencePatch;
-  return { ...(isLanguage(patch.language) ? { language: patch.language } : {}), ...(isTheme(patch.theme) ? { theme: patch.theme } : {}) };
+  const extra: PreferencePatch = {};
+  for (const key of ['brewingView', 'resultsView'] as const) if (patch[key] === 'grid' || patch[key] === 'list') extra[key] = patch[key];
+  for (const key of ['largerText', 'highContrast', 'reduceMotion'] as const) if (typeof patch[key] === 'boolean') extra[key] = patch[key];
+  return { ...extra, ...(isLanguage(patch.language) ? { language: patch.language } : {}), ...(isTheme(patch.theme) ? { theme: patch.theme } : {}) };
 }

@@ -41,7 +41,7 @@ export function createPreferenceController({ owner, scope, storage, remote, chan
       const sent = { ...pending };
       const result = Object.keys(sent).length ? await remote.patch(owner, sent) : remotePreferences;
       if (stopped) return;
-      for (const key of ['language', 'theme'] as const) {
+      for (const key of ['language', 'theme', 'brewingView', 'resultsView', 'largerText', 'highContrast', 'reduceMotion'] as const) {
         if (pending[key] === sent[key]) delete pending[key];
       }
       preferences = { ...result, ...pending };

@@ -5,6 +5,7 @@ import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import { captchaLoadError, challengeNavigationAllowed, CAPTCHA_LOAD_ERROR } from '../lib/captchaNavigation';
 import { getCaptchaChallengeUrl } from '../lib/captcha';
+import { usePreferences } from '../lib/preferences';
 import { useAppTheme } from '../lib/theme';
 
 type Props = { binding: string; onCancel: () => void; onToken: (token: string) => void };
@@ -12,6 +13,7 @@ type Props = { binding: string; onCancel: () => void; onToken: (token: string) =
 export function TurnstileChallenge({ binding, onCancel, onToken }: Props) {
   const { t } = useI18n();
   const { colors } = useAppTheme();
+  const { preferences } = usePreferences();
   const [error, setError] = useState<string | null>(null);
   const url = useMemo(() => getCaptchaChallengeUrl(binding), [binding]);
   const origin = useMemo(() => new URL(url).origin, [url]);
@@ -31,17 +33,19 @@ export function TurnstileChallenge({ binding, onCancel, onToken }: Props) {
   }
 
   return (
-    <Modal animationType="slide" onRequestClose={onCancel} presentationStyle="pageSheet" visible>
+    <Modal animationType={preferences.reduceMotion ? 'none' : 'slide'} onRequestClose={onCancel} presentationStyle="pageSheet" visible>
       <View style={[styles.screen, { backgroundColor: colors.canvas }]}> 
         <View style={styles.header}>
           <View style={styles.headerCopy}>
             <Text style={[styles.title, { color: colors.ink }]}>{t("Verify you’re human")}</Text>
-            <Text style={[styles.body, { color: colors.muted }]}>{t("Complete this security check to submit your vote.")}</Text>
+            <Text style={[styles.body, { color: colors.muted }]}>{t("Complete this security check to continue.")}</Text>
           </View>
           <Pressable accessibilityRole="button" onPress={onCancel}><Text style={[styles.close, { color: colors.accent }]}>{t("Cancel")}</Text></Pressable>
         </View>
-        {error ? <Text accessibilityLiveRegion="polite" style={styles.error}>{t(error)}</Text> : null}
+        {error ? <Text accessibilityLiveRegion="polite" style={[styles.error, { color: colors.error }]}>{t(error)}</Text> : null}
         <WebView
+          mixedContentMode="never"
+          allowFileAccess={false}
           domStorageEnabled
           javaScriptEnabled
           onError={({ nativeEvent }) => setError(captchaLoadError(nativeEvent.description, nativeEvent.code))}
@@ -66,5 +70,5 @@ const styles = StyleSheet.create({
   screen: { flex: 1, paddingTop: 18 }, header: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', padding: 20 },
   headerCopy: { flex: 1, marginEnd: 12 },
   title: { fontSize: 22, fontWeight: '700' }, body: { fontSize: 13, marginTop: 4 }, close: { fontSize: 15, fontWeight: '700' },
-  error: { color: '#C95B55', paddingHorizontal: 20, paddingBottom: 8 }, webview: { flex: 1 }, loading: { flex: 1 }
+  error: { paddingHorizontal: 20, paddingBottom: 8 }, webview: { flex: 1 }, loading: { flex: 1 }
 });

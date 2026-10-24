@@ -14,6 +14,9 @@ const expectedMigrations = [
   '202610200004_account_preferences.sql',
   '202610200005_community_selection.sql',
   '202610210001_community_only_brewing.sql',
+  '202610240001_account_sessions_and_ownership.sql',
+  '202610240002_brewing_journeys.sql',
+  '202610240003_preferences_and_activity.sql',
 ];
 const migrationFiles = (await readdir(migrationsDirectory))
   .filter((file) => file.endsWith('.sql'))
@@ -25,10 +28,10 @@ if (JSON.stringify(migrationFiles) !== JSON.stringify(expectedMigrations)) {
     [
       `Expected exactly ${expectedMigrations.join(', ')}; found: ${migrationFiles.join(', ') || 'none'}.`,
       legacyFiles.length > 0
-        ? 'The legacy files are real inputs to Supabase, not harmless cache files.'
+        ? 'Unexpected migration files are real Supabase inputs. Review new migrations and update this allowlist; use legacy cleanup only for its explicitly named superseded files.'
         : 'A required reviewed migration is missing.',
       legacyFiles.length > 0
-        ? 'Preview the allowlisted cleanup with "npm run db:baseline:clean", then run "npm run db:baseline:clean -- --apply".'
+        ? 'Do not delete unrecognized migrations solely to satisfy this guard.'
         : 'Restore the migrations from Git before running database commands.',
     ].join('\n'),
   );
@@ -189,3 +192,12 @@ if (!supabaseConfig.includes('[functions.turnstile-challenge]') || !supabaseConf
 }
 
 console.log('Database guard passed: baseline, gateway-only voting, finalization, and account history.');
+
+const accountJourneys = await readFile(path.join(migrationsDirectory, expectedMigrations[11]), 'utf8');
+const brewingJourneys = await readFile(path.join(migrationsDirectory, expectedMigrations[12]), 'utf8');
+const activity = await readFile(path.join(migrationsDirectory, expectedMigrations[13]), 'utf8');
+for (const [source, statements] of [[accountJourneys, ['private.signup_import_entitlements', 'public.bind_account_otp', 'public.check_account_lease', 'private.assert_account_session', 'verified_session is distinct from p_session']],
+  [brewingJourneys, ['submission_votes_device_day', 'public.accept_brewing_upvote', 'public.review_brewing_submission', 's.published_at < v_boundary', 'public.resolve_public_question']],
+  [activity, ['public.my_pulse_activity', 'private.assert_current_session()', 'private.valid_preference_options']]]) {
+  for (const statement of statements) if (!source.includes(statement)) throw new Error(`Product journeys migration is missing: ${statement}`);
+}

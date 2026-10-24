@@ -81,3 +81,14 @@ test('edits while a response is in flight converge; old account responses cannot
   const emissions = device.states.length; device.stop(); release(); await old;
   assert.equal(device.states.length, emissions);
 });
+
+test('one-button view selections and accessibility flags restore independently on another device', async () => {
+  let saved = { language: 'ur', theme: 'dark', brewingView: 'list', resultsView: 'grid', highContrast: true };
+  const remote = { ensure: async () => saved, patch: async (_, patch) => { saved = { ...saved, ...patch }; return saved; } };
+  const first = fixture({ owner: 'member', remote }); await first.start();
+  await first.set({ brewingView: 'grid', largerText: true, reduceMotion: true });
+  await first.set({ highContrast: false });
+  const second = fixture({ owner: 'member', remote }); await second.start();
+  assert.deepEqual(second.latest().preferences, { language: 'ur', theme: 'dark', brewingView: 'grid', resultsView: 'grid', highContrast: false, largerText: true, reduceMotion: true });
+  assert.deepEqual(plain(model.parsePatch({ brewingView: 'cards', largerText: 'true', reduceMotion: false })), { reduceMotion: false });
+});

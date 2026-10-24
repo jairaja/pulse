@@ -1,3 +1,6 @@
+import { getInstallationCredential } from './installation';
+import { collectClientDeviceEvidence } from './deviceIntegrity';
+import { invokeAction, type ActionProof } from './actionVerification';
 import { PulseApiError } from './pulseApi';
 import { supabase, supabaseConfigurationError } from './supabase';
 
@@ -5,7 +8,7 @@ export type CommunityQuestion = {
   id: string; text: string; createdAt: string; upvoteCount: number; isOwn: boolean; upvotedToday: boolean;
 };
 export type BrewingAllowance = {
-  serverTime: string; resetsAt: string; submittedQuestionId: string | null; upvotedQuestionId: string | null;
+  serverTime: string; resetsAt: string; submittedQuestionId: string | null; upvotedQuestionId: string | null; deviceUsed?: boolean;
 };
 function client() {
   if (!supabase) throw new PulseApiError(supabaseConfigurationError ?? 'PULSE is not configured.', 'NOT_CONFIGURED');
@@ -21,7 +24,7 @@ function text(value: unknown): string {
 }
 export type BrewingSort = 'most_upvoted' | 'newest' | 'oldest';
 export type BrewingFilter = 'all' | 'mine' | 'others' | 'today';
-export type CommunityRole = 'member' | 'admin' | 'superuser';
+export type CommunityRole = 'member' | 'moderator' | 'admin';
 export type BrewingCursor = Record<string, unknown>;
 export type CommunityPage = { items: CommunityQuestion[]; nextCursor: BrewingCursor | null };
 export async function fetchCommunityQuestions({ sort = 'most_upvoted', filter = 'all', cursor = null }: {
@@ -49,7 +52,7 @@ export async function fetchCommunityQuestions({ sort = 'most_upvoted', filter = 
 }
 export async function fetchCommunityRole(): Promise<CommunityRole> {
   const { data, error } = await client().rpc('get_my_community_role');
-  if (error || !['member','admin','superuser'].includes(data)) {
+  if (error || !['member','moderator','admin'].includes(data)) {
     throw new PulseApiError('Could not verify moderator access.', 'ROLE_UNAVAILABLE', true);
   }
   return data as CommunityRole;
@@ -69,29 +72,23 @@ export async function removeCommunityQuestion(attempt: { userId: string; id: str
   return attempt.id;
 }
 export async function fetchBrewingAllowance(): Promise<BrewingAllowance> {
-  const { data, error } = await client().rpc('get_brewing_allowance');
-  if (error) throw new PulseApiError('Could not check your daily allowance.', error.code, true);
+  const credential = await getInstallationCredential();
+  const deviceEvidence = await collectClientDeviceEvidence();
+  const data = await invokeAction('community-action', { operation: 'allowance', credential, deviceEvidence });
   const r = row(data);
   if (!Number.isFinite(Date.parse(text(r.server_time))) || !Number.isFinite(Date.parse(text(r.resets_at)))) {
     throw new PulseApiError('Invalid community response.', 'INVALID_RESPONSE');
   }
   return { serverTime: text(r.server_time), resetsAt: text(r.resets_at),
+    deviceUsed: r.device_used === true,
     submittedQuestionId: r.submitted_question_id === null ? null : text(r.submitted_question_id),
     upvotedQuestionId: r.upvoted_question_id === null ? null : text(r.upvoted_question_id) };
 }
-const safeMessages = new Set([
-  'Sign in to submit a question.', 'Sign in to upvote a question.', 'Questions must contain 5 to 280 characters.',
-  'Verify your email before submitting or upvoting.',
-  'You already submitted a question today. Try again at 00:00 UTC.',
-  'You already used your upvote today. Try again at 00:00 UTC.',
-  'You cannot upvote your own question.', 'This question is not available for upvotes.', 'Refresh the question list to continue.'
-]);
-export async function submitCommunityQuestion(question: string): Promise<string> {
-  const { data, error } = await client().rpc('submit_brewing_question', { p_question_text: question });
-  if (error) throw new PulseApiError(safeMessages.has(error.message) ? error.message : 'Could not submit your question.', error.code);
-  return text(data);
+export async function submitCommunityQuestion(attempt: { text: string; proof: ActionProof; editId?: string }): Promise<string> {
+  const data = await invokeAction('community-action', { operation: 'submit', text: attempt.text, editId: attempt.editId ?? null, ...attempt.proof });
+  return text(row(data).id);
 }
-export async function upvoteCommunityQuestion(id: string): Promise<void> {
-  const { error } = await client().rpc('upvote_brewing_question', { p_submission_id: id });
-  if (error) throw new PulseApiError(safeMessages.has(error.message) ? error.message : 'Could not upvote this question.', error.code);
+export async function upvoteCommunityQuestion(attempt: { id: string; proof: ActionProof }): Promise<void> {
+  const data = row(await invokeAction('community-action', { operation: 'upvote', id: attempt.id, ...attempt.proof }));
+  if (!['ACCEPTED', 'ALREADY_UPVOTED'].includes(String(data.status)) || data.id !== attempt.id) throw new Error('Could not verify this upvote. Refresh before trying again.');
 }

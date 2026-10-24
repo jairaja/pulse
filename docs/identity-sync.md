@@ -1,5 +1,8 @@
 # First-signup history import and canonical account restoration
 
+Current approved implementation and deployment: [product journeys rollout](product-journeys-rollout.md). The owner chose a checked signup-import checkbox, no blanket waiting period, and one upvote per account/device/UTC day. Earlier comparison proposals below are superseded for that scope.
+
+
 Review specification, not implemented policy. The authoritative detail is [the October 24 product review](requirements/product-review-2026-10-24.md), points 4–5 and 26. The owner confirmed guest daily voting remains available.
 
 - A new verified account may import server-accepted unowned device history once, with explicit consent (opt-in recommended). Bind the entitlement to the originating signup/device and a frozen cutoff; seal decline and make same-operation retries safe.

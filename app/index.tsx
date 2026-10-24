@@ -3,6 +3,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, AppState, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { YesterdayResult } from '../components/YesterdayResult';
 import { AccountPrompt } from '../components/AccountPrompt';
 import { TurnstileChallenge } from '../components/TurnstileChallenge';
 import { getCaptchaChallengeUrl, prepareVoteAttempt, type PendingVoteAttempt } from '../lib/captcha';
@@ -119,7 +120,7 @@ function TodayQuestionScreen({ today }: { today: ReturnType<typeof useTodayQuest
               <View accessibilityLiveRegion="polite" style={styles.receipt}>
                 <Text style={styles.receiptMark}>✓</Text>
                 <Text style={styles.receiptTitle}>{receipt.alreadyCounted ? t("Your vote was already counted") : t("Vote counted")}</Text>
-                <Text style={styles.receiptBody}>{t('Your {choice} vote is recorded.', { choice: t(receipt.choice) })}</Text>
+                <Text style={styles.receiptBody}>{receipt.choice ? t('Your {choice} vote is recorded.', { choice: t(receipt.choice) }) : t('This device has already voted. Logging out does not reset today’s vote.')}</Text>
                 <Text style={styles.receiptBody}>{utcChangeoverText(question.votingClosesAt, estimatedServerNow, { t, locale })}</Text>
                 <Text style={styles.receiptId}>{t('Receipt: {id}', { id: receipt.receiptId.slice(0, 8).toUpperCase() })}</Text>
                 <AccountPrompt
@@ -194,6 +195,7 @@ function TodayQuestionScreen({ today }: { today: ReturnType<typeof useTodayQuest
             )}
           </>
         )}
+        <YesterdayResult />
       </ScrollView>
       {pendingAttempt ? (
         <TurnstileChallenge
@@ -282,7 +284,7 @@ function createStyles(colors: ThemeColors) {
     submitButtonText: { color: colors.onPrimary, fontSize: 15, fontWeight: '800', letterSpacing: 0.7 },
     disclosure: { color: colors.muted, fontSize: 14, lineHeight: 20, textAlign: 'center' },
     offline: { color: colors.muted, fontSize: 14, lineHeight: 20 },
-    error: { color: '#C95B55', fontSize: 14, lineHeight: 20, textAlign: 'center' },
+    error: { color: colors.error, fontSize: 14, lineHeight: 20, textAlign: 'center' },
     disabled: { opacity: 0.45 },
     receipt: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 24, borderWidth: 1, gap: 10, padding: 24 },
     receiptMark: { color: colors.accent, fontSize: 28, fontWeight: '700' },

@@ -1,11 +1,11 @@
 # Optional account and authentication UX
 
-> Product review update (24 October 2026): use **Moderator** (formerly product Admin), **Admin** (formerly Superuser), and **Announcements** in user-facing requirements. The owner confirmed guest daily YES/NO voting; Brewing writes require sign-in. See [the current review](requirements/product-review-2026-10-24.md). Runtime roles/APIs and existing SQL examples below remain current implementation details until an approved migration; this documentation change does not implement the proposal.
+> Implementation update (24 October 2026): [approved journeys and rollout](product-journeys-rollout.md) supersedes older implementation boundaries below. Guest daily voting remains supported; Brewing writes require sign-in and a protected gateway. Runtime roles are now Moderator (`moderator`) and Admin (`admin`). Product messages use Announcements; platform push APIs retain their technical names.
 
 
 **Status:** The email-code session, device-only nickname, contextual prompts, and local logout UX
 are implemented as an authentication foundation. Cross-device history, vote ownership, question
-ownership, notifications, and account deletion remain blocked on the secure server-side voting and
+ownership, announcements, and account deletion remain blocked on the secure server-side voting and
 canonical merge work below. The UI must not claim those capabilities are active yet.
 
 ## Product position

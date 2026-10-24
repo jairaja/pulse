@@ -1,5 +1,7 @@
 # PULSE — Step-by-step build
 
+Current approved implementation: [account, community and sharing journeys](docs/product-journeys-rollout.md). It includes forward migrations, deployment steps, verification evidence and remaining external setup. Older phase descriptions below are historical.
+
 ## Phase 1 UX concept
 
 See the editable four-state launch mockup: [Vote today, discover the world tomorrow](docs/design/pulse-phase1-launch-flow.svg).

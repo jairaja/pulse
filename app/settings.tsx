@@ -1,7 +1,7 @@
 import { useI18n, AppText as Text } from '../lib/i18n';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SUPPORTED_LANGUAGES } from '../lib/preferencesModel';
@@ -102,13 +102,24 @@ export default function SettingsScreen() {
             </Pressable>)}
           </View>
           <Text style={styles.note}>{session
-            ? t('Theme and language are saved to your account and restored when you sign in on another device.')
-            : t('Theme and language are saved on this device. Choose them again on a new device.')}</Text>
+            ? t('Your preferences are saved to your account and restored when you sign in on another device.')
+            : t('Your preferences are saved on this device. Choose them again on a new device.')}</Text>
           <Text accessibilityLiveRegion="polite" style={styles.note}>{t(preferenceStatus === 'synced' ? 'Preferences synced'
             : preferenceStatus === 'pending' ? 'Preferences could not be saved. Your changes will retry when connected.'
             : preferenceStatus === 'loading' ? 'Loading preferences…' : 'Saved on this device')}</Text>
           {preferenceStatus === 'pending' ? <Pressable accessibilityRole="button" onPress={retryPreferences} style={styles.retryButton}>
             <Text style={styles.retryButtonText}>{t('Retry sync')}</Text></Pressable> : null}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.eyebrow}>{t('ACCESSIBILITY')}</Text>
+          <Text style={styles.note}>{t('Text follows your device settings. These options add to them and sync with your account.')}</Text>
+          {([{ key: 'largerText', label: 'Larger text' }, { key: 'highContrast', label: 'High contrast' },
+            { key: 'reduceMotion', label: 'Reduce motion' }] as const).map(option => <View key={option.key} style={styles.option}>
+            <Text style={[styles.optionText, { flex: 1 }]}>{t(option.label)}</Text>
+            <Switch accessibilityLabel={t(option.label)} value={Boolean(preferences[option.key])} disabled={preferenceStatus === 'loading'}
+              onValueChange={value => setPreferences({ [option.key]: value })} />
+          </View>)}
         </View>
 
         <View style={styles.accountCard}>
@@ -243,7 +254,7 @@ function createStyles(colors: ThemeColors) {
     connectionMessage: { color: colors.body, fontSize: 14, lineHeight: 21 },
     statusDot: { backgroundColor: colors.muted, borderRadius: 6, height: 12, width: 12 },
     statusDotConnected: { backgroundColor: '#3B9A67' },
-    statusDotError: { backgroundColor: '#C95B55' },
+    statusDotError: { backgroundColor: colors.error },
     retryButton: {
       alignItems: 'center',
       borderColor: colors.accent,

@@ -1,0 +1,4 @@
+name = "pulse-question-links"
+main = "worker.mjs"
+compatibility_date = "2026-10-24"
+# Add your public domain and the variables documented in docs/product-journeys-rollout.md.

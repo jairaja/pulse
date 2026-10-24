@@ -8,6 +8,7 @@ export type { ThemePreference } from './preferencesModel';
 export type ResolvedTheme = 'light' | 'dark';
 
 export type ThemeColors = {
+  error: string;
   accent: string;
   activeSurface: string;
   body: string;
@@ -26,6 +27,7 @@ export type ThemeColors = {
 
 const palettes: Record<ResolvedTheme, ThemeColors> = {
   light: {
+    error: '#A52C26',
     accent: '#315FC7',
     activeSurface: '#E1E5ED',
     body: '#565853',
@@ -42,6 +44,7 @@ const palettes: Record<ResolvedTheme, ThemeColors> = {
     surface: '#F3F1EC'
   },
   dark: {
+    error: '#FFABA6',
     accent: '#9CB5FF',
     activeSurface: '#28354E',
     body: '#C5C7C0',
@@ -76,7 +79,13 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
 
   const resolvedTheme: ResolvedTheme =
     preference === 'system' ? (systemTheme === 'dark' ? 'dark' : 'light') : preference;
-  const colors = palettes[resolvedTheme];
+  const colors = useMemo(() => preferences.highContrast ? {
+    ...palettes[resolvedTheme],
+    body: resolvedTheme === 'dark' ? '#FFFFFF' : '#111111',
+    muted: resolvedTheme === 'dark' ? '#EEEEEE' : '#222222',
+    border: resolvedTheme === 'dark' ? '#AAAAAA' : '#444444',
+    disabledText: resolvedTheme === 'dark' ? '#CCCCCC' : '#444444'
+  } : palettes[resolvedTheme], [resolvedTheme, preferences.highContrast]);
 
   useEffect(() => {
     void SystemUI.setBackgroundColorAsync(colors.canvas);

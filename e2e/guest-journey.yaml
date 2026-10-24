@@ -1,0 +1,18 @@
+appId: com.pulse.worldtoday
+---
+- launchApp:
+    clearState: true
+- openLink: pulse://my-pulse
+- assertVisible: "My Pulse"
+- assertVisible: "Answered on this device: 0"
+- openLink: pulse://brewing-questions
+- assertVisible: "Sign in to submit or upvote"
+- tapOn: "Switch to grid"
+- assertVisible: "Switch to list"
+- stopApp
+- launchApp:
+    clearState: false
+- openLink: pulse://brewing-questions
+- assertVisible: "Switch to list"
+- tapOn: "Ask a question"
+- assertVisible: "Sign in to ask a question"

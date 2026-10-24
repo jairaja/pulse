@@ -14,13 +14,14 @@ async function loadClient(dependencies) {
     imports++;
     return `const ${names} = globalThis.__pulseReceiptRecoveryDependencies;`;
   });
-  assert.equal(imports, 4, 'Native test boundary must mock every runtime import');
+  assert.equal(imports, 6, 'Native test boundary must mock every runtime import');
   globalThis.__pulseReceiptRecoveryDependencies = dependencies;
   return import(`data:text/javascript;base64,${Buffer.from(javascript).toString('base64')}`);
 }
 
 test('client restores original receipt after storage clear and never fabricates acceptance', async () => {
   const saved = [];
+  const guestHistory = [];
   const calls = [];
   let result = { data: { status: 'NOT_VOTED' }, error: null };
   const device = { platform: 'android', deviceIdentifier: 'stable-android-id', deviceType: 'phone',
@@ -28,11 +29,12 @@ test('client restores original receipt after storage clear and never fabricates 
   class IneligibleDeviceError extends Error {}
   try {
     const client = await loadClient({
+      localGeneration: () => 0, rememberGuestAnswer: async receipt => guestHistory.push(receipt),
       getInstallationCredential: async () => 'new-credential-after-storage-clear',
       collectClientDeviceEvidence: async () => device, IneligibleDeviceError,
       storeVoteReceipt: async receipt => saved.push(receipt),
       supabaseConfigurationError: null,
-      supabase: { functions: { invoke: async (name, options) => {
+      supabase: { auth: { getSession: async () => ({ data: {session: null} }) }, functions: { invoke: async (name, options) => {
         calls.push({ name, body: options.body });
         return result;
       } } }
@@ -63,6 +65,10 @@ test('client restores original receipt after storage clear and never fabricates 
     result = { data: { status: 'ALREADY_VOTED', receipt_id: 'bad-receipt', accepted_choice: 'MAYBE' }, error: null };
     await assert.rejects(client.fetchVoteReceipt('question'), error => error.code === 'INVALID_RESPONSE');
     assert.equal(saved.length, 2, 'Failed or malformed status must not be saved as a confirmed vote');
+    assert.equal(guestHistory.length, 2, 'A confirmed unowned guest receipt can restore history after response loss');
+    result = { data: { status: 'ALREADY_VOTED', receipt_id: 'private-receipt', accepted_choice: null, accepted_at: '2026-10-20T12:00:00Z' }, error: null };
+    assert.equal((await client.fetchVoteReceipt('question')).choice, null);
+    assert.equal(guestHistory.length, 2, 'Redacted former-account receipts never become guest history');
   } finally {
     delete globalThis.__pulseReceiptRecoveryDependencies;
   }
@@ -103,4 +109,21 @@ test('receipt query never treats an offline empty cache or failed lookup as perm
   } finally {
     delete globalThis.__pulseReceiptQueryDependencies;
   }
+});
+
+test('a late vote success after logout cannot reintroduce the old account receipt into guest cache', async () => {
+  const source=readFileSync(new URL('../lib/pulseQueries.ts',import.meta.url),'utf8');
+  const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ESNext}}).outputText
+    .replace(/^import (\{[^\n]+\}) from ['"][^'"]+['"];$/gm,(_line,names)=>`const ${names}=globalThis.__pulseLateMutationDependencies;`);
+  let generation=0;const cached=[];
+  globalThis.__pulseLateMutationDependencies={localGeneration:()=>generation,useMutation:options=>options,
+    useQueryClient:()=>({setQueryData:(key,value)=>cached.push({key,value}),invalidateQueries:async()=>{}})};
+  try {
+    const {useSubmitVote}=await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
+    const mutation=useSubmitVote('question');const context=mutation.onMutate();generation++;
+    mutation.onSuccess({questionId:'question',choice:'YES'}, {}, context);
+    assert.equal(cached.length,0,'Logout generation isolates the new guest session from an old successful response');
+    const current=mutation.onMutate();mutation.onSuccess({questionId:'question',choice:'NO'}, {}, current);
+    assert.equal(cached.length,1,'A current accepted response still updates the receipt');
+  } finally {delete globalThis.__pulseLateMutationDependencies;}
 });
