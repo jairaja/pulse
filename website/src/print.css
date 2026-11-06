@@ -1,0 +1,81 @@
+@media print {
+  :root {
+    color-scheme: light !important;
+    --paper: #fff !important;
+    --surface: #fff !important;
+    --ink: #111 !important;
+    --muted: #333 !important;
+    --line: #aaa !important;
+    --yes: #537d57 !important;
+    --no: #ce877c !important;
+    background: white !important;
+    color: #111 !important;
+    font-size: 11pt !important;
+  }
+  .site-header,
+  .utility-bar,
+  .search-section,
+  .download-section,
+  footer,
+  .skip-link,
+  .toast,
+  button,
+  .card-actions,
+  .report-actions,
+  .pagination {
+    display: none !important;
+  }
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  dialog:not([open]) {
+    display: none !important;
+  }
+  body:has(#report-dialog[open]) #app > :not(#report-dialog) {
+    display: none !important;
+  }
+  #report-dialog[open] {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    color: #111 !important;
+    background: white !important;
+  }
+  dialog::backdrop {
+    display: none !important;
+  }
+  .result-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+    margin: 20pt 0 !important;
+    border: 1px solid #aaa !important;
+  }
+  .result-bar {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .cards,
+  .recent-grid {
+    display: block !important;
+  }
+  h1 {
+    font-size: 30pt !important;
+  }
+  h2 {
+    font-size: 23pt !important;
+  }
+  h3 {
+    font-size: 16pt !important;
+  }
+  @page {
+    size: A4;
+    margin: 18mm;
+  }
+}

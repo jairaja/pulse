@@ -1,5 +1,7 @@
 # PULSE — Step-by-step build
 
+Public read-only website: [website/](website/README.md), independently hosted on Cloudflare with GitHub source, current/Brewing questions, public results and PDF reports. It does not handle mobile authentication or verified deep links.
+
 Current approved implementation: [account, community and sharing journeys](docs/product-journeys-rollout.md). It includes forward migrations, deployment steps, verification evidence and remaining external setup. Older phase descriptions below are historical.
 
 ## Phase 1 UX concept
