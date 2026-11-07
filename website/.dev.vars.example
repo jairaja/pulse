@@ -1,0 +1,8 @@
+# Copy to .dev.vars for local Wrangler preview only.
+# Set these separately in each Cloudflare deployment environment.
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_PUBLIC_KEY
+# Optional: omit until real listings exist. No placeholder store buttons are shown.
+# PLAY_STORE_URL=https://play.google.com/store/apps/details?id=com.pulse.worldtoday
+# APP_STORE_URL=https://apps.apple.com/app/idYOUR_REAL_ID
+# CONTACT_EMAIL=hello@YOUR_DOMAIN
