@@ -75,6 +75,8 @@ The link worker and store/domain/signing configuration are prepared, not deploye
 
 ## Manual security and UX acceptance
 
+Use the current [hosted app acceptance plan](test-plans/app.md) for the full case list and evidence template. [Email delivery guidance](test-plans/README.md) distinguishes Pro template customization from permitted recipients and SMTP transport; do not assume Pro unlocks unrestricted built-in email sending.
+
 - On device A, cast a guest vote; create a **new** email account on A with the checkbox checked, then complete OTP/CAPTCHA. My Pulse contains that vote once. Repeat separately with the box unchecked: it is not imported. Resend OTP before the first completion and repeat.
 - Make an unowned guest vote on a different device; log into an **existing** account there with the box checked. It restores only account history. Logging out deletes all local history/preferences/drafts, but the current daily question still cannot receive a second device vote. A later new guest vote must have null raw account ownership and must not enter the signed-out account's history.
 - Log into the same account on device B. A should reset promptly online; check fallback after 15 seconds, and again after airplane mode/background reconnect. Retain an old A JWT for an operator test: private REST RPCs must reject it and old gateway writes must fail. Confirm requesting an OTP or failing/cancelling CAPTCHA does not log A out.

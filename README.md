@@ -2,6 +2,8 @@
 
 Public read-only website: [website/](website/README.md), independently hosted on Cloudflare with GitHub source, current/Brewing questions, public results and PDF reports. It does not handle mobile authentication or verified deep links.
 
+Hosted acceptance testing: separate [app](docs/test-plans/app.md) and [website](docs/test-plans/website.md) plans, plus [email-delivery and CAPTCHA guidance](docs/test-plans/README.md). These list steps/expected outcomes; they are not completed test reports.
+
 Current approved implementation: [account, community and sharing journeys](docs/product-journeys-rollout.md). It includes forward migrations, deployment steps, verification evidence and remaining external setup. Older phase descriptions below are historical.
 
 ## Phase 1 UX concept

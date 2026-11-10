@@ -67,6 +67,8 @@ The About page describes website behavior. Before public launch, the owner still
 
 ## Verification
 
+Full manual acceptance: [website test plan](../docs/test-plans/website.md). [CAPTCHA decision](../docs/test-plans/README.md#website-captcha-decision): no routine challenge on public read-only browsing; targeted abuse controls remain an operational decision, not a configured guarantee.
+
 ```sh
 npm test
 npm run build
